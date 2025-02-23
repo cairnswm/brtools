@@ -1,8 +1,32 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { useBRTools } from './BRToolsContext';
 import * as XLSX from 'xlsx';
+import PropTypes from 'prop-types';
 
 const TeamContext = createContext();
+
+const calculateTeamAverages = (players) => {
+  const stats = ['age', 'csr', 'energy', 'form', 'stamina', 'handling', 'attack', 'defense', 'technique', 'strength', 'jumping', 'speed', 'agility', 'kicking', 'salary'];
+  
+  const sortedByCsr = [...players].sort((a, b) => Number(b.csr) - Number(a.csr));
+  const top15 = sortedByCsr.slice(0, 15);
+  const top22 = sortedByCsr.slice(0, 22);
+
+  const calculateAverages = (playerGroup) => {
+    const averages = {};
+    stats.forEach(stat => {
+      const sum = playerGroup.reduce((acc, player) => acc + Number(player[stat]), 0);
+      averages[stat] = playerGroup.length ? (sum / playerGroup.length).toFixed(2) : 0;
+    });
+    return averages;
+  };
+
+  return {
+    allPlayers: calculateAverages(players),
+    top15Players: calculateAverages(top15),
+    top22Players: calculateAverages(top22)
+  };
+};
 
 const SORT_OPTIONS = [
   { value: 'jersey', label: 'Jersey' },
@@ -10,6 +34,8 @@ const SORT_OPTIONS = [
   { value: 'age', label: 'Age' },
   { value: 'csr', label: 'CSR' },
   { value: 'energy', label: 'Energy' },
+  { value: 'form', label: 'Form' },
+  { value: 'leadership', label: 'Leadership' },
   { value: 'height', label: 'Height' },
   { value: 'weight', label: 'Weight' },
   { value: 'stamina', label: 'Stamina' },
@@ -112,7 +138,7 @@ export function TeamProvider({ children }) {
     let aValue = a[sortField];
     let bValue = b[sortField];
     
-    if (['age', 'csr', 'energy', 'jersey', 'salary', 'height', 'weight', 'stamina', 'handling', 'attack', 'defense', 'technique', 'strength', 'jumping', 'speed', 'agility', 'kicking'].includes(sortField)) {
+    if (['age', 'csr', 'energy', 'jersey', 'salary', 'height', 'weight', 'form', 'leadership', 'stamina', 'handling', 'attack', 'defense', 'technique', 'strength', 'jumping', 'speed', 'agility', 'kicking'].includes(sortField)) {
       aValue = Number(aValue);
       bValue = Number(bValue);
     }
@@ -218,6 +244,8 @@ export function TeamProvider({ children }) {
     XLSX.writeFile(wb, `${standingsView}.xlsx`);
   };
 
+  const teamAverages = calculateTeamAverages(sortedPlayers);
+
   return (
     <TeamContext.Provider value={{ 
       teamId, 
@@ -238,7 +266,8 @@ export function TeamProvider({ children }) {
       setPlayersView,
       standingsSortField,
       standingsSortDirection,
-      handleStandingsSort
+      handleStandingsSort,
+      teamAverages
     }}>
       {children}
     </TeamContext.Provider>
@@ -252,3 +281,7 @@ export function useTeam() {
   }
   return context;
 }
+
+TeamProvider.propTypes = {
+  children: PropTypes.node.isRequired
+};

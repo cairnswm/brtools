@@ -2,10 +2,12 @@ import { Link } from 'react-router-dom';
 import { useBRTools } from '../context/BRToolsContext';
 import { useState } from 'react';
 
-function LandingPage() {
+const LandingPage = () => {
+  console.log('[Debug] LandingPage: Component initializing at path:', window.location.pathname)
   const { memberKey, setMemberKey } = useBRTools();
   const [showTooltip, setShowTooltip] = useState(false);
 
+  console.log('[Debug] LandingPage: Rendering with memberKey:', !!memberKey)
   return (
     <div className="min-h-screen bg-gray-100">
       <div className="container mx-auto px-4 py-16">

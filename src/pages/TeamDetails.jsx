@@ -5,6 +5,7 @@ import Header from '../components/Header';
 import TeamMenu from '../components/TeamMenu';
 import PlayersList from '../components/PlayersList';
 import PlayersDetailList from '../components/PlayersDetailList';
+import PlayersAverages from '../components/PlayersAverages';
 import TeamStandings from './TeamStandings';
 
 function TeamDetails() {
@@ -36,11 +37,13 @@ function TeamDetails() {
       if (window.location.pathname.includes('/standings')) {
         return <TeamStandings />;
       }
-      return playersView === 'summary' ? (
-        <PlayersList players={players} />
-      ) : (
-        <PlayersDetailList players={players} />
-      );
+      if (playersView === 'summary') {
+        return <PlayersList players={players} />;
+      }
+      if (playersView === 'details') {
+        return <PlayersDetailList players={players} />;
+      }
+      return <PlayersAverages />;
     }
 
     return null;

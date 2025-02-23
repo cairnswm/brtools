@@ -1,9 +1,15 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import PropTypes from 'prop-types';
 import { debounce } from '../utils/debounce';
 
 const BRToolsContext = createContext();
 
+BRToolsProvider.propTypes = {
+  children: PropTypes.node.isRequired
+};
+
 export function BRToolsProvider({ children }) {
+  
   const [memberKey, setMemberKey] = useState(() => {
     const saved = localStorage.getItem('brtools-member-key');
     return saved || '';
@@ -67,7 +73,8 @@ export function BRToolsProvider({ children }) {
           }
         })
         .catch(err => {
-          setError('Failed to fetch team data');
+          const errorMessage = 'Failed to fetch team data';
+          setError(errorMessage);
           console.error('Error fetching teams:', err);
         })
         .finally(() => {

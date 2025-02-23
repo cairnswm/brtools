@@ -6,11 +6,18 @@ import HomePage from './pages/HomePage';
 import StadiumCalculator from './pages/StadiumCalculator';
 import TeamDetails from './pages/TeamDetails';
 import SettingsPage from './pages/SettingsPage';
+import { useEffect } from 'react';
 
-function App() {
+const App = () => {
+  useEffect(() => {
+    console.log('[Debug] App.jsx: Component mounted')
+    return () => console.log('[Debug] App.jsx: Component unmounted')
+  }, [])
+  console.log('[Debug] App.jsx: Rendering component')
   return (
     <BRToolsProvider>
-      <Router>
+      <Router basename="/brtools">
+        {console.log('[Debug] App.jsx: Router initialized')}
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/home" element={<HomePage />} />
