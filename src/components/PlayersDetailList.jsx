@@ -1,5 +1,6 @@
 import { formatCSR, formatSalary, formatNationality, formatBirthday } from '../utils/formatters';
 import SortBar from './SortBar';
+import PropTypes from 'prop-types';
 
 function PlayersDetailList({ players }) {
   return (
@@ -24,20 +25,25 @@ function PlayersDetailList({ players }) {
               </div>
             </div>
 
+            <div className="text-gray-600 mb-4">
+              {player.hand} handed, {player.foot.toLowerCase()} footed, form: {player.form}.
+              {" "}A {player.aggression} aggression player with {player.discipline} discipline, {player.leadership} leadership, and {player.experience} experience.
+            </div>
+
             <div className="grid grid-cols-2 gap-8">
               <div>
-                <div className="mb-2">Stamina: {player.stamina}</div>
-                <div className="mb-2">Attack: {player.attack}</div>
-                <div className="mb-2">Technique: {player.technique}</div>
-                <div className="mb-2">Jumping: {player.jumping}</div>
-                <div className="mb-2">Agility: {player.agility}</div>
+                <div className="mb-2">Stamina: {player.stamina}{player.ops?.includes('stamina') ? '*' : ''}</div>
+                <div className="mb-2">Attack: {player.attack}{player.ops?.includes('attack') ? '*' : ''}</div>
+                <div className="mb-2">Technique: {player.technique}{player.ops?.includes('technique') ? '*' : ''}</div>
+                <div className="mb-2">Jumping: {player.jumping}{player.ops?.includes('jumping') ? '*' : ''}</div>
+                <div className="mb-2">Agility: {player.agility}{player.ops?.includes('agility') ? '*' : ''}</div>
               </div>
               <div>
-                <div className="mb-2">Handling: {player.handling}</div>
-                <div className="mb-2">Defense: {player.defense}</div>
-                <div className="mb-2">Strength: {player.strength}</div>
-                <div className="mb-2">Speed: {player.speed}</div>
-                <div className="mb-2">Kicking: {player.kicking}</div>
+                <div className="mb-2">Handling: {player.handling}{player.ops?.includes('handling') ? '*' : ''}</div>
+                <div className="mb-2">Defense: {player.defense}{player.ops?.includes('defense') ? '*' : ''}</div>
+                <div className="mb-2">Strength: {player.strength}{player.ops?.includes('strength') ? '*' : ''}</div>
+                <div className="mb-2">Speed: {player.speed}{player.ops?.includes('speed') ? '*' : ''}</div>
+                <div className="mb-2">Kicking: {player.kicking}{player.ops?.includes('kicking') ? '*' : ''}</div>
               </div>
             </div>
           </div>
@@ -46,5 +52,42 @@ function PlayersDetailList({ players }) {
     </div>
   );
 }
+
+PlayersDetailList.propTypes = {
+  players: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.string,
+      jersey: PropTypes.string,
+      fname: PropTypes.string,
+      ops: PropTypes.arrayOf(PropTypes.string),
+      lname: PropTypes.string,
+      age: PropTypes.string,
+      birthday: PropTypes.string,
+      csr: PropTypes.string,
+      salary: PropTypes.string,
+      height: PropTypes.string,
+      weight: PropTypes.string,
+      nationality: PropTypes.string,
+      energy: PropTypes.string,
+      form: PropTypes.string,
+      hand: PropTypes.oneOf(['Right', 'Left']),
+      foot: PropTypes.oneOf(['Right', 'Left']),
+      playstyle: PropTypes.string,
+      discipline: PropTypes.string,
+      leadership: PropTypes.string,
+      experience: PropTypes.string,
+      stamina: PropTypes.string,
+      attack: PropTypes.string,
+      technique: PropTypes.string,
+      jumping: PropTypes.string,
+      agility: PropTypes.string,
+      handling: PropTypes.string,
+      defense: PropTypes.string,
+      strength: PropTypes.string,
+      speed: PropTypes.string,
+      kicking: PropTypes.string
+    })
+  ).isRequired
+};
 
 export default PlayersDetailList;
