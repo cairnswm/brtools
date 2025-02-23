@@ -32,18 +32,18 @@ function PlayersDetailList({ players }) {
 
             <div className="grid grid-cols-2 gap-8">
               <div>
-                <div className="mb-2">Stamina: {player.stamina}{player.ops?.includes('stamina') ? '*' : ''}</div>
-                <div className="mb-2">Attack: {player.attack}{player.ops?.includes('attack') ? '*' : ''}</div>
-                <div className="mb-2">Technique: {player.technique}{player.ops?.includes('technique') ? '*' : ''}</div>
-                <div className="mb-2">Jumping: {player.jumping}{player.ops?.includes('jumping') ? '*' : ''}</div>
-                <div className="mb-2">Agility: {player.agility}{player.ops?.includes('agility') ? '*' : ''}</div>
+                <div className="mb-2">Stamina: {player.stamina}{player.pops?.includes('stamina') ? '*' : ''}</div>
+                <div className="mb-2">Attack: {player.attack}{player.pops?.includes('attack') ? '*' : ''}</div>
+                <div className="mb-2">Technique: {player.technique}{player.pops?.includes('technique') ? '*' : ''}</div>
+                <div className="mb-2">Jumping: {player.jumping}{player.pops?.includes('jumping') ? '*' : ''}</div>
+                <div className="mb-2">Agility: {player.agility}{player.pops?.includes('agility') ? '*' : ''}</div>
               </div>
               <div>
-                <div className="mb-2">Handling: {player.handling}{player.ops?.includes('handling') ? '*' : ''}</div>
-                <div className="mb-2">Defense: {player.defense}{player.ops?.includes('defense') ? '*' : ''}</div>
-                <div className="mb-2">Strength: {player.strength}{player.ops?.includes('strength') ? '*' : ''}</div>
-                <div className="mb-2">Speed: {player.speed}{player.ops?.includes('speed') ? '*' : ''}</div>
-                <div className="mb-2">Kicking: {player.kicking}{player.ops?.includes('kicking') ? '*' : ''}</div>
+                <div className="mb-2">Handling: {player.handling}{player.pops?.includes('handling') ? '*' : ''}</div>
+                <div className="mb-2">Defense: {player.defense}{player.pops?.includes('defense') ? '*' : ''}</div>
+                <div className="mb-2">Strength: {player.strength}{player.pops?.includes('strength') ? '*' : ''}</div>
+                <div className="mb-2">Speed: {player.speed}{player.pops?.includes('speed') ? '*' : ''}</div>
+                <div className="mb-2">Kicking: {player.kicking}{player.pops?.includes('kicking') ? '*' : ''}</div>
               </div>
             </div>
           </div>
