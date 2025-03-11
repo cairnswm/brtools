@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import TeamStandings from "./teamStandings"; 
+import TeamStandings from "./TeamStandingsTable"; 
 
 const TeamStandingsPage = () => {
   return (
