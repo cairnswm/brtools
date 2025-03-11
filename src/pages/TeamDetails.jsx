@@ -8,7 +8,6 @@ import PlayersDetailList from "../components/PlayersDetailList";
 import PlayersAverages from "../components/PlayersAverages";
 import PlayerDetails from "./playerDetails";
 import TeamStandingsPage from "./TeamStandingsPage";
-import TeamFixtures from "./teamfixturesPage";
 import TeamFixturesPage from "./teamfixturesPage";
 
 const TeamDetails = () => {

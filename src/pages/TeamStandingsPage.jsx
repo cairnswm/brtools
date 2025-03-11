@@ -1,7 +1,5 @@
-import { useParams, Link } from "react-router-dom";
-import Header from "../components/Header";
-import TeamMenu from "../components/TeamMenu";
-import TeamStandings from "./teamstandings";
+import { Link } from "react-router-dom";
+import TeamStandings from "./teamStandings";
 
 const TeamStandingsPage = () => {
   return (
