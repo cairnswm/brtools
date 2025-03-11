@@ -1,17 +1,13 @@
 import { useEffect } from "react";
-import { useParams, Link, Route, Routes } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import { useTeam } from "../context/TeamContext";
 import Header from "../components/Header";
 import TeamMenu from "../components/TeamMenu";
 import PlayersList from "../components/PlayersList";
 import PlayersDetailList from "../components/PlayersDetailList";
 import PlayersAverages from "../components/PlayersAverages";
-import PlayerDetails from "./playerdetails";
-import TeamStandingsPage from "./TeamStandingsPage";
-import TeamFixtures from "./teamfixturesPage";
-import TeamFixturesPage from "./teamfixturesPage";
 
-const TeamDetails = () => {
+const PlayerDetails = () => {
   const { teamId: routeTeamId } = useParams();
   const {
     setTeamId,
@@ -62,16 +58,9 @@ const TeamDetails = () => {
       <Header />
       <TeamMenu teamId={routeTeamId} />
 
-      <div className="container mx-auto px-4 py-8">
-        <Routes>
-          <Route path="fixtures" element={<TeamFixturesPage />} />
-          <Route path="standings" element={<TeamStandingsPage />} />
-          <Route path="player/:playerId" element={<PlayerDetails />} />
-          <Route path="/" element={renderContent()} />
-        </Routes>
-      </div>
+      <div>{renderContent()}</div>
     </div>
   );
 };
 
-export default TeamDetails;
+export default PlayerDetails;

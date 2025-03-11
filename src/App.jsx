@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { BRToolsProvider } from './context/BRToolsContext';
 import { TeamProvider } from './context/TeamContext';
+import { FixtureProvider } from './context/FixtureContext';
 import LandingPage from './pages/LandingPage';
 import HomePage from './pages/HomePage';
 import StadiumCalculator from './pages/StadiumCalculator';
@@ -27,7 +28,9 @@ const App = () => {
             path="/team/:teamId/*"
             element={
               <TeamProvider>
-                <TeamDetails />
+                <FixtureProvider>
+                  <TeamDetails />
+                </FixtureProvider>
               </TeamProvider>
             }
           />

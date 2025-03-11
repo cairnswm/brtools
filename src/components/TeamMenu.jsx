@@ -1,8 +1,10 @@
 import { Link, useLocation } from 'react-router-dom';
 
-function TeamMenu({ teamId }) {
+const TeamMenu = ({ teamId }) => {
   const location = useLocation();
-  const isStandings = location.pathname.includes('/standings');
+  const currentPath = location.pathname;
+  const isStandings = currentPath.includes('/standings');
+  const isFixtures = currentPath.includes('/fixtures');
 
   return (
     <div className="bg-white shadow-md mb-6">
@@ -10,7 +12,7 @@ function TeamMenu({ teamId }) {
         <div className="flex space-x-6">
           <Link
             to={`/team/${teamId}`}
-            className={`py-3 border-b-2 ${!isStandings ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+            className={`py-3 border-b-2 ${!isStandings && !isFixtures ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
           >
             Players
           </Link>
@@ -20,10 +22,16 @@ function TeamMenu({ teamId }) {
           >
             Standings
           </Link>
+          <Link
+            to={`/team/${teamId}/fixtures`}
+            className={`py-3 border-b-2 ${isFixtures ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+          >
+            Fixtures
+          </Link>
         </div>
       </div>
     </div>
   );
-}
+};
 
 export default TeamMenu;

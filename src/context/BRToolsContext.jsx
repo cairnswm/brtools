@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import PropTypes from 'prop-types';
 import { debounce } from '../utils/debounce';
 
@@ -20,7 +20,7 @@ export function BRToolsProvider({ children }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const fetchTeams = useCallback(debounce(async (teamIds) => {
+  const fetchTeams = useCallback(async (teamIds) => {
     try {
       const response = await fetch(`https://thegamedeveloper.co.za/brexport/api/api.php/teams/${teamIds.join(',')}`, {
         headers: { 'accesskey': memberKey }
@@ -37,7 +37,7 @@ export function BRToolsProvider({ children }) {
     } catch (err) {
       console.error('Error fetching teams:', err);
     }
-  }, 100), [memberKey]);
+  }, [memberKey]);
 
   const addTeamsToCache = useCallback((teamIds) => {
     const uncachedTeamIds = teamIds.filter(id => !cachedTeams[id]);
@@ -85,6 +85,50 @@ export function BRToolsProvider({ children }) {
     }
   }, [memberKey]);
 
+  const getTeamById = (teamId) => {
+    const team = cachedTeams[teamId];
+    if (team) {
+      return team;
+    }
+    getTeam(teamId);
+  };
+
+  // Use a ref to store pending team IDs to avoid dependency issues with debounce
+  const pendingTeamIdsRef = useRef(new Set());
+
+  // Debounced function to fetch all pending team IDs in a single call
+  const debouncedFetchTeams = useCallback(
+    debounce(() => {
+      if (pendingTeamIdsRef.current.size > 0) {
+        const idsToFetch = [...pendingTeamIdsRef.current];
+        console.log('Fetching batch of teams:', idsToFetch);
+        pendingTeamIdsRef.current = new Set(); // Clear the queue
+        addTeamsToCache(idsToFetch);
+      }
+    }, 300),
+    [addTeamsToCache]
+  );
+
+  const getTeam = (ids) => {
+    const idArray = Array.isArray(ids) ? ids : [ids];
+    const uncachedTeamIds = idArray.filter(id => !cachedTeams[id]);
+
+    console.log("uncachedTeamIds", uncachedTeamIds);
+    
+    if (uncachedTeamIds.length > 0) {
+      console.log('Adding uncached team IDs to queue:', uncachedTeamIds);
+      // Add IDs to the pending queue
+      uncachedTeamIds.forEach(id => pendingTeamIdsRef.current.add(id));
+      // Trigger the debounced fetch
+      console.log('Triggering debounced fetch', uncachedTeamIds);
+      debouncedFetchTeams();
+    }
+    
+    return Array.isArray(ids) 
+      ? idArray.map(id => cachedTeams[id]).filter(Boolean)
+      : cachedTeams[ids];
+  }
+
   return (
     <BRToolsContext.Provider value={{ 
       memberKey, 
@@ -93,7 +137,9 @@ export function BRToolsProvider({ children }) {
       loading, 
       error,
       cachedTeams,
-      addTeamsToCache
+      addTeamsToCache,
+      getTeamById,
+      getTeam
     }}>
       {children}
     </BRToolsContext.Provider>
