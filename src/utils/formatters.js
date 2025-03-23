@@ -1,6 +1,6 @@
 export function formatCSR(csr) {
   const csrNum = Number(csr);
-  if (isNaN(csrNum)) return { value: 'N/A', color: 'text-gray-900' };
+  if (isNaN(csrNum)) return { value: '--', color: 'text-gray-900' };
   
   let color = 'text-purple-300';
   if (csrNum >= 400000) color = 'text-purple-900';

@@ -1,12 +1,10 @@
 import { formatCSR, formatSalary, formatNationality, formatBirthday } from '../utils/formatters';
-import SortBar from './SortBar';
+import PlayerSortBar from './PlayerSortBar';
 import PropTypes from 'prop-types';
 
 function PlayersDetailList({ players }) {
   return (
     <div className="space-y-4">
-      <SortBar />
-
       {players.map((player) => {
         const csrFormatted = formatCSR(player.csr);
         return (

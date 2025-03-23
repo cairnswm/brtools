@@ -1,6 +1,6 @@
 import { useTeam } from '../context/TeamContext';
 import { formatCSR, formatSalary } from '../utils/formatters';
-import SortBar from './SortBar';
+import PlayerSortBar from './PlayerSortBar';
 
 const PlayersAverages = () => {
   const { teamAverages } = useTeam();
@@ -44,7 +44,6 @@ const PlayersAverages = () => {
 
   return (
     <div className="space-y-4">
-      <SortBar />
       {renderAveragesSection('All Players Averages', teamAverages.allPlayers)}
       {renderAveragesSection('Top 15 Players Averages', teamAverages.top15Players)}
       {renderAveragesSection('Top 22 Players Averages', teamAverages.top22Players)}

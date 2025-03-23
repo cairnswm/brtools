@@ -54,6 +54,7 @@ const SORT_OPTIONS = [
 export function TeamProvider({ children }) {
   const [teamId, setTeamId] = useState(null);
   const [players, setPlayers] = useState([]);
+  const [youth, setYouth] = useState([]);
   const [standings, setStandings] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -80,6 +81,27 @@ export function TeamProvider({ children }) {
           if (data.data?.status === 'Ok' && data.data?.players) {
             const playersList = Object.values(data.data.players);
             setPlayers(playersList);
+
+            // Fetch youth data
+            fetch(`https://thegamedeveloper.co.za/brexport/api/api.php/team/${teamId}/youth`, {
+              headers: {
+                'accesskey': memberKey
+              }
+            })
+              .then(response => response.json())
+              .then(youthData => {
+                console.log("OK?", youthData)
+                console.log("OK?", youthData.data?.status)
+                if (youthData.data?.status === 'Ok' && youthData.data?.players) {
+                  const youthList = Object.values(youthData.data.players);
+                  
+                console.log("YouthData", youthList)
+                  setYouth(youthList);
+                }
+              })
+              .catch(err => {
+                console.error('Error fetching youth data:', err);
+              });
 
             const team = cachedTeams[teamId];
             if (team?.leagueid) {
@@ -112,6 +134,7 @@ export function TeamProvider({ children }) {
         });
     } else {
       setPlayers([]);
+      setYouth([]);
       setStandings([]);
     }
   }, [teamId, memberKey, addTeamsToCache, cachedTeams]);
@@ -139,6 +162,41 @@ export function TeamProvider({ children }) {
     let bValue = b[sortField];
     
     if (['age', 'csr', 'energy', 'jersey', 'salary', 'height', 'weight', 'form', 'leadership', 'stamina', 'handling', 'attack', 'defense', 'technique', 'strength', 'jumping', 'speed', 'agility', 'kicking'].includes(sortField)) {
+      aValue = Number(aValue);
+      bValue = Number(bValue);
+    }
+    
+    if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1;
+    if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
+    return 0;
+  });
+
+  const sortedYouth = [...youth].sort((a, b) => {
+    let aValue = a[sortField];
+    let bValue = b[sortField];
+    
+    // For CSR, we need to calculate it since it's not stored directly
+    if (sortField === 'csr') {
+      const calculateCSR = (player) => {
+        const pow = (value) => Math.pow(value - 1, 3.79);
+        return (
+          pow(player.stamina) +
+          pow(player.handling) +
+          pow(player.attack) +
+          pow(player.defense) +
+          pow(player.technique) +
+          pow(player.strength) +
+          pow(player.speed) +
+          pow(player.jumping) +
+          pow(player.agility) +
+          pow(player.kicking)
+        );
+      };
+      
+      aValue = calculateCSR(a);
+      bValue = calculateCSR(b);
+    }
+    else if (['age', 'energy', 'jersey', 'stamina', 'handling', 'attack', 'defense', 'technique', 'strength', 'jumping', 'speed', 'agility', 'kicking'].includes(sortField)) {
       aValue = Number(aValue);
       bValue = Number(bValue);
     }
@@ -251,6 +309,7 @@ export function TeamProvider({ children }) {
       teamId, 
       setTeamId, 
       players: sortedPlayers,
+      youth: sortedYouth,
       standings: sortedStandings,
       loading, 
       error,

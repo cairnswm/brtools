@@ -1,6 +1,6 @@
 import { useTeam } from '../context/TeamContext';
 
-function SortBar() {
+function PlayerSortBar() {
   const { 
     sortField, 
     sortDirection, 
@@ -84,4 +84,4 @@ function SortBar() {
   );
 }
 
-export default SortBar;
+export default PlayerSortBar;

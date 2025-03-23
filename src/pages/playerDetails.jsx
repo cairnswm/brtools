@@ -1,8 +1,6 @@
 import { useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useTeam } from "../context/TeamContext";
-import Header from "../components/Header";
-import TeamMenu from "../components/TeamMenu";
 import PlayersList from "../components/PlayersList";
 import PlayersDetailList from "../components/PlayersDetailList";
 import PlayersAverages from "../components/PlayersAverages";
@@ -55,8 +53,6 @@ const PlayerDetails = () => {
 
   return (
     <div className="min-h-screen bg-gray-100">
-      <Header />
-      <TeamMenu teamId={routeTeamId} />
 
       <div>{renderContent()}</div>
     </div>
