@@ -8,12 +8,16 @@ import StadiumCalculator from './pages/StadiumCalculator';
 import TeamDetails from './pages/TeamDetails';
 import SettingsPage from './pages/SettingsPage';
 import { useEffect } from 'react';
+import { accessElf } from './components/accessElf';
+
+accessElf.setApiKey("b415c3e1-b415c3ee-4207-bad2-24ca2f5f4673");
 
 const App = () => {
   useEffect(() => {
     console.log('[Debug] App.jsx: Component mounted')
     return () => console.log('[Debug] App.jsx: Component unmounted')
   }, [])
+  accessElf.track();
   console.log('[Debug] App.jsx: Rendering component')
   return (
     <BRToolsProvider>

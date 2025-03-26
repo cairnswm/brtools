@@ -4,9 +4,17 @@ import { useTeam } from "../context/TeamContext";
 import PlayersList from "../components/PlayersList";
 import PlayersDetailList from "../components/PlayersDetailList";
 import PlayersAverages from "../components/PlayersAverages";
+import { accessElf } from "../components/accessElf";
 
 const PlayerDetails = () => {
   const { teamId: routeTeamId } = useParams();
+
+    const {teamId }= useTeam();
+  
+    useEffect(() => {
+      accessElf.track("Team/Players", teamId);    
+    }, [teamId]);
+
   const {
     setTeamId,
     players,

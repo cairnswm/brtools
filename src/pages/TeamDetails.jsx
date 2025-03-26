@@ -8,10 +8,12 @@ import PlayerDetails from "./playerDetails";
 import TeamStandingsPage from "./TeamStandingsPage";
 import TeamFixturesPage from "./teamfixturesPage";
 import YouthPage from "./YouthPage";
+import { accessElf } from "../components/accessElf";
 
 const TeamDetails = () => {
   const { teamId: routeTeamId } = useParams();
   const {
+    teamId,
     setTeamId,
   } = useTeam();
 
@@ -20,6 +22,7 @@ const TeamDetails = () => {
       setTeamId(routeTeamId);
     }
   }, [routeTeamId, setTeamId]);
+
 
 
   return (

@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useBRTools } from '../context/BRToolsContext';
 import { useState } from 'react';
+import { accessElf } from '../components/accessElf';
 
 const LandingPage = () => {
   console.log('[Debug] LandingPage: Component initializing at path:', window.location.pathname)
@@ -8,6 +9,9 @@ const LandingPage = () => {
   const [showTooltip, setShowTooltip] = useState(false);
 
   console.log('[Debug] LandingPage: Rendering with memberKey:', !!memberKey)
+
+  accessElf.track("Landing");
+  
   return (
     <div className="min-h-screen bg-gray-100">
       <div className="container mx-auto px-4 py-16">

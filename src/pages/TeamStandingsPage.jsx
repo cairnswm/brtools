@@ -1,7 +1,16 @@
+import React, { useEffect } from "react";
 import { Link } from "react-router-dom";
 import TeamStandings from "./TeamStandingsTable"; 
+import { accessElf } from "../components/accessElf";
+import { useTeam } from "../context/TeamContext";
 
 const TeamStandingsPage = () => {
+  const {teamId }= useTeam();
+
+  useEffect(() => {
+    accessElf.track("Team/Standings", teamId);    
+  }, [teamId]);
+
   return (
     <div className="min-h-screen bg-gray-100">
       <div className="flex justify-between items-center mb-6">

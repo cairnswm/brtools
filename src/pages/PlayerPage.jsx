@@ -1,19 +1,25 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useTeam } from "../context/TeamContext";
 import PlayersList from "../components/PlayersList";
 import PlayersDetailList from "../components/PlayersDetailList";
 import PlayersAverages from "../components/PlayersAverages";
-import Header from "../components/Header";
-import TeamMenu from "../components/TeamMenu";
 import PlayerHeader from "../components/PlayerHeader";
+import { accessElf } from "../components/accessElf";
 
 const PlayerPage = () => {
   const {
+    teamId,
     players,
     loading: teamLoading,
     error: teamError,
     playersView,
   } = useTeam();
+
+  useEffect(() => {
+    if (teamId) {
+      accessElf.track("Team/Players", teamId);
+    }
+  }, [teamId]);
 
   if (teamLoading) {
     return (

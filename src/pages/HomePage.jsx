@@ -3,9 +3,12 @@ import Header from '../components/Header';
 import AccessKeyInput from '../components/AccessKeyInput';
 import IconMenu from '../components/IconMenu';
 import TeamsList from '../components/TeamsList';
+import { accessElf } from '../components/accessElf';
 
 function HomePage() {
   const { loading, error, teams, memberKey } = useBRTools();
+
+  accessElf.track("Home");
 
   return (
     <div className="min-h-screen bg-gray-100">

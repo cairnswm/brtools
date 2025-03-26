@@ -2,11 +2,17 @@ import React, { useEffect } from "react";
 import { useFixtures } from "../context/FixtureContext";
 import Team from "../components/team";
 import BRDate from "../components/brdate";
+import { accessElf } from "../components/accessElf";
+import { useTeam } from "../context/TeamContext";
 
 const TeamFixtures = () => {
   const { fixtures } = useFixtures();
 
-  console.log("fixtures", fixtures);
+  const {teamId }= useTeam();
+
+  useEffect(() => {
+    accessElf.track("Team/Fixtures", teamId);
+  }, [teamId]);
 
   return (
     <div className="min-h-screen bg-gray-100">

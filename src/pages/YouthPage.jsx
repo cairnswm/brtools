@@ -1,10 +1,16 @@
+import React, { useEffect } from "react";
 import { useTeam } from "../context/TeamContext";
 import YouthList from "../components/YouthList";
 import PlayersDetailList from "../components/PlayersDetailList";
 import YouthHeader from "../components/YouthHeader";
+import { accessElf } from "../components/accessElf";
 
 const YouthPage = () => {
-  const { youth, loading, error, playersView } = useTeam();
+  const { teamId, youth, loading, error, playersView } = useTeam();
+
+    useEffect(() => {
+      accessElf.track("Team/Youth", teamId);    
+    }, [teamId]);
 
   if (loading) {
     return (
