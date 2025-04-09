@@ -59,7 +59,7 @@ export function TeamProvider({ children }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [sortField, setSortField] = useState('jersey');
-  const [sortDirection, setSortDirection] = useState('desc');
+  const [sortDirection, setSortDirection] = useState('asc');
   const [playersView, setPlayersView] = useState('summary'); // Options: 'summary', 'details', 'averages'
   const [standingsView, setStandingsView] = useState('standings');
   const [standingsSortField, setStandingsSortField] = useState('points');

@@ -22,6 +22,10 @@ const PlayersAverages = () => {
           </div>
         </div>
 
+        <div>
+          <div className="text-gray-600 mb-2">Form: {averages.form}</div>
+        </div>
+
         <div className="grid grid-cols-2 gap-8">
           <div>
             <div className="mb-2">Stamina: {averages.stamina}</div>
