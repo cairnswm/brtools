@@ -2,6 +2,7 @@ import { createContext, useContext, useState, useEffect } from 'react';
 import { useBRTools } from './BRToolsContext';
 import * as XLSX from 'xlsx';
 import PropTypes from 'prop-types';
+import { Form } from 'react-router-dom';
 
 const TeamContext = createContext();
 
@@ -251,6 +252,9 @@ export function TeamProvider({ children }) {
       Age: player.age,
       CSR: player.csr,
       Energy: player.energy,
+      Form: player.form,
+      Leadership: player.leadership,
+      Experience: player.experience,
       Height: player.height,
       Weight: player.weight,
       Nationality: player.nationality + (player.dualnationality ? `/${player.dualnationality}` : '') + (player.capped_for ? '*' : ''),
