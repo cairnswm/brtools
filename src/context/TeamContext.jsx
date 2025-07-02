@@ -244,31 +244,41 @@ export function TeamProvider({ children }) {
     return 0;
   });
 
+  const getNationality = (player) => {
+    let nat = player.nationality;
+    if (player.capped_for && player.capped_for === player.nationality) { nat += '*'; }
+    if (player.dualnationality) { nat += `/${player.dualnationality}`; }
+    if (player.capped_for && player.capped_for === player.dualnationality) {
+      nat += '*';
+    }
+    return nat;
+  }
+
   const exportToExcel = () => {
     const exportData = sortedPlayers.map(player => ({
       Jersey: player.jersey !== "255" ? player.jersey : "",
       'First Name': player.fname,
       'Last Name': player.lname,
-      Age: player.age,
-      CSR: player.csr,
-      Energy: player.energy,
-      Form: player.form,
-      Leadership: player.leadership,
-      Experience: player.experience,
-      Height: player.height,
-      Weight: player.weight,
-      Nationality: player.nationality + (player.dualnationality ? `/${player.dualnationality}` : '') + (player.capped_for ? '*' : ''),
-      Salary: player.salary,
-      Stamina: player.stamina,
-      Handling: player.handling,
-      Attack: player.attack,
-      Defense: player.defense,
-      Technique: player.technique,
-      Strength: player.strength,
-      Jumping: player.jumping,
-      Speed: player.speed,
-      Agility: player.agility,
-      Kicking: player.kicking
+      Age: Number(player.age),
+      CSR: Number(player.csr),
+      Energy: Number(player.energy),
+      Form: Number(player.form),
+      Leadership: Number(player.leadership),
+      Experience: Number(player.experience),
+      Height: Number(player.height),
+      Weight: Number(player.weight),
+      Nationality: getNationality(player),
+      Salary: Number(player.salary),
+      Stamina: Number(player.stamina),
+      Handling: Number(player.handling),
+      Attack: Number(player.attack),
+      Defense: Number(player.defense),
+      Technique: Number(player.technique),
+      Strength: Number(player.strength),
+      Jumping: Number(player.jumping),
+      Speed: Number(player.speed),
+      Agility: Number(player.agility),
+      Kicking: Number(player.kicking)
     }));
 
     const ws = XLSX.utils.json_to_sheet(exportData);
