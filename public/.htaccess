@@ -1,10 +1,10 @@
-# React Router support for client-side routing
+# React Router support for client-side routing in /brtools subfolder
 
 <IfModule mod_rewrite.c>
   RewriteEngine On
-  RewriteBase /
+  RewriteBase /brtools/
   RewriteRule ^index\.html$ - [L]
   RewriteCond %{REQUEST_FILENAME} !-f
   RewriteCond %{REQUEST_FILENAME} !-d
-  RewriteRule . /index.html [L]
+  RewriteRule ^(.*)$ /brtools/index.html [L]
 </IfModule>
