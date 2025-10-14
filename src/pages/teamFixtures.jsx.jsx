@@ -108,6 +108,27 @@ const TeamFixtures = () => {
     );
   };
 
+  const renderForm = (formString) => {
+    if (!formString) return null;
+    const results = formString.split(',');
+    return (
+      <div className="flex justify-center gap-1">
+        {results.map((result, i) => (
+          <span
+            key={i}
+            className={`w-5 h-5 flex items-center justify-center text-xs font-bold rounded ${
+              result === 'W' ? 'bg-green-600 text-white' :
+              result === 'L' ? 'bg-red-600 text-white' :
+              'bg-gray-400 text-white'
+            }`}
+          >
+            {result}
+          </span>
+        ))}
+      </div>
+    );
+  };
+
   const upcomingFixtures = fixtures.filter(f => !isMatchPlayed(f));
   const playedFixtures = fixtures.filter(f => isMatchPlayed(f));
 
@@ -299,6 +320,8 @@ const TeamFixtures = () => {
                     {expandedFixture === fixture.id && fixture.matchSummary && (() => {
                       const homeStats = getTeamStats(fixture, true);
                       const guestStats = getTeamStats(fixture, false);
+                      const homeReport = fixture.reporterSummary?.home;
+                      const guestReport = fixture.reporterSummary?.guest;
                       const homeTries = getStatCount(fixture.matchSummary.home.tries);
                       const guestTries = getStatCount(fixture.matchSummary.guest.tries);
                       const homeConversions = getStatCount(fixture.matchSummary.home.conversions);
@@ -309,123 +332,155 @@ const TeamFixtures = () => {
                       const guestDropgoals = getStatCount(fixture.matchSummary.guest.dropgoals);
 
                       return (
-                        <div className="mt-4 pt-4 border-t border-gray-200 space-y-4">
-                          {homeStats?.territory && guestStats?.territory && (
-                            <div>
-                              <div className="text-xs text-gray-500 uppercase mb-2 text-center">Territory</div>
-                              <div className="flex items-center justify-between">
-                                <span className="text-sm font-semibold">{homeStats.territory}%</span>
-                                <div className="flex-1 mx-4 bg-gray-200 rounded-full h-4 overflow-hidden">
-                                  <div
-                                    className={`h-full ${isHome ? 'bg-blue-600' : 'bg-gray-600'}`}
-                                    style={{ width: `${homeStats.territory}%` }}
-                                  />
-                                </div>
-                                <div className="flex-1 mx-4 bg-gray-200 rounded-full h-4 overflow-hidden">
-                                  <div
-                                    className={`h-full ${!isHome ? 'bg-blue-600' : 'bg-gray-600'} ml-auto`}
-                                    style={{ width: `${guestStats.territory}%` }}
-                                  />
-                                </div>
-                                <span className="text-sm font-semibold">{guestStats.territory}%</span>
-                              </div>
-                            </div>
-                          )}
+                        <div className="mt-4 pt-4 border-t border-gray-200">
+                          <div className="max-w-4xl mx-auto space-y-6">
 
-                          {homeStats?.possession && guestStats?.possession && (
-                            <div>
-                              <div className="text-xs text-gray-500 uppercase mb-2 text-center">Possession</div>
-                              <div className="flex items-center justify-between">
-                                <span className="text-sm font-semibold">{homeStats.possession}%</span>
-                                <div className="flex-1 mx-4 bg-gray-200 rounded-full h-4 overflow-hidden">
-                                  <div
-                                    className={`h-full ${isHome ? 'bg-blue-600' : 'bg-gray-600'}`}
-                                    style={{ width: `${homeStats.possession}%` }}
-                                  />
+                            <div className="space-y-3">
+                              <h3 className="text-sm font-bold text-gray-700 text-center uppercase tracking-wide">Scoring</h3>
+                              <div className="flex justify-center gap-8">
+                                <div className="text-center">
+                                  <div className="text-xs text-gray-500 uppercase mb-1">Tries</div>
+                                  <div className="text-lg font-bold">{homeTries} - {guestTries}</div>
                                 </div>
-                                <div className="flex-1 mx-4 bg-gray-200 rounded-full h-4 overflow-hidden">
-                                  <div
-                                    className={`h-full ${!isHome ? 'bg-blue-600' : 'bg-gray-600'} ml-auto`}
-                                    style={{ width: `${guestStats.possession}%` }}
-                                  />
+                                <div className="text-center">
+                                  <div className="text-xs text-gray-500 uppercase mb-1">Conversions</div>
+                                  <div className="text-lg font-bold">{homeConversions} - {guestConversions}</div>
                                 </div>
-                                <span className="text-sm font-semibold">{guestStats.possession}%</span>
-                              </div>
-                            </div>
-                          )}
-
-                          <div className="grid grid-cols-3 gap-4 pt-4 border-t border-gray-100">
-                            <div className="text-center">
-                              <div className="text-xs text-gray-500 uppercase mb-1">Tries</div>
-                              <div className="flex justify-between text-sm font-semibold">
-                                <span className={isHome ? 'text-blue-700' : ''}>{homeTries}</span>
-                                <span className="text-gray-400">-</span>
-                                <span className={!isHome ? 'text-blue-700' : ''}>{guestTries}</span>
-                              </div>
-                            </div>
-                            <div className="text-center">
-                              <div className="text-xs text-gray-500 uppercase mb-1">Conversions</div>
-                              <div className="flex justify-between text-sm font-semibold">
-                                <span className={isHome ? 'text-blue-700' : ''}>{homeConversions}</span>
-                                <span className="text-gray-400">-</span>
-                                <span className={!isHome ? 'text-blue-700' : ''}>{guestConversions}</span>
-                              </div>
-                            </div>
-                            <div className="text-center">
-                              <div className="text-xs text-gray-500 uppercase mb-1">Penalties</div>
-                              <div className="flex justify-between text-sm font-semibold">
-                                <span className={isHome ? 'text-blue-700' : ''}>{homePenalties}</span>
-                                <span className="text-gray-400">-</span>
-                                <span className={!isHome ? 'text-blue-700' : ''}>{guestPenalties}</span>
-                              </div>
-                            </div>
-                          </div>
-
-                          {(homeDropgoals > 0 || guestDropgoals > 0) && (
-                            <div className="grid grid-cols-3 gap-4">
-                              <div className="text-center">
-                                <div className="text-xs text-gray-500 uppercase mb-1">Drop Goals</div>
-                                <div className="flex justify-between text-sm font-semibold">
-                                  <span className={isHome ? 'text-blue-700' : ''}>{homeDropgoals}</span>
-                                  <span className="text-gray-400">-</span>
-                                  <span className={!isHome ? 'text-blue-700' : ''}>{guestDropgoals}</span>
+                                <div className="text-center">
+                                  <div className="text-xs text-gray-500 uppercase mb-1">Penalties</div>
+                                  <div className="text-lg font-bold">{homePenalties} - {guestPenalties}</div>
                                 </div>
+                                {(homeDropgoals > 0 || guestDropgoals > 0) && (
+                                  <div className="text-center">
+                                    <div className="text-xs text-gray-500 uppercase mb-1">Drop Goals</div>
+                                    <div className="text-lg font-bold">{homeDropgoals} - {guestDropgoals}</div>
+                                  </div>
+                                )}
                               </div>
                             </div>
-                          )}
 
-                          {homeStats && guestStats && (
-                            <div className="pt-4 border-t border-gray-100">
-                              <div className="text-xs text-gray-500 uppercase mb-3 text-center font-semibold">Team Stars</div>
-                              <div className="grid grid-cols-3 gap-3">
-                                {['scrum', 'lineout', 'ruck', 'maul', 'attack', 'defense', 'kicking', 'handling', 'stamina'].map(stat => (
-                                  homeStats[stat] && guestStats[stat] && (
-                                    <div key={stat} className="text-center">
-                                      <div className="text-xs text-gray-500 uppercase mb-1">{stat}</div>
-                                      <div className="flex justify-between items-center gap-2">
-                                        <div className={isHome ? 'opacity-100' : 'opacity-50'}>
+                            <div className="pt-4 border-t border-gray-200 space-y-3">
+                              <h3 className="text-sm font-bold text-gray-700 text-center uppercase tracking-wide">Match Stats</h3>
+                              {homeStats?.territory && guestStats?.territory && (
+                                <div>
+                                  <div className="text-xs text-gray-500 uppercase mb-2 text-center">Territory</div>
+                                  <div className="flex items-center justify-center gap-3">
+                                    <span className="text-sm font-semibold w-12 text-right">{homeStats.territory}%</span>
+                                    <div className="w-48 bg-gray-200 rounded-full h-4 overflow-hidden flex">
+                                      <div
+                                        className={`h-full ${isHome ? 'bg-blue-600' : 'bg-gray-600'}`}
+                                        style={{ width: `${homeStats.territory}%` }}
+                                      />
+                                      <div
+                                        className={`h-full ${!isHome ? 'bg-blue-600' : 'bg-gray-600'}`}
+                                        style={{ width: `${guestStats.territory}%` }}
+                                      />
+                                    </div>
+                                    <span className="text-sm font-semibold w-12 text-left">{guestStats.territory}%</span>
+                                  </div>
+                                </div>
+                              )}
+
+                              {homeStats?.possession && guestStats?.possession && (
+                                <div>
+                                  <div className="text-xs text-gray-500 uppercase mb-2 text-center">Possession</div>
+                                  <div className="flex items-center justify-center gap-3">
+                                    <span className="text-sm font-semibold w-12 text-right">{homeStats.possession}%</span>
+                                    <div className="w-48 bg-gray-200 rounded-full h-4 overflow-hidden flex">
+                                      <div
+                                        className={`h-full ${isHome ? 'bg-blue-600' : 'bg-gray-600'}`}
+                                        style={{ width: `${homeStats.possession}%` }}
+                                      />
+                                      <div
+                                        className={`h-full ${!isHome ? 'bg-blue-600' : 'bg-gray-600'}`}
+                                        style={{ width: `${guestStats.possession}%` }}
+                                      />
+                                    </div>
+                                    <span className="text-sm font-semibold w-12 text-left">{guestStats.possession}%</span>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+
+                            {homeStats && guestStats && (
+                              <div className="pt-4 border-t border-gray-200 space-y-3">
+                                <h3 className="text-sm font-bold text-gray-700 text-center uppercase tracking-wide">Team Stars</h3>
+                                <div className="space-y-2">
+                                  {['scrum', 'lineout', 'ruck', 'maul', 'attack', 'defense', 'kicking', 'handling', 'stamina'].map(stat => (
+                                    homeStats[stat] && guestStats[stat] && (
+                                      <div key={stat} className="flex items-center justify-center gap-4">
+                                        <div className={`w-32 text-right ${isHome ? 'opacity-100' : 'opacity-50'}`}>
                                           {renderStars(homeStats[stat])}
                                         </div>
-                                        <span className="text-gray-400 text-xs">vs</span>
-                                        <div className={!isHome ? 'opacity-100' : 'opacity-50'}>
+                                        <div className="text-xs text-gray-500 uppercase w-20 text-center">{stat}</div>
+                                        <div className={`w-32 text-left ${!isHome ? 'opacity-100' : 'opacity-50'}`}>
                                           {renderStars(guestStats[stat])}
                                         </div>
                                       </div>
-                                    </div>
-                                  )
-                                ))}
+                                    )
+                                  ))}
+                                </div>
                               </div>
-                            </div>
-                          )}
+                            )}
 
-                          <div className="grid grid-cols-2 gap-4 pt-4 border-t border-gray-100">
-                            <div className="text-center">
-                              <div className="text-xs text-gray-500 uppercase mb-1">Venue</div>
-                              <div className="text-sm font-medium">{fixture.venue || homeTeam?.name + ' Stadium' || 'N/A'}</div>
-                            </div>
-                            <div className="text-center">
-                              <div className="text-xs text-gray-500 uppercase mb-1">Attendance</div>
-                              <div className="text-sm font-medium">{getAttendance(fixture)}</div>
+                            {homeReport && guestReport && (
+                              <div className="pt-4 border-t border-gray-200 space-y-3">
+                                <h3 className="text-sm font-bold text-gray-700 text-center uppercase tracking-wide">Team Information</h3>
+                                <div className="space-y-3">
+                                  <div className="flex items-center justify-center gap-4">
+                                    <div className="w-32 text-right">
+                                      {renderForm(homeReport.all_form)}
+                                    </div>
+                                    <div className="text-xs text-gray-500 uppercase w-20 text-center">Form</div>
+                                    <div className="w-32 text-left">
+                                      {renderForm(guestReport.all_form)}
+                                    </div>
+                                  </div>
+
+                                  <div className="grid grid-cols-3 gap-4 text-center">
+                                    <div>
+                                      <div className="text-xs text-gray-500 uppercase mb-1">World Rank</div>
+                                      <div className="text-sm font-semibold">{homeReport.world_rank} - {guestReport.world_rank}</div>
+                                    </div>
+                                    <div>
+                                      <div className="text-xs text-gray-500 uppercase mb-1">National Rank</div>
+                                      <div className="text-sm font-semibold">{homeReport.national_rank} - {guestReport.national_rank}</div>
+                                    </div>
+                                    <div>
+                                      <div className="text-xs text-gray-500 uppercase mb-1">Regional Rank</div>
+                                      <div className="text-sm font-semibold">{homeReport.regional_rank} - {guestReport.regional_rank}</div>
+                                    </div>
+                                  </div>
+
+                                  <div className="grid grid-cols-3 gap-4 text-center">
+                                    <div>
+                                      <div className="text-xs text-gray-500 uppercase mb-1">Avg CSR</div>
+                                      <div className="text-sm font-semibold">{Number(homeReport.avg_csr).toLocaleString()} - {Number(guestReport.avg_csr).toLocaleString()}</div>
+                                    </div>
+                                    <div>
+                                      <div className="text-xs text-gray-500 uppercase mb-1">Energy</div>
+                                      <div className="text-sm font-semibold">{homeReport.energy_level}% - {guestReport.energy_level}%</div>
+                                    </div>
+                                    <div>
+                                      <div className="text-xs text-gray-500 uppercase mb-1">Weight</div>
+                                      <div className="text-sm font-semibold">{homeReport.weight}kg - {guestReport.weight}kg</div>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+
+                            <div className="pt-4 border-t border-gray-200">
+                              <div className="flex justify-center gap-8 text-center">
+                                <div>
+                                  <div className="text-xs text-gray-500 uppercase mb-1">Venue</div>
+                                  <div className="text-sm font-medium">{fixture.venue || homeTeam?.name + ' Stadium' || 'N/A'}</div>
+                                </div>
+                                <div>
+                                  <div className="text-xs text-gray-500 uppercase mb-1">Attendance</div>
+                                  <div className="text-sm font-medium">{getAttendance(fixture)}</div>
+                                </div>
+                              </div>
                             </div>
                           </div>
                         </div>
