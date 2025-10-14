@@ -1,4 +1,5 @@
 import { useTeam } from '../context/TeamContext';
+import * as XLSX from 'xlsx';
 
 const TrainingPage = () => {
   const { trainingReport, loading, players } = useTeam();
@@ -42,13 +43,89 @@ const TrainingPage = () => {
   const totalPops = teamTrainingPlayers.reduce((sum, player) => sum + (player.pops?.length || 0), 0);
   const totalDrops = teamTrainingPlayers.reduce((sum, player) => sum + (player.drops?.length || 0), 0);
 
+  const exportToExcel = () => {
+    const teamTrainingData = teamTrainingPlayers.map((player) => {
+      const csrChange = Number(player.csr.is) - Number(player.csr.was);
+      const energyChange = Number(player.energy.is) - Number(player.energy.was);
+      const popsText = player.pops?.map(p => `${p.skill}: ${p.was}→${p.is}`).join(', ') || '';
+      const dropsText = player.drops?.map(d => `${d.skill}: ${d.was}→${d.is}`).join(', ') || '';
+
+      return {
+        'Player': getPlayerName(player.id),
+        'CSR Before': Number(player.csr.was),
+        'CSR After': Number(player.csr.is),
+        'CSR Change': csrChange,
+        'Energy Before': player.energy.was,
+        'Energy After': player.energy.is,
+        'Energy Change': energyChange,
+        'Skill Pops': popsText,
+        'Skill Drops': dropsText
+      };
+    });
+
+    const individualTrainingData = individualTrainingPlayers.map((player) => {
+      const csrChange = Number(player.csr.is) - Number(player.csr.was);
+      const energyChange = Number(player.energy.is) - Number(player.energy.was);
+      const skillsText = player.skills?.map(s =>
+        `${s.skill} (${s.sessions} sessions, ${s.trainer})`
+      ).join('; ') || '';
+      const popsText = player.skills?.flatMap(s =>
+        s.pops?.map(p => `${p.skill}: ${p.was}→${p.is}`) || []
+      ).join(', ') || '';
+
+      return {
+        'Player': getPlayerName(player.id),
+        'CSR Before': Number(player.csr.was),
+        'CSR After': Number(player.csr.is),
+        'CSR Change': csrChange,
+        'Energy Before': player.energy.was,
+        'Energy After': player.energy.is,
+        'Energy Change': energyChange,
+        'Training Sessions': skillsText,
+        'Skill Pops': popsText
+      };
+    });
+
+    const wb = XLSX.utils.book_new();
+
+    const wsTeam = XLSX.utils.json_to_sheet(teamTrainingData);
+    XLSX.utils.book_append_sheet(wb, wsTeam, "Team Training");
+
+    if (individualTrainingData.length > 0) {
+      const wsIndividual = XLSX.utils.json_to_sheet(individualTrainingData);
+      XLSX.utils.book_append_sheet(wb, wsIndividual, "Individual Training");
+    }
+
+    const summaryData = [
+      { 'Metric': 'Season', 'Value': data.report.season },
+      { 'Metric': 'Round', 'Value': data.report.round },
+      { 'Metric': 'Coach Level', 'Value': report.coach_level },
+      { 'Metric': 'Facility Level', 'Value': report.facility_level },
+      { 'Metric': 'Total Pops', 'Value': totalPops },
+      { 'Metric': 'Total Drops', 'Value': totalDrops },
+      { 'Metric': 'Team Training Focus', 'Value': teamSkills.join(', ') }
+    ];
+    const wsSummary = XLSX.utils.json_to_sheet(summaryData);
+    XLSX.utils.book_append_sheet(wb, wsSummary, "Summary");
+
+    XLSX.writeFile(wb, `training_report_s${data.report.season}_r${data.report.round}.xlsx`);
+  };
+
   return (
     <div className="space-y-6">
       <div className="bg-white rounded-lg shadow-md p-6">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-bold text-gray-800">Training Report</h2>
-          <div className="text-sm text-gray-600">
-            Season {data.report.season} - Round {data.report.round}
+          <div className="flex items-center gap-4">
+            <div className="text-sm text-gray-600">
+              Season {data.report.season} - Round {data.report.round}
+            </div>
+            <button
+              onClick={exportToExcel}
+              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-medium"
+            >
+              Export to Excel
+            </button>
           </div>
         </div>
 
