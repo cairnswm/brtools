@@ -79,13 +79,33 @@ const TeamFixtures = () => {
     return {
       territory: summary.territory ? Math.round(Number(summary.territory) / 2) : null,
       possession: summary.possession ? Math.round(Number(summary.possession) / 2) : null,
-      scrum: summary.scrum,
-      lineout: summary.lineout,
-      ruck: summary.ruck,
-      maul: summary.maul,
-      attack: summary.attack,
-      defense: summary.defense
+      scrum: summary.scrum ? Math.round(Number(summary.scrum) / 2) : null,
+      lineout: summary.lineout ? Math.round(Number(summary.lineout) / 2) : null,
+      ruck: summary.ruck ? Math.round(Number(summary.ruck) / 2) : null,
+      maul: summary.maul ? Math.round(Number(summary.maul) / 2) : null,
+      attack: summary.attack ? Math.round(Number(summary.attack) / 2) : null,
+      defense: summary.defense ? Math.round(Number(summary.defense) / 2) : null,
+      kicking: summary.kicking ? Math.round(Number(summary.kicking) / 2) : null,
+      handling: summary.handling ? Math.round(Number(summary.handling) / 2) : null,
+      stamina: summary.stamina ? Math.round(Number(summary.stamina) / 2) : null,
+      pickandgo: summary.pickandgo ? Math.round(Number(summary.pickandgo) / 2) : null,
+      driving: summary.driving ? Math.round(Number(summary.driving) / 2) : null,
+      expansive: summary.expansive ? Math.round(Number(summary.expansive) / 2) : null,
+      creative: summary.creative ? Math.round(Number(summary.creative) / 2) : null
     };
+  };
+
+  const renderStars = (count) => {
+    if (!count) return null;
+    return (
+      <div className="flex justify-center gap-0.5">
+        {[...Array(Math.min(count, 10))].map((_, i) => (
+          <svg key={i} className="w-3 h-3 fill-yellow-400" viewBox="0 0 20 20">
+            <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z" />
+          </svg>
+        ))}
+      </div>
+    );
   };
 
   const upcomingFixtures = fixtures.filter(f => !isMatchPlayed(f));
@@ -376,16 +396,20 @@ const TeamFixtures = () => {
 
                           {homeStats && guestStats && (
                             <div className="pt-4 border-t border-gray-100">
-                              <div className="text-xs text-gray-500 uppercase mb-3 text-center font-semibold">Team Stars (Rating)</div>
-                              <div className="grid grid-cols-4 gap-4">
-                                {['scrum', 'lineout', 'ruck', 'maul', 'attack', 'defense'].map(stat => (
+                              <div className="text-xs text-gray-500 uppercase mb-3 text-center font-semibold">Team Stars</div>
+                              <div className="grid grid-cols-3 gap-3">
+                                {['scrum', 'lineout', 'ruck', 'maul', 'attack', 'defense', 'kicking', 'handling', 'stamina'].map(stat => (
                                   homeStats[stat] && guestStats[stat] && (
                                     <div key={stat} className="text-center">
                                       <div className="text-xs text-gray-500 uppercase mb-1">{stat}</div>
-                                      <div className="flex justify-between text-sm font-semibold">
-                                        <span className={isHome ? 'text-blue-700' : ''}>{homeStats[stat]}</span>
-                                        <span className="text-gray-400">-</span>
-                                        <span className={!isHome ? 'text-blue-700' : ''}>{guestStats[stat]}</span>
+                                      <div className="flex justify-between items-center gap-2">
+                                        <div className={isHome ? 'opacity-100' : 'opacity-50'}>
+                                          {renderStars(homeStats[stat])}
+                                        </div>
+                                        <span className="text-gray-400 text-xs">vs</span>
+                                        <div className={!isHome ? 'opacity-100' : 'opacity-50'}>
+                                          {renderStars(guestStats[stat])}
+                                        </div>
                                       </div>
                                     </div>
                                   )
