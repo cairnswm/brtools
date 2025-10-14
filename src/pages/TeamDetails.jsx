@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useParams, Route, Routes } from "react-router-dom";
-import { useTeam } from "../context/TeamContext";
+import { useTeam } from '../hooks/useTeam';
 import Header from "../components/Header";
 import TeamMenu from "../components/TeamMenu";
 import PlayerPage from "./PlayerPage";

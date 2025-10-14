@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { debounce } from '../utils/debounce';
 import { API_BASE_URL } from '../config/api';
 
-const BRToolsContext = createContext();
+export const BRToolsContext = createContext();
 
 BRToolsProvider.propTypes = {
   children: PropTypes.node.isRequired
@@ -145,12 +145,4 @@ export function BRToolsProvider({ children }) {
       {children}
     </BRToolsContext.Provider>
   );
-}
-
-export function useBRTools() {
-  const context = useContext(BRToolsContext);
-  if (!context) {
-    throw new Error('useBRTools must be used within a BRToolsProvider');
-  }
-  return context;
 }

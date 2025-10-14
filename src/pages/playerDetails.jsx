@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
-import { useTeam } from "../context/TeamContext";
+import { useTeam } from '../hooks/useTeam';
 import PlayersList from "../components/PlayersList";
 import PlayersDetailList from "../components/PlayersDetailList";
 import PlayersAverages from "../components/PlayersAverages";

@@ -1,11 +1,10 @@
-import { createContext, useContext, useState, useEffect } from 'react';
-import { useBRTools } from './BRToolsContext';
+import { createContext, useState, useEffect } from 'react';
+import { useBRTools } from '../hooks/useBRTools';
 import * as XLSX from 'xlsx';
 import PropTypes from 'prop-types';
-import { Form } from 'react-router-dom';
 import { API_BASE_URL } from '../config/api';
 
-const TeamContext = createContext();
+export const TeamContext = createContext();
 
 const calculateTeamAverages = (players) => {
   const stats = ['age', 'csr', 'energy', 'form', 'stamina', 'handling', 'attack', 'defense', 'technique', 'strength', 'jumping', 'speed', 'agility', 'kicking', 'salary'];
@@ -365,14 +364,6 @@ export function TeamProvider({ children }) {
       {children}
     </TeamContext.Provider>
   );
-}
-
-export function useTeam() {
-  const context = useContext(TeamContext);
-  if (!context) {
-    throw new Error('useTeam must be used within a TeamProvider');
-  }
-  return context;
 }
 
 TeamProvider.propTypes = {

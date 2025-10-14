@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { useTeam } from "../context/TeamContext";
+import { useTeam } from '../hooks/useTeam';
 import YouthList from "../components/YouthList";
 import PlayersDetailList from "../components/PlayersDetailList";
 import YouthHeader from "../components/YouthHeader";

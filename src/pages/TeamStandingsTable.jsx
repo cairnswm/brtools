@@ -1,5 +1,5 @@
-import { useTeam } from '../context/TeamContext';
-import { useBRTools } from '../context/BRToolsContext';
+import { useTeam } from '../hooks/useTeam';
+import { useBRTools } from '../hooks/useBRTools';
 import { formatCSR, formatRanking } from '../utils/formatters';
 
 function TeamStandings() {

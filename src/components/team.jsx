@@ -1,5 +1,5 @@
 import React from "react";
-import { useBRTools } from "../context/BRToolsContext";
+import { useBRTools } from '../hooks/useBRTools';
 
 const Team = ({ id, field = "name", style }) => {
    const { getTeamById } = useBRTools();

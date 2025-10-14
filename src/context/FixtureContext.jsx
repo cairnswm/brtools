@@ -1,9 +1,9 @@
-import { createContext, useContext, useState, useEffect } from 'react';
-import { useBRTools } from './BRToolsContext';
-import { useTeam } from './TeamContext';
+import { createContext, useState, useEffect } from 'react';
+import { useBRTools } from '../hooks/useBRTools';
+import { useTeam } from '../hooks/useTeam';
 import { API_BASE_URL } from '../config/api';
 
-const FixtureContext = createContext();
+export const FixtureContext = createContext();
 
 export const FixtureProvider = ({ children }) => {
   const [fixtures, setFixtures] = useState([]);
@@ -56,12 +56,4 @@ export const FixtureProvider = ({ children }) => {
       {children}
     </FixtureContext.Provider>
   );
-};
-
-export const useFixtures = () => {
-  const context = useContext(FixtureContext);
-  if (!context) {
-    throw new Error('useFixtures must be used within a FixtureProvider');
-  }
-  return context;
 };

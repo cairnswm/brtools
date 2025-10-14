@@ -1,4 +1,4 @@
-import { useTeam } from '../context/TeamContext';
+import { useTeam } from '../hooks/useTeam';
 
 function PlayerSortBar() {
   const { 

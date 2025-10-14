@@ -1,4 +1,4 @@
-import { useTeam } from '../context/TeamContext';
+import { useTeam } from '../hooks/useTeam';
 import { formatCSR, formatSalary } from '../utils/formatters';
 import PlayerSortBar from './PlayerSortBar';
 

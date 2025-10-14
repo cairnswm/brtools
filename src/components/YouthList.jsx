@@ -1,4 +1,4 @@
-import { useTeam } from "../context/TeamContext";
+import { useTeam } from '../hooks/useTeam';
 import { formatCSR } from "../utils/formatters";
 import YouthSortBar from "./YouthSortBar";
 import { Link } from "react-router-dom";

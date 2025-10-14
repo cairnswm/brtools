@@ -1,6 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
 import PropTypes from 'prop-types';
-import { useTeam } from '../context/TeamContext';
+import { useTeam } from '../hooks/useTeam';
 
 const TeamMenu = () => {
   const location = useLocation();
