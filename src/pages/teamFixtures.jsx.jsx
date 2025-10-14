@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useFixtures } from "../context/FixtureContext";
 import Team from "../components/team";
 import BRDate from "../components/brdate";
@@ -10,10 +10,15 @@ const TeamFixtures = () => {
   const { fixtures } = useFixtures();
   const { teamId } = useTeam();
   const { getTeamById } = useBRTools();
+  const [expandedFixture, setExpandedFixture] = useState(null);
 
   useEffect(() => {
     accessElf.track("Team/Fixtures", teamId);
   }, [teamId]);
+
+  const toggleExpand = (fixtureId) => {
+    setExpandedFixture(expandedFixture === fixtureId ? null : fixtureId);
+  };
 
   const isMatchPlayed = (fixture) => {
     return fixture.matchSummary && (fixture.matchSummary.home.points > 0 || fixture.matchSummary.guest.points > 0);
@@ -107,6 +112,40 @@ const TeamFixtures = () => {
                         <div className="text-sm text-gray-500 text-right">{guestTeam?.country_iso || ''}</div>
                       </div>
                     </div>
+
+                    <div className="mt-4 pt-4 border-t border-gray-200">
+                      <button
+                        onClick={() => toggleExpand(fixture.id)}
+                        className="w-full flex items-center justify-center text-sm text-gray-600 hover:text-blue-700 transition-colors"
+                      >
+                        <span className="font-medium">
+                          {expandedFixture === fixture.id ? 'Hide Details' : 'Show Details'}
+                        </span>
+                        <svg
+                          className={`ml-2 w-4 h-4 transition-transform ${expandedFixture === fixture.id ? 'rotate-180' : ''}`}
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        </svg>
+                      </button>
+                    </div>
+
+                    {expandedFixture === fixture.id && (
+                      <div className="mt-4 pt-4 border-t border-gray-200 space-y-3">
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="text-center">
+                            <div className="text-xs text-gray-500 uppercase mb-1">Venue</div>
+                            <div className="text-sm font-medium">{fixture.venue || 'TBD'}</div>
+                          </div>
+                          <div className="text-center">
+                            <div className="text-xs text-gray-500 uppercase mb-1">Attendance</div>
+                            <div className="text-sm font-medium">{fixture.attendance || 'N/A'}</div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               );
@@ -181,6 +220,150 @@ const TeamFixtures = () => {
                         </div>
                       </div>
                     </div>
+
+                    <div className="mt-4 pt-4 border-t border-gray-200">
+                      <button
+                        onClick={() => toggleExpand(fixture.id)}
+                        className="w-full flex items-center justify-center text-sm text-gray-600 hover:text-blue-700 transition-colors"
+                      >
+                        <span className="font-medium">
+                          {expandedFixture === fixture.id ? 'Hide Match Stats' : 'Show Match Stats'}
+                        </span>
+                        <svg
+                          className={`ml-2 w-4 h-4 transition-transform ${expandedFixture === fixture.id ? 'rotate-180' : ''}`}
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        </svg>
+                      </button>
+                    </div>
+
+                    {expandedFixture === fixture.id && fixture.matchSummary && (
+                      <div className="mt-4 pt-4 border-t border-gray-200 space-y-4">
+                        {fixture.matchSummary.home?.territory && fixture.matchSummary.guest?.territory && (
+                          <div>
+                            <div className="text-xs text-gray-500 uppercase mb-2 text-center">Territory</div>
+                            <div className="flex items-center justify-between">
+                              <span className="text-sm font-semibold">{fixture.matchSummary.home.territory}%</span>
+                              <div className="flex-1 mx-4 bg-gray-200 rounded-full h-4 overflow-hidden">
+                                <div
+                                  className={`h-full ${isHome ? 'bg-blue-600' : 'bg-gray-600'}`}
+                                  style={{ width: `${fixture.matchSummary.home.territory}%` }}
+                                />
+                              </div>
+                              <div className="flex-1 mx-4 bg-gray-200 rounded-full h-4 overflow-hidden">
+                                <div
+                                  className={`h-full ${!isHome ? 'bg-blue-600' : 'bg-gray-600'} ml-auto`}
+                                  style={{ width: `${fixture.matchSummary.guest.territory}%` }}
+                                />
+                              </div>
+                              <span className="text-sm font-semibold">{fixture.matchSummary.guest.territory}%</span>
+                            </div>
+                          </div>
+                        )}
+
+                        {fixture.matchSummary.home?.possession && fixture.matchSummary.guest?.possession && (
+                          <div>
+                            <div className="text-xs text-gray-500 uppercase mb-2 text-center">Possession</div>
+                            <div className="flex items-center justify-between">
+                              <span className="text-sm font-semibold">{fixture.matchSummary.home.possession}%</span>
+                              <div className="flex-1 mx-4 bg-gray-200 rounded-full h-4 overflow-hidden">
+                                <div
+                                  className={`h-full ${isHome ? 'bg-blue-600' : 'bg-gray-600'}`}
+                                  style={{ width: `${fixture.matchSummary.home.possession}%` }}
+                                />
+                              </div>
+                              <div className="flex-1 mx-4 bg-gray-200 rounded-full h-4 overflow-hidden">
+                                <div
+                                  className={`h-full ${!isHome ? 'bg-blue-600' : 'bg-gray-600'} ml-auto`}
+                                  style={{ width: `${fixture.matchSummary.guest.possession}%` }}
+                                />
+                              </div>
+                              <span className="text-sm font-semibold">{fixture.matchSummary.guest.possession}%</span>
+                            </div>
+                          </div>
+                        )}
+
+                        <div className="grid grid-cols-3 gap-4 pt-4 border-t border-gray-100">
+                          {fixture.matchSummary.home?.tries !== undefined && (
+                            <div className="text-center">
+                              <div className="text-xs text-gray-500 uppercase mb-1">Tries</div>
+                              <div className="flex justify-between text-sm font-semibold">
+                                <span className={isHome ? 'text-blue-700' : ''}>{fixture.matchSummary.home.tries}</span>
+                                <span className="text-gray-400">-</span>
+                                <span className={!isHome ? 'text-blue-700' : ''}>{fixture.matchSummary.guest.tries}</span>
+                              </div>
+                            </div>
+                          )}
+                          {fixture.matchSummary.home?.conversions !== undefined && (
+                            <div className="text-center">
+                              <div className="text-xs text-gray-500 uppercase mb-1">Conversions</div>
+                              <div className="flex justify-between text-sm font-semibold">
+                                <span className={isHome ? 'text-blue-700' : ''}>{fixture.matchSummary.home.conversions}</span>
+                                <span className="text-gray-400">-</span>
+                                <span className={!isHome ? 'text-blue-700' : ''}>{fixture.matchSummary.guest.conversions}</span>
+                              </div>
+                            </div>
+                          )}
+                          {fixture.matchSummary.home?.penalties !== undefined && (
+                            <div className="text-center">
+                              <div className="text-xs text-gray-500 uppercase mb-1">Penalties</div>
+                              <div className="flex justify-between text-sm font-semibold">
+                                <span className={isHome ? 'text-blue-700' : ''}>{fixture.matchSummary.home.penalties}</span>
+                                <span className="text-gray-400">-</span>
+                                <span className={!isHome ? 'text-blue-700' : ''}>{fixture.matchSummary.guest.penalties}</span>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="grid grid-cols-3 gap-4 pt-2">
+                          {fixture.matchSummary.home?.dropgoals !== undefined && (
+                            <div className="text-center">
+                              <div className="text-xs text-gray-500 uppercase mb-1">Drop Goals</div>
+                              <div className="flex justify-between text-sm font-semibold">
+                                <span className={isHome ? 'text-blue-700' : ''}>{fixture.matchSummary.home.dropgoals}</span>
+                                <span className="text-gray-400">-</span>
+                                <span className={!isHome ? 'text-blue-700' : ''}>{fixture.matchSummary.guest.dropgoals}</span>
+                              </div>
+                            </div>
+                          )}
+                          {fixture.matchSummary.home?.yellowcards !== undefined && (
+                            <div className="text-center">
+                              <div className="text-xs text-gray-500 uppercase mb-1">Yellow Cards</div>
+                              <div className="flex justify-between text-sm font-semibold">
+                                <span className={isHome ? 'text-blue-700' : ''}>{fixture.matchSummary.home.yellowcards}</span>
+                                <span className="text-gray-400">-</span>
+                                <span className={!isHome ? 'text-blue-700' : ''}>{fixture.matchSummary.guest.yellowcards}</span>
+                              </div>
+                            </div>
+                          )}
+                          {fixture.matchSummary.home?.redcards !== undefined && (
+                            <div className="text-center">
+                              <div className="text-xs text-gray-500 uppercase mb-1">Red Cards</div>
+                              <div className="flex justify-between text-sm font-semibold">
+                                <span className={isHome ? 'text-blue-700' : ''}>{fixture.matchSummary.home.redcards}</span>
+                                <span className="text-gray-400">-</span>
+                                <span className={!isHome ? 'text-blue-700' : ''}>{fixture.matchSummary.guest.redcards}</span>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4 pt-4 border-t border-gray-100">
+                          <div className="text-center">
+                            <div className="text-xs text-gray-500 uppercase mb-1">Venue</div>
+                            <div className="text-sm font-medium">{fixture.venue || 'N/A'}</div>
+                          </div>
+                          <div className="text-center">
+                            <div className="text-xs text-gray-500 uppercase mb-1">Attendance</div>
+                            <div className="text-sm font-medium">{fixture.attendance || 'N/A'}</div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               );
