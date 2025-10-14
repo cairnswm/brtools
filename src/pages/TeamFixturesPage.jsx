@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { useFixtures } from "../context/FixtureContext";
+import { useFixtures } from "../hooks/useFixtures";
 import Team from "../components/team";
 import BRDate from "../components/brdate";
 import { accessElf } from "../components/accessElf";
-import { useTeam } from "../context/TeamContext";
-import { useBRTools } from "../context/BRToolsContext";
+import { useTeam } from "../hooks/useTeam";
+import { useBRTools } from "../hooks/useBRTools";
 
 const TeamFixtures = () => {
   const { fixtures } = useFixtures();
