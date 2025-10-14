@@ -8,7 +8,6 @@ const TeamMenu = () => {
   const isStandings = currentPath.includes('/standings');
   const isFixtures = currentPath.includes('/fixtures');
   const isYouth = currentPath.includes('/youth');
-  const isTraining = currentPath.includes('/training');
 
   const { teamId } = useTeam();
 
@@ -18,7 +17,7 @@ const TeamMenu = () => {
         <div className="flex space-x-6">
           <Link
             to={`/team/${teamId}`}
-            className={`py-3 border-b-2 ${!isStandings && !isFixtures && !isYouth && !isTraining ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+            className={`py-3 border-b-2 ${!isStandings && !isFixtures && !isYouth ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
           >
             Players
           </Link>
@@ -27,12 +26,6 @@ const TeamMenu = () => {
             className={`py-3 border-b-2 ${isYouth ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
           >
             Youth
-          </Link>
-          <Link
-            to={`/team/${teamId}/training`}
-            className={`py-3 border-b-2 ${isTraining ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
-          >
-            Training
           </Link>
           <Link
             to={`/team/${teamId}/standings`}

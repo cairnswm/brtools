@@ -8,7 +8,6 @@ import PlayerDetails from "./playerDetails";
 import TeamStandingsPage from "./TeamStandingsPage";
 import TeamFixturesPage from "./teamfixturesPage";
 import YouthPage from "./YouthPage";
-import TrainingPage from "./TrainingPage";
 import { accessElf } from "../components/accessElf";
 
 const TeamDetails = () => {
@@ -36,7 +35,6 @@ const TeamDetails = () => {
           <Route path="fixtures" element={<TeamFixturesPage />} />
           <Route path="standings" element={<TeamStandingsPage />} />
           <Route path="youth" element={<YouthPage />} />
-          <Route path="training" element={<TrainingPage />} />
           <Route path="player/:playerId" element={<PlayerDetails />} />
           <Route path="/" element={<PlayerPage />} />
         </Routes>

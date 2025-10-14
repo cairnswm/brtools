@@ -57,8 +57,6 @@ export function TeamProvider({ children }) {
   const [players, setPlayers] = useState([]);
   const [youth, setYouth] = useState([]);
   const [standings, setStandings] = useState([]);
-  const [training, setTraining] = useState(null);
-  const [currentGameDate, setCurrentGameDate] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [sortField, setSortField] = useState('jersey');
@@ -127,18 +125,6 @@ export function TeamProvider({ children }) {
             const teamIds = standingsList.map(standing => standing.teamid);
             addTeamsToCache(teamIds);
           }
-
-          fetch(`https://thegamedeveloper.co.za/brexport/api/api.php?memberid=${memberKey}&r=tr&teamid=${teamId}&json=1`)
-            .then(response => response.json())
-            .then(trainingData => {
-              if (trainingData?.status === 'Ok' && trainingData?.report) {
-                setTraining(trainingData.report);
-                setCurrentGameDate(trainingData.gameDate);
-              }
-            })
-            .catch(err => {
-              console.error('Error fetching training data:', err);
-            });
         })
         .catch(err => {
           setError('Failed to fetch data');
@@ -151,8 +137,6 @@ export function TeamProvider({ children }) {
       setPlayers([]);
       setYouth([]);
       setStandings([]);
-      setTraining(null);
-      setCurrentGameDate(null);
     }
   }, [teamId, memberKey, addTeamsToCache, cachedTeams]);
 
@@ -335,15 +319,13 @@ export function TeamProvider({ children }) {
   const teamAverages = calculateTeamAverages(sortedPlayers);
 
   return (
-    <TeamContext.Provider value={{
-      teamId,
-      setTeamId,
+    <TeamContext.Provider value={{ 
+      teamId, 
+      setTeamId, 
       players: sortedPlayers,
       youth: sortedYouth,
       standings: sortedStandings,
-      training,
-      currentGameDate,
-      loading,
+      loading, 
       error,
       sortField,
       sortDirection,
