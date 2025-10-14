@@ -6,7 +6,7 @@ import TeamMenu from "../components/TeamMenu";
 import PlayerPage from "./PlayerPage";
 import PlayerDetails from "./playerDetails";
 import TeamStandingsPage from "./TeamStandingsPage";
-import TeamFixturesPage from "./teamfixturesPage";
+import TeamFixturesPage from "./TeamFixturesPage";
 import YouthPage from "./YouthPage";
 import TrainingPage from "./TrainingPage";
 import { accessElf } from "../components/accessElf";
