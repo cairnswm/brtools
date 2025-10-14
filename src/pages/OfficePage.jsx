@@ -4,7 +4,7 @@ import { useBRTools } from "../hooks/useBRTools";
 import { accessElf } from "../components/accessElf";
 
 const OfficePage = () => {
-  const { teamId, players, trainingReport } = useTeam();
+  const { teamId, players, trainingReport, standings } = useTeam();
   const { getTeamById } = useBRTools();
 
   useEffect(() => {
@@ -99,6 +99,40 @@ const OfficePage = () => {
     return { diff, isPositive: diff > 0 };
   };
 
+  const getLeaguePosition = () => {
+    if (!standings || standings.length === 0) return [];
+
+    const sortedStandings = [...standings].sort((a, b) => {
+      const aPoints = Number(a.points);
+      const bPoints = Number(b.points);
+      if (aPoints !== bPoints) return bPoints - aPoints;
+
+      const aFor = Number(a.for);
+      const bFor = Number(b.for);
+      if (aFor !== bFor) return bFor - aFor;
+
+      const aAgainst = Number(a.against);
+      const bAgainst = Number(b.against);
+      return aAgainst - bAgainst;
+    });
+
+    const currentIndex = sortedStandings.findIndex(s => s.teamid === teamId);
+    if (currentIndex === -1) return [];
+
+    const result = [];
+    if (currentIndex > 0) {
+      result.push({ ...sortedStandings[currentIndex - 1], position: currentIndex });
+    }
+    result.push({ ...sortedStandings[currentIndex], position: currentIndex + 1, isCurrentTeam: true });
+    if (currentIndex < sortedStandings.length - 1) {
+      result.push({ ...sortedStandings[currentIndex + 1], position: currentIndex + 2 });
+    }
+
+    return result;
+  };
+
+  const leaguePosition = getLeaguePosition();
+
   const stats = [
     {
       label: "Top 15 Average CSR",
@@ -178,14 +212,6 @@ const OfficePage = () => {
               </div>
             </div>
 
-            <div className="flex flex-wrap justify-center gap-4">
-              <button className="px-8 py-3 bg-white text-blue-900 font-semibold rounded-lg hover:bg-blue-50 transition-all transform hover:scale-105 shadow-lg">
-                Club History
-              </button>
-              <button className="px-8 py-3 bg-blue-600/80 backdrop-blur-sm text-white font-semibold rounded-lg hover:bg-blue-700 transition-all transform hover:scale-105 border border-white/20">
-                Latest News
-              </button>
-            </div>
           </div>
         </div>
 
@@ -239,7 +265,7 @@ const OfficePage = () => {
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-gray-600">Form</span>
-                    <span className="font-semibold text-gray-700">{player.form}%</span>
+                    <span className="font-semibold text-gray-700">{player.form}/11</span>
                   </div>
                 </div>
               </div>
@@ -247,6 +273,62 @@ const OfficePage = () => {
           ))}
         </div>
       </div>
+
+      {leaguePosition.length > 0 && (
+        <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+          <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-8 py-6">
+            <h2 className="text-2xl font-bold text-white">League Position</h2>
+            <p className="text-blue-100 text-sm mt-1">Current standings</p>
+          </div>
+          <div className="p-6">
+            <div className="space-y-3">
+              {leaguePosition.map((standing, index) => {
+                const team = getTeamById(standing.teamid);
+                return (
+                  <div
+                    key={standing.teamid}
+                    className={`flex items-center justify-between p-4 rounded-lg transition-all ${
+                      standing.isCurrentTeam
+                        ? 'bg-blue-50 border-2 border-blue-500'
+                        : 'bg-gray-50 border-2 border-transparent'
+                    }`}
+                  >
+                    <div className="flex items-center gap-4 flex-1">
+                      <div
+                        className={`w-8 h-8 rounded-full flex items-center justify-center font-bold ${
+                          standing.isCurrentTeam
+                            ? 'bg-blue-600 text-white'
+                            : 'bg-gray-300 text-gray-700'
+                        }`}
+                      >
+                        {standing.position}
+                      </div>
+                      <div className="flex-1">
+                        <div className={`font-semibold ${
+                          standing.isCurrentTeam ? 'text-blue-900' : 'text-gray-900'
+                        }`}>
+                          {team?.name || `Team ${standing.teamid}`}
+                        </div>
+                        <div className="text-xs text-gray-600 mt-1">
+                          P: {standing.played} | W: {standing.w} | D: {standing.d} | L: {standing.l}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className={`text-2xl font-bold ${
+                        standing.isCurrentTeam ? 'text-blue-900' : 'text-gray-900'
+                      }`}>
+                        {standing.points}
+                      </div>
+                      <div className="text-xs text-gray-600">points</div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="grid md:grid-cols-2 gap-6">
         <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
@@ -368,24 +450,6 @@ const OfficePage = () => {
         </div>
       </div>
 
-      <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-2xl shadow-xl overflow-hidden">
-        <div className="p-8 md:p-12 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-            Join the Legacy
-          </h2>
-          <p className="text-blue-100 text-lg mb-8 max-w-2xl mx-auto">
-            Be part of our journey. Support your team and become a member today.
-          </p>
-          <div className="flex flex-wrap justify-center gap-4">
-            <button className="px-8 py-4 bg-white text-blue-900 font-bold rounded-lg hover:bg-gray-100 transition-all transform hover:scale-105 shadow-lg">
-              Become a Member
-            </button>
-            <button className="px-8 py-4 bg-blue-800/50 backdrop-blur-sm text-white font-bold rounded-lg hover:bg-blue-800 transition-all transform hover:scale-105 border-2 border-white/30">
-              View Packages
-            </button>
-          </div>
-        </div>
-      </div>
     </div>
   );
 };
