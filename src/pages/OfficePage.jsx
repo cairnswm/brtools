@@ -4,7 +4,7 @@ import { useBRTools } from "../hooks/useBRTools";
 import { accessElf } from "../components/accessElf";
 
 const OfficePage = () => {
-  const { teamId, team, players } = useTeam();
+  const { teamId, players, trainingReport } = useTeam();
   const { getTeamById } = useBRTools();
 
   useEffect(() => {
@@ -13,21 +13,121 @@ const OfficePage = () => {
     }
   }, [teamId]);
 
-  const teamData = team || getTeamById(teamId);
+  const teamData = getTeamById(teamId);
 
   const getTopPlayers = () => {
     return [...players]
+      .filter(p => Number(p.csr) > 0)
       .sort((a, b) => Number(b.csr) - Number(a.csr))
       .slice(0, 3);
   };
 
   const topPlayers = getTopPlayers();
 
+  const activePlayers = players.filter(p => Number(p.csr) > 0);
+  const top15Players = [...activePlayers].sort((a, b) => Number(b.csr) - Number(a.csr)).slice(0, 15);
+
+  const top15Avg = top15Players.length > 0
+    ? Math.round(top15Players.reduce((sum, p) => sum + Number(p.csr), 0) / top15Players.length)
+    : 0;
+
+  const allAvg = activePlayers.length > 0
+    ? Math.round(activePlayers.reduce((sum, p) => sum + Number(p.csr), 0) / activePlayers.length)
+    : 0;
+
+  const avgAge = activePlayers.length > 0
+    ? (activePlayers.reduce((sum, p) => sum + Number(p.age), 0) / activePlayers.length).toFixed(1)
+    : 0;
+
+  const getCoachingStaff = () => {
+    if (!trainingReport?.data?.trainers) return [];
+
+    const trainers = trainingReport.data.trainers;
+    const staff = [];
+
+    const trainerTypes = {
+      stamina: { label: 'Stamina', skills: ['stamina'] },
+      kicking: { label: 'Kicking', skills: ['kicking'] },
+      defense: { label: 'Defense', skills: ['defense', 'technique', 'strength', 'jumping'] },
+      attack: { label: 'Attack', skills: ['handling', 'attack', 'agility', 'speed'] }
+    };
+
+    Object.entries(trainerTypes).forEach(([type, config]) => {
+      if (trainers[type]) {
+        staff.push({
+          type: config.label,
+          name: `${trainers[type].fname} ${trainers[type].lname}`,
+          level: trainers[type].level,
+          skills: config.skills
+        });
+      }
+    });
+
+    return staff;
+  };
+
+  const coachingStaff = getCoachingStaff();
+
+  const getTrainingFacilities = () => {
+    if (!trainingReport?.data?.facilities) return [];
+
+    const facilities = trainingReport.data.facilities;
+    return [
+      { name: 'Training Pitch', level: facilities.pitch || 0 },
+      { name: 'Gymnasium', level: facilities.gym || 0 },
+      { name: 'Medical Center', level: facilities.medical || 0 }
+    ];
+  };
+
+  const trainingFacilities = getTrainingFacilities();
+
+  const formatCurrency = (value) => {
+    if (!value) return '$0';
+    return `$${Number(value).toLocaleString()}`;
+  };
+
+  const formatStadiumCapacity = () => {
+    if (!teamData?.stadium_capacity) return 'N/A';
+    return Number(teamData.stadium_capacity).toLocaleString();
+  };
+
+  const getRankChange = (current, previous) => {
+    const curr = Number(current);
+    const prev = Number(previous);
+    if (!prev || curr === prev) return null;
+    const diff = prev - curr;
+    return { diff, isPositive: diff > 0 };
+  };
+
   const stats = [
-    { label: "Squad Size", value: players.length },
-    { label: "Average Age", value: (players.reduce((sum, p) => sum + Number(p.age), 0) / players.length).toFixed(1) },
-    { label: "Average CSR", value: Math.round(players.reduce((sum, p) => sum + Number(p.csr), 0) / players.length) },
-    { label: "Total Salary", value: `$${(players.reduce((sum, p) => sum + Number(p.salary), 0)).toLocaleString()}` }
+    {
+      label: "Top 15 Average CSR",
+      value: top15Avg.toLocaleString(),
+      subValue: `Squad Avg: ${allAvg.toLocaleString()}`
+    },
+    {
+      label: "Average Age",
+      value: avgAge,
+      subValue: `${activePlayers.length} active players`
+    },
+    {
+      label: "Bank Balance",
+      value: formatCurrency(teamData?.bank_balance),
+      subValue: `Total Salary: ${formatCurrency(teamData?.total_salary)}`
+    },
+    {
+      label: "World Rank",
+      value: teamData?.world_rank || 'N/A',
+      subValue: (() => {
+        const change = getRankChange(teamData?.world_rank, teamData?.prev_world_rank);
+        if (!change) return null;
+        return (
+          <span className={change.isPositive ? 'text-green-600' : 'text-red-600'}>
+            {change.isPositive ? '▲' : '▼'} {Math.abs(change.diff)}
+          </span>
+        );
+      })()
+    }
   ];
 
   return (
@@ -47,9 +147,36 @@ const OfficePage = () => {
               {teamData?.name || "Team Office"}
             </h1>
 
+            {teamData?.nickname_1 && (
+              <p className="text-2xl text-white/90 mb-4 font-semibold">
+                The {teamData.nickname_1}
+              </p>
+            )}
+
             <p className="text-xl text-white/80 mb-8 max-w-2xl mx-auto">
               Excellence in Rugby. Tradition. Victory.
             </p>
+
+            <div className="flex flex-wrap justify-center gap-6 text-white/90 text-sm mb-8">
+              <div className="flex items-center gap-2">
+                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+                </svg>
+                <span>{teamData?.country_iso || 'N/A'}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                </svg>
+                <span>National Rank: {teamData?.national_rank || 'N/A'}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
+                </svg>
+                <span>Regional Rank: {teamData?.regional_rank || 'N/A'}</span>
+              </div>
+            </div>
 
             <div className="flex flex-wrap justify-center gap-4">
               <button className="px-8 py-3 bg-white text-blue-900 font-semibold rounded-lg hover:bg-blue-50 transition-all transform hover:scale-105 shadow-lg">
@@ -69,7 +196,10 @@ const OfficePage = () => {
         {stats.map((stat, index) => (
           <div key={index} className="bg-white rounded-xl shadow-md p-6 hover:shadow-xl transition-shadow">
             <div className="text-3xl font-bold text-blue-900 mb-2">{stat.value}</div>
-            <div className="text-sm text-gray-600 uppercase tracking-wide">{stat.label}</div>
+            <div className="text-sm text-gray-600 uppercase tracking-wide mb-1">{stat.label}</div>
+            {stat.subValue && (
+              <div className="text-xs text-gray-500 mt-1">{stat.subValue}</div>
+            )}
           </div>
         ))}
       </div>
@@ -101,7 +231,7 @@ const OfficePage = () => {
                 <div className="space-y-2 pt-4 border-t border-gray-200">
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-gray-600">CSR</span>
-                    <span className="font-bold text-blue-900">{player.csr}</span>
+                    <span className="font-bold text-blue-900">{Number(player.csr).toLocaleString()}</span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-gray-600">Age</span>
@@ -128,26 +258,56 @@ const OfficePage = () => {
             </div>
           </div>
           <div className="p-6">
-            <ul className="space-y-3">
-              <li className="flex items-center text-gray-700">
-                <svg className="w-5 h-5 mr-3 text-green-600" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                </svg>
-                Professional training pitch
-              </li>
-              <li className="flex items-center text-gray-700">
-                <svg className="w-5 h-5 mr-3 text-green-600" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                </svg>
-                State-of-the-art gym
-              </li>
-              <li className="flex items-center text-gray-700">
-                <svg className="w-5 h-5 mr-3 text-green-600" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                </svg>
-                Medical & recovery center
-              </li>
-            </ul>
+            {trainingFacilities.length > 0 ? (
+              <div className="space-y-4">
+                {trainingFacilities.map((facility, index) => (
+                  <div key={index} className="flex items-center justify-between">
+                    <div className="flex items-center">
+                      <svg className="w-5 h-5 mr-3 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                      </svg>
+                      <span className="text-gray-700">{facility.name}</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      {[...Array(10)].map((_, i) => (
+                        <div
+                          key={i}
+                          className={`w-2 h-6 rounded-sm ${
+                            i < facility.level ? 'bg-green-600' : 'bg-gray-200'
+                          }`}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-gray-500 text-sm">Training facility data unavailable</p>
+            )}
+
+            {coachingStaff.length > 0 && (
+              <div className="mt-6 pt-6 border-t border-gray-200">
+                <h4 className="font-semibold text-gray-700 mb-4">Coaching Staff</h4>
+                <div className="space-y-3">
+                  {coachingStaff.map((coach, index) => (
+                    <div key={index} className="bg-gray-50 rounded-lg p-3">
+                      <div className="flex items-center justify-between mb-2">
+                        <div>
+                          <div className="font-semibold text-gray-900">{coach.name}</div>
+                          <div className="text-sm text-gray-600">{coach.type} Coach</div>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-lg font-bold text-green-600">Level {coach.level}</div>
+                        </div>
+                      </div>
+                      <div className="text-xs text-gray-500">
+                        Trains: {coach.skills.join(', ')}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
@@ -155,31 +315,55 @@ const OfficePage = () => {
           <div className="relative h-48 bg-gradient-to-br from-blue-500 to-blue-700">
             <div className="absolute inset-0 bg-[url('https://images.pexels.com/photos/1884574/pexels-photo-1884574.jpeg?auto=compress&cs=tinysrgb&w=800')] bg-cover bg-center opacity-30"></div>
             <div className="relative z-10 p-6 h-full flex flex-col justify-end">
-              <h3 className="text-2xl font-bold text-white mb-2">Club Stadium</h3>
+              <h3 className="text-2xl font-bold text-white mb-2">{teamData?.stadium || 'Club Stadium'}</h3>
               <p className="text-white/90 text-sm">Home of champions and unforgettable moments</p>
             </div>
           </div>
           <div className="p-6">
-            <ul className="space-y-3">
-              <li className="flex items-center text-gray-700">
-                <svg className="w-5 h-5 mr-3 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                </svg>
-                Premium seating options
-              </li>
-              <li className="flex items-center text-gray-700">
-                <svg className="w-5 h-5 mr-3 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                </svg>
-                Corporate hospitality suites
-              </li>
-              <li className="flex items-center text-gray-700">
-                <svg className="w-5 h-5 mr-3 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                </svg>
-                Fan experience zones
-              </li>
-            </ul>
+            <div className="mb-6">
+              <div className="text-sm text-gray-600 mb-2">Total Capacity</div>
+              <div className="text-3xl font-bold text-blue-900">{formatStadiumCapacity()}</div>
+            </div>
+
+            <div className="space-y-3">
+              {teamData?.stadium_standing && Number(teamData.stadium_standing) > 0 && (
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-gray-600">Standing</span>
+                  <span className="font-semibold">{Number(teamData.stadium_standing).toLocaleString()}</span>
+                </div>
+              )}
+              {teamData?.stadium_uncovered && Number(teamData.stadium_uncovered) > 0 && (
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-gray-600">Uncovered Seating</span>
+                  <span className="font-semibold">{Number(teamData.stadium_uncovered).toLocaleString()}</span>
+                </div>
+              )}
+              {teamData?.stadium_covered && Number(teamData.stadium_covered) > 0 && (
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-gray-600">Covered Seating</span>
+                  <span className="font-semibold">{Number(teamData.stadium_covered).toLocaleString()}</span>
+                </div>
+              )}
+              {teamData?.stadium_members && Number(teamData.stadium_members) > 0 && (
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-gray-600">Members Area</span>
+                  <span className="font-semibold">{Number(teamData.stadium_members).toLocaleString()}</span>
+                </div>
+              )}
+              {teamData?.stadium_corporate && Number(teamData.stadium_corporate) > 0 && (
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-gray-600">Corporate Suites</span>
+                  <span className="font-semibold">{Number(teamData.stadium_corporate).toLocaleString()}</span>
+                </div>
+              )}
+            </div>
+
+            {teamData?.minor_sponsors && (
+              <div className="mt-6 pt-6 border-t border-gray-200 text-center">
+                <div className="text-2xl font-bold text-blue-900">{teamData.minor_sponsors}</div>
+                <div className="text-sm text-gray-600 uppercase tracking-wide">Minor Sponsors</div>
+              </div>
+            )}
           </div>
         </div>
       </div>
