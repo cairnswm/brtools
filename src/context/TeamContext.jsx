@@ -57,6 +57,7 @@ export function TeamProvider({ children }) {
   const [players, setPlayers] = useState([]);
   const [youth, setYouth] = useState([]);
   const [standings, setStandings] = useState([]);
+  const [trainingReport, setTrainingReport] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [sortField, setSortField] = useState('jersey');
@@ -105,6 +106,22 @@ export function TeamProvider({ children }) {
               });
 
             const team = cachedTeams[teamId];
+
+            fetch(`https://thegamedeveloper.co.za/brexport/api/api.php/trainingreport/${teamId}`, {
+              headers: {
+                'accesskey': memberKey
+              }
+            })
+              .then(response => response.json())
+              .then(trainingData => {
+                if (trainingData.data?.status === 'Ok') {
+                  setTrainingReport(trainingData);
+                }
+              })
+              .catch(err => {
+                console.error('Error fetching training report:', err);
+              });
+
             if (team?.leagueid) {
               return fetch(`https://thegamedeveloper.co.za/brexport/api/api.php/league/${team.leagueid}/standings`, {
                 headers: {
@@ -121,7 +138,7 @@ export function TeamProvider({ children }) {
           if (data?.data?.status === 'Ok' && data?.data?.standings) {
             const standingsList = Object.values(data.data.standings);
             setStandings(standingsList);
-            
+
             const teamIds = standingsList.map(standing => standing.teamid);
             addTeamsToCache(teamIds);
           }
@@ -137,6 +154,7 @@ export function TeamProvider({ children }) {
       setPlayers([]);
       setYouth([]);
       setStandings([]);
+      setTrainingReport(null);
     }
   }, [teamId, memberKey, addTeamsToCache, cachedTeams]);
 
@@ -319,13 +337,14 @@ export function TeamProvider({ children }) {
   const teamAverages = calculateTeamAverages(sortedPlayers);
 
   return (
-    <TeamContext.Provider value={{ 
-      teamId, 
-      setTeamId, 
+    <TeamContext.Provider value={{
+      teamId,
+      setTeamId,
       players: sortedPlayers,
       youth: sortedYouth,
       standings: sortedStandings,
-      loading, 
+      trainingReport,
+      loading,
       error,
       sortField,
       sortDirection,
