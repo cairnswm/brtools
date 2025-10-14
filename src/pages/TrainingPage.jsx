@@ -36,6 +36,10 @@ const TrainingPage = () => {
     return player ? `${player.fname} ${player.lname}` : `Player ${playerId}`;
   };
 
+  const getPlayer = (playerId) => {
+    return players.find(p => p.id === playerId);
+  };
+
   const teamTrainingPlayers = report.team?.players ? Object.values(report.team.players) : [];
   const individualTrainingPlayers = report.individual?.players ? Object.values(report.individual.players) : [];
   const teamSkills = report.team?.skills || [];
@@ -111,6 +115,66 @@ const TrainingPage = () => {
     XLSX.writeFile(wb, `training_report_s${data.report.season}_r${data.report.round}.xlsx`);
   };
 
+  const exportSessionsToExcel = () => {
+    const skillNames = ['stamina', 'handling', 'attack', 'defense', 'technique', 'strength', 'jumping', 'speed', 'agility', 'kicking'];
+
+    const sessionsData = [];
+
+    individualTrainingPlayers.forEach((trainingPlayer) => {
+      const player = getPlayer(trainingPlayer.id);
+      if (!player) return;
+
+      const sessionsBySkill = {};
+
+      trainingPlayer.skills?.forEach(skillTraining => {
+        const skill = skillTraining.skill;
+        const sessions = Number(skillTraining.sessions);
+        const level = Number(skillTraining.trainerlevel);
+
+        if (!sessionsBySkill[skill]) {
+          sessionsBySkill[skill] = {};
+        }
+        if (!sessionsBySkill[skill][level]) {
+          sessionsBySkill[skill][level] = 0;
+        }
+        sessionsBySkill[skill][level] += sessions;
+      });
+
+      const playerRow = {
+        'Player': `${player.fname} ${player.lname}`
+      };
+
+      skillNames.forEach(skill => {
+        const skillLevel = Number(player[skill]) || 0;
+        let sessionInfo = `${skillLevel}`;
+
+        if (sessionsBySkill[skill]) {
+          const levels = Object.keys(sessionsBySkill[skill]).sort((a, b) => Number(b) - Number(a));
+          const sessionParts = levels.map(level =>
+            `${sessionsBySkill[skill][level]}, ${level}`
+          );
+          sessionInfo += `, ${sessionParts.join(', ')}`;
+        } else {
+          sessionInfo += ', 0';
+        }
+
+        playerRow[skill.charAt(0).toUpperCase() + skill.slice(1)] = sessionInfo;
+      });
+
+      sessionsData.push(playerRow);
+    });
+
+    if (sessionsData.length === 0) {
+      alert('No individual training sessions to export');
+      return;
+    }
+
+    const ws = XLSX.utils.json_to_sheet(sessionsData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Training Sessions");
+    XLSX.writeFile(wb, `training_sessions_s${data.report.season}_r${data.report.round}.xlsx`);
+  };
+
   return (
     <div className="space-y-6">
       <div className="bg-white rounded-lg shadow-md p-6">
@@ -120,6 +184,12 @@ const TrainingPage = () => {
             <div className="text-sm text-gray-600">
               Season {data.report.season} - Round {data.report.round}
             </div>
+            <button
+              onClick={exportSessionsToExcel}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
+            >
+              Sessions Export
+            </button>
             <button
               onClick={exportToExcel}
               className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-medium"
