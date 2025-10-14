@@ -140,28 +140,26 @@ const TrainingPage = () => {
         sessionsBySkill[skill][level] += sessions;
       });
 
-      const playerRow = {
-        'Player': `${player.fname} ${player.lname}`
-      };
+      sessionsData.push([`${player.fname} ${player.lname}`]);
 
       skillNames.forEach(skill => {
         const skillLevel = Number(player[skill]) || 0;
-        let sessionInfo = `${skillLevel}`;
+        const skillCapitalized = skill.charAt(0).toUpperCase() + skill.slice(1);
+
+        const row = [skillCapitalized, skillLevel];
 
         if (sessionsBySkill[skill]) {
           const levels = Object.keys(sessionsBySkill[skill]).sort((a, b) => Number(b) - Number(a));
-          const sessionParts = levels.map(level =>
-            `${sessionsBySkill[skill][level]}, ${level}`
-          );
-          sessionInfo += `, ${sessionParts.join(', ')}`;
+          levels.forEach(level => {
+            row.push(sessionsBySkill[skill][level]);
+            row.push(Number(level));
+          });
         } else {
-          sessionInfo += ', 0';
+          row.push(0);
         }
 
-        playerRow[skill.charAt(0).toUpperCase() + skill.slice(1)] = sessionInfo;
+        sessionsData.push(row);
       });
-
-      sessionsData.push(playerRow);
     });
 
     if (sessionsData.length === 0) {
@@ -169,7 +167,7 @@ const TrainingPage = () => {
       return;
     }
 
-    const ws = XLSX.utils.json_to_sheet(sessionsData);
+    const ws = XLSX.utils.aoa_to_sheet(sessionsData);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Training Sessions");
     XLSX.writeFile(wb, `training_sessions_s${data.report.season}_r${data.report.round}.xlsx`);
