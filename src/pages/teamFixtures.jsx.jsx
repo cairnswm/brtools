@@ -152,7 +152,7 @@ const TeamFixtures = () => {
                   <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-3">
                     <div className="flex justify-between items-center">
                       <span className="text-sm font-medium">
-                        Season {fixture.season} • Round {fixture.round}
+                        Season {fixture.season} • Round {fixture.round} • {fixture.competition}
                       </span>
                       <span className="text-sm">
                         {formatTime(fixture.matchstart)}
@@ -252,7 +252,7 @@ const TeamFixtures = () => {
                   <div className={`${result.color} text-white px-6 py-3`}>
                     <div className="flex justify-between items-center">
                       <span className="text-sm font-medium">
-                        Season {fixture.season} • Round {fixture.round}
+                        Season {fixture.season} • Round {fixture.round} • {fixture.competition}
                       </span>
                       <span className="text-sm font-bold uppercase">
                         {result.status === 'win' ? 'Victory' : result.status === 'draw' ? 'Draw' : 'Defeat'}
@@ -437,33 +437,63 @@ const TeamFixtures = () => {
                                     </div>
                                   </div>
 
-                                  <div className="grid grid-cols-3 gap-4 text-center">
-                                    <div>
-                                      <div className="text-xs text-gray-500 uppercase mb-1">World Rank</div>
-                                      <div className="text-sm font-semibold">{homeReport.world_rank} - {guestReport.world_rank}</div>
+                                  <div className="flex items-center justify-center gap-4">
+                                    <div className="w-32 text-right">
+                                      <div className="text-sm font-semibold">{homeReport.world_rank}</div>
                                     </div>
-                                    <div>
-                                      <div className="text-xs text-gray-500 uppercase mb-1">National Rank</div>
-                                      <div className="text-sm font-semibold">{homeReport.national_rank} - {guestReport.national_rank}</div>
-                                    </div>
-                                    <div>
-                                      <div className="text-xs text-gray-500 uppercase mb-1">Regional Rank</div>
-                                      <div className="text-sm font-semibold">{homeReport.regional_rank} - {guestReport.regional_rank}</div>
+                                    <div className="text-xs text-gray-500 uppercase w-20 text-center">World Rank</div>
+                                    <div className="w-32 text-left">
+                                      <div className="text-sm font-semibold">{guestReport.world_rank}</div>
                                     </div>
                                   </div>
 
-                                  <div className="grid grid-cols-3 gap-4 text-center">
-                                    <div>
-                                      <div className="text-xs text-gray-500 uppercase mb-1">Avg CSR</div>
-                                      <div className="text-sm font-semibold">{Number(homeReport.avg_csr).toLocaleString()} - {Number(guestReport.avg_csr).toLocaleString()}</div>
+                                  <div className="flex items-center justify-center gap-4">
+                                    <div className="w-32 text-right">
+                                      <div className="text-sm font-semibold">{homeReport.national_rank}</div>
                                     </div>
-                                    <div>
-                                      <div className="text-xs text-gray-500 uppercase mb-1">Energy</div>
-                                      <div className="text-sm font-semibold">{homeReport.energy_level}% - {guestReport.energy_level}%</div>
+                                    <div className="text-xs text-gray-500 uppercase w-20 text-center">National Rank</div>
+                                    <div className="w-32 text-left">
+                                      <div className="text-sm font-semibold">{guestReport.national_rank}</div>
                                     </div>
-                                    <div>
-                                      <div className="text-xs text-gray-500 uppercase mb-1">Weight</div>
-                                      <div className="text-sm font-semibold">{homeReport.weight}kg - {guestReport.weight}kg</div>
+                                  </div>
+
+                                  <div className="flex items-center justify-center gap-4">
+                                    <div className="w-32 text-right">
+                                      <div className="text-sm font-semibold">{homeReport.regional_rank}</div>
+                                    </div>
+                                    <div className="text-xs text-gray-500 uppercase w-20 text-center">Regional Rank</div>
+                                    <div className="w-32 text-left">
+                                      <div className="text-sm font-semibold">{guestReport.regional_rank}</div>
+                                    </div>
+                                  </div>
+
+                                  <div className="flex items-center justify-center gap-4">
+                                    <div className="w-32 text-right">
+                                      <div className="text-sm font-semibold">{Number(homeReport.avg_csr).toLocaleString()}</div>
+                                    </div>
+                                    <div className="text-xs text-gray-500 uppercase w-20 text-center">Avg CSR</div>
+                                    <div className="w-32 text-left">
+                                      <div className="text-sm font-semibold">{Number(guestReport.avg_csr).toLocaleString()}</div>
+                                    </div>
+                                  </div>
+
+                                  <div className="flex items-center justify-center gap-4">
+                                    <div className="w-32 text-right">
+                                      <div className="text-sm font-semibold">{homeReport.energy_level}%</div>
+                                    </div>
+                                    <div className="text-xs text-gray-500 uppercase w-20 text-center">Energy</div>
+                                    <div className="w-32 text-left">
+                                      <div className="text-sm font-semibold">{guestReport.energy_level}%</div>
+                                    </div>
+                                  </div>
+
+                                  <div className="flex items-center justify-center gap-4">
+                                    <div className="w-32 text-right">
+                                      <div className="text-sm font-semibold">{homeReport.weight}kg</div>
+                                    </div>
+                                    <div className="text-xs text-gray-500 uppercase w-20 text-center">Weight</div>
+                                    <div className="w-32 text-left">
+                                      <div className="text-sm font-semibold">{guestReport.weight}kg</div>
                                     </div>
                                   </div>
                                 </div>
