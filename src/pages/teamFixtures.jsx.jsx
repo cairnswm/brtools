@@ -287,66 +287,66 @@ const TeamFixtures = () => {
                         )}
 
                         <div className="grid grid-cols-3 gap-4 pt-4 border-t border-gray-100">
-                          {fixture.matchSummary.home?.tries !== undefined && (
+                          {(typeof fixture.matchSummary.home?.tries === 'number' || typeof fixture.matchSummary.home?.tries === 'string') && (
                             <div className="text-center">
                               <div className="text-xs text-gray-500 uppercase mb-1">Tries</div>
                               <div className="flex justify-between text-sm font-semibold">
-                                <span className={isHome ? 'text-blue-700' : ''}>{fixture.matchSummary.home.tries}</span>
+                                <span className={isHome ? 'text-blue-700' : ''}>{String(fixture.matchSummary.home.tries)}</span>
                                 <span className="text-gray-400">-</span>
-                                <span className={!isHome ? 'text-blue-700' : ''}>{fixture.matchSummary.guest.tries}</span>
+                                <span className={!isHome ? 'text-blue-700' : ''}>{String(fixture.matchSummary.guest.tries)}</span>
                               </div>
                             </div>
                           )}
-                          {fixture.matchSummary.home?.conversions !== undefined && (
+                          {(typeof fixture.matchSummary.home?.conversions === 'number' || typeof fixture.matchSummary.home?.conversions === 'string') && (
                             <div className="text-center">
                               <div className="text-xs text-gray-500 uppercase mb-1">Conversions</div>
                               <div className="flex justify-between text-sm font-semibold">
-                                <span className={isHome ? 'text-blue-700' : ''}>{fixture.matchSummary.home.conversions}</span>
+                                <span className={isHome ? 'text-blue-700' : ''}>{String(fixture.matchSummary.home.conversions)}</span>
                                 <span className="text-gray-400">-</span>
-                                <span className={!isHome ? 'text-blue-700' : ''}>{fixture.matchSummary.guest.conversions}</span>
+                                <span className={!isHome ? 'text-blue-700' : ''}>{String(fixture.matchSummary.guest.conversions)}</span>
                               </div>
                             </div>
                           )}
-                          {fixture.matchSummary.home?.penalties !== undefined && (
+                          {(typeof fixture.matchSummary.home?.penalties === 'number' || typeof fixture.matchSummary.home?.penalties === 'string') && (
                             <div className="text-center">
                               <div className="text-xs text-gray-500 uppercase mb-1">Penalties</div>
                               <div className="flex justify-between text-sm font-semibold">
-                                <span className={isHome ? 'text-blue-700' : ''}>{fixture.matchSummary.home.penalties}</span>
+                                <span className={isHome ? 'text-blue-700' : ''}>{String(fixture.matchSummary.home.penalties)}</span>
                                 <span className="text-gray-400">-</span>
-                                <span className={!isHome ? 'text-blue-700' : ''}>{fixture.matchSummary.guest.penalties}</span>
+                                <span className={!isHome ? 'text-blue-700' : ''}>{String(fixture.matchSummary.guest.penalties)}</span>
                               </div>
                             </div>
                           )}
                         </div>
 
                         <div className="grid grid-cols-3 gap-4 pt-2">
-                          {fixture.matchSummary.home?.dropgoals !== undefined && (
+                          {(typeof fixture.matchSummary.home?.dropgoals === 'number' || typeof fixture.matchSummary.home?.dropgoals === 'string') && (
                             <div className="text-center">
                               <div className="text-xs text-gray-500 uppercase mb-1">Drop Goals</div>
                               <div className="flex justify-between text-sm font-semibold">
-                                <span className={isHome ? 'text-blue-700' : ''}>{fixture.matchSummary.home.dropgoals}</span>
+                                <span className={isHome ? 'text-blue-700' : ''}>{String(fixture.matchSummary.home.dropgoals)}</span>
                                 <span className="text-gray-400">-</span>
-                                <span className={!isHome ? 'text-blue-700' : ''}>{fixture.matchSummary.guest.dropgoals}</span>
+                                <span className={!isHome ? 'text-blue-700' : ''}>{String(fixture.matchSummary.guest.dropgoals)}</span>
                               </div>
                             </div>
                           )}
-                          {fixture.matchSummary.home?.yellowcards !== undefined && (
+                          {(typeof fixture.matchSummary.home?.yellowcards === 'number' || typeof fixture.matchSummary.home?.yellowcards === 'string') && (
                             <div className="text-center">
                               <div className="text-xs text-gray-500 uppercase mb-1">Yellow Cards</div>
                               <div className="flex justify-between text-sm font-semibold">
-                                <span className={isHome ? 'text-blue-700' : ''}>{fixture.matchSummary.home.yellowcards}</span>
+                                <span className={isHome ? 'text-blue-700' : ''}>{String(fixture.matchSummary.home.yellowcards)}</span>
                                 <span className="text-gray-400">-</span>
-                                <span className={!isHome ? 'text-blue-700' : ''}>{fixture.matchSummary.guest.yellowcards}</span>
+                                <span className={!isHome ? 'text-blue-700' : ''}>{String(fixture.matchSummary.guest.yellowcards)}</span>
                               </div>
                             </div>
                           )}
-                          {fixture.matchSummary.home?.redcards !== undefined && (
+                          {(typeof fixture.matchSummary.home?.redcards === 'number' || typeof fixture.matchSummary.home?.redcards === 'string') && (
                             <div className="text-center">
                               <div className="text-xs text-gray-500 uppercase mb-1">Red Cards</div>
                               <div className="flex justify-between text-sm font-semibold">
-                                <span className={isHome ? 'text-blue-700' : ''}>{fixture.matchSummary.home.redcards}</span>
+                                <span className={isHome ? 'text-blue-700' : ''}>{String(fixture.matchSummary.home.redcards)}</span>
                                 <span className="text-gray-400">-</span>
-                                <span className={!isHome ? 'text-blue-700' : ''}>{fixture.matchSummary.guest.redcards}</span>
+                                <span className={!isHome ? 'text-blue-700' : ''}>{String(fixture.matchSummary.guest.redcards)}</span>
                               </div>
                             </div>
                           )}
