@@ -152,7 +152,11 @@ const TeamFixtures = () => {
                   <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-3">
                     <div className="flex justify-between items-center">
                       <span className="text-sm font-medium">
-                        Season {fixture.season} • Round {fixture.round} • {fixture.competition}
+                        Season {fixture.season} • Round {fixture.round} • {
+                          fixture.competition === 'Friendly' && fixture.friendlycompetitionshort
+                            ? fixture.friendlycompetitionshort
+                            : fixture.competition
+                        }
                       </span>
                       <span className="text-sm">
                         {formatTime(fixture.matchstart)}
@@ -252,7 +256,11 @@ const TeamFixtures = () => {
                   <div className={`${result.color} text-white px-6 py-3`}>
                     <div className="flex justify-between items-center">
                       <span className="text-sm font-medium">
-                        Season {fixture.season} • Round {fixture.round} • {fixture.competition}
+                        Season {fixture.season} • Round {fixture.round} • {
+                          fixture.competition === 'Friendly' && fixture.friendlycompetitionshort
+                            ? fixture.friendlycompetitionshort
+                            : fixture.competition
+                        }
                       </span>
                       <span className="text-sm font-bold uppercase">
                         {result.status === 'win' ? 'Victory' : result.status === 'draw' ? 'Draw' : 'Defeat'}
