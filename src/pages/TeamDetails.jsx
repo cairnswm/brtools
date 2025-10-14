@@ -9,6 +9,7 @@ import TeamStandingsPage from "./TeamStandingsPage";
 import TeamFixturesPage from "./TeamFixturesPage";
 import YouthPage from "./YouthPage";
 import TrainingPage from "./TrainingPage";
+import OfficePage from "./OfficePage";
 import { accessElf } from "../components/accessElf";
 
 const TeamDetails = () => {
@@ -33,6 +34,7 @@ const TeamDetails = () => {
 
       <div className="container mx-auto px-4 py-8">
         <Routes>
+          <Route path="office" element={<OfficePage />} />
           <Route path="fixtures" element={<TeamFixturesPage />} />
           <Route path="standings" element={<TeamStandingsPage />} />
           <Route path="youth" element={<YouthPage />} />
