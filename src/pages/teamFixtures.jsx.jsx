@@ -43,6 +43,14 @@ const TeamFixtures = () => {
     return { day, month };
   };
 
+  const formatCompetition = (competition) => {
+    if (!competition) return '';
+    return competition
+      .replace(/([A-Z])/g, ' $1')
+      .replace(/([a-z])([A-Z])/g, '$1 $2')
+      .trim();
+  };
+
   const formatTime = (dateString) => {
     const date = new Date(dateString);
     return date.toLocaleString('default', {
@@ -155,7 +163,7 @@ const TeamFixtures = () => {
                         Season {fixture.season} • Round {fixture.round} • {
                           fixture.competition === 'Friendly' && fixture.friendlycompetitionshort
                             ? fixture.friendlycompetitionshort
-                            : fixture.competition
+                            : formatCompetition(fixture.competition)
                         }
                       </span>
                       <span className="text-sm">
@@ -259,7 +267,7 @@ const TeamFixtures = () => {
                         Season {fixture.season} • Round {fixture.round} • {
                           fixture.competition === 'Friendly' && fixture.friendlycompetitionshort
                             ? fixture.friendlycompetitionshort
-                            : fixture.competition
+                            : formatCompetition(fixture.competition)
                         }
                       </span>
                       <span className="text-sm font-bold uppercase">
