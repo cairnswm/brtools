@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import PropTypes from 'prop-types';
 import { debounce } from '../utils/debounce';
+import { API_BASE_URL } from '../config/api';
 
 const BRToolsContext = createContext();
 
@@ -22,7 +23,7 @@ export function BRToolsProvider({ children }) {
 
   const fetchTeams = useCallback(async (teamIds) => {
     try {
-      const response = await fetch(`https://thegamedeveloper.co.za/brexport/api/api.php/teams/${teamIds.join(',')}`, {
+      const response = await fetch(`${API_BASE_URL}/teams/${teamIds.join(',')}`, {
         headers: { 'accesskey': memberKey }
       });
       const data = await response.json();
@@ -53,7 +54,7 @@ export function BRToolsProvider({ children }) {
       setLoading(true);
       setError(null);
       
-      fetch('https://thegamedeveloper.co.za/brexport/api/api.php/mydata/teams', {
+      fetch(`${API_BASE_URL}/mydata/teams`, {
         headers: {
           'accesskey': memberKey
         }

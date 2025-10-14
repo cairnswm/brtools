@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { useBRTools } from './BRToolsContext';
 import { useTeam } from './TeamContext';
+import { API_BASE_URL } from '../config/api';
 
 const FixtureContext = createContext();
 
@@ -19,7 +20,7 @@ export const FixtureProvider = ({ children }) => {
       setError(null);
       try {
         const response = await fetch(
-          `http://localhost/blackoutrugby.brexport/api/api.php/fixtures/${teamId}`,
+          `${API_BASE_URL}/fixtures/${teamId}`,
           {
             headers: {
               'accesskey': memberKey

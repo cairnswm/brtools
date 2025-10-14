@@ -3,6 +3,7 @@ import { useBRTools } from './BRToolsContext';
 import * as XLSX from 'xlsx';
 import PropTypes from 'prop-types';
 import { Form } from 'react-router-dom';
+import { API_BASE_URL } from '../config/api';
 
 const TeamContext = createContext();
 
@@ -73,7 +74,7 @@ export function TeamProvider({ children }) {
       setLoading(true);
       setError(null);
       
-      fetch(`https://thegamedeveloper.co.za/brexport/api/api.php/team/${teamId}/players`, {
+      fetch(`${API_BASE_URL}/team/${teamId}/players`, {
         headers: {
           'accesskey': memberKey
         }
@@ -85,7 +86,7 @@ export function TeamProvider({ children }) {
             setPlayers(playersList);
 
             // Fetch youth data
-            fetch(`https://thegamedeveloper.co.za/brexport/api/api.php/team/${teamId}/youth`, {
+            fetch(`${API_BASE_URL}/team/${teamId}/youth`, {
               headers: {
                 'accesskey': memberKey
               }
@@ -107,7 +108,7 @@ export function TeamProvider({ children }) {
 
             const team = cachedTeams[teamId];
 
-            fetch(`https://thegamedeveloper.co.za/brexport/api/api.php/trainingreport/${teamId}`, {
+            fetch(`${API_BASE_URL}/trainingreport/${teamId}`, {
               headers: {
                 'accesskey': memberKey
               }
@@ -123,7 +124,7 @@ export function TeamProvider({ children }) {
               });
 
             if (team?.leagueid) {
-              return fetch(`https://thegamedeveloper.co.za/brexport/api/api.php/league/${team.leagueid}/standings`, {
+              return fetch(`${API_BASE_URL}/league/${team.leagueid}/standings`, {
                 headers: {
                   'accesskey': memberKey
                 }
