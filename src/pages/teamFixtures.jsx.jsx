@@ -52,6 +52,42 @@ const TeamFixtures = () => {
     });
   };
 
+  const getStatCount = (stat) => {
+    if (!stat || Array.isArray(stat) && stat.length === 0) return 0;
+    if (stat.player) {
+      if (Array.isArray(stat.player)) {
+        return stat.player.reduce((sum, p) => sum + Number(p.number || 0), 0);
+      }
+      return Number(stat.player.number || 0);
+    }
+    return 0;
+  };
+
+  const getAttendance = (fixture) => {
+    if (!fixture.matchSummary?.attendance) return 'N/A';
+    const att = fixture.matchSummary.attendance;
+    const total = Number(att.standing || 0) + Number(att.uncovered || 0) +
+                  Number(att.covered || 0) + Number(att.members || 0) +
+                  Number(att.corporate || 0);
+    return total.toLocaleString();
+  };
+
+  const getTeamStats = (fixture, isHome) => {
+    const summary = isHome ? fixture.reporterSummary?.home : fixture.reporterSummary?.guest;
+    if (!summary) return null;
+
+    return {
+      territory: summary.territory ? Math.round(Number(summary.territory) / 2) : null,
+      possession: summary.possession ? Math.round(Number(summary.possession) / 2) : null,
+      scrum: summary.scrum,
+      lineout: summary.lineout,
+      ruck: summary.ruck,
+      maul: summary.maul,
+      attack: summary.attack,
+      defense: summary.defense
+    };
+  };
+
   const upcomingFixtures = fixtures.filter(f => !isMatchPlayed(f));
   const playedFixtures = fixtures.filter(f => isMatchPlayed(f));
 
@@ -240,130 +276,137 @@ const TeamFixtures = () => {
                       </button>
                     </div>
 
-                    {expandedFixture === fixture.id && fixture.matchSummary && (
-                      <div className="mt-4 pt-4 border-t border-gray-200 space-y-4">
-                        {fixture.matchSummary.home?.territory && fixture.matchSummary.guest?.territory && (
-                          <div>
-                            <div className="text-xs text-gray-500 uppercase mb-2 text-center">Territory</div>
-                            <div className="flex items-center justify-between">
-                              <span className="text-sm font-semibold">{fixture.matchSummary.home.territory}%</span>
-                              <div className="flex-1 mx-4 bg-gray-200 rounded-full h-4 overflow-hidden">
-                                <div
-                                  className={`h-full ${isHome ? 'bg-blue-600' : 'bg-gray-600'}`}
-                                  style={{ width: `${fixture.matchSummary.home.territory}%` }}
-                                />
-                              </div>
-                              <div className="flex-1 mx-4 bg-gray-200 rounded-full h-4 overflow-hidden">
-                                <div
-                                  className={`h-full ${!isHome ? 'bg-blue-600' : 'bg-gray-600'} ml-auto`}
-                                  style={{ width: `${fixture.matchSummary.guest.territory}%` }}
-                                />
-                              </div>
-                              <span className="text-sm font-semibold">{fixture.matchSummary.guest.territory}%</span>
-                            </div>
-                          </div>
-                        )}
+                    {expandedFixture === fixture.id && fixture.matchSummary && (() => {
+                      const homeStats = getTeamStats(fixture, true);
+                      const guestStats = getTeamStats(fixture, false);
+                      const homeTries = getStatCount(fixture.matchSummary.home.tries);
+                      const guestTries = getStatCount(fixture.matchSummary.guest.tries);
+                      const homeConversions = getStatCount(fixture.matchSummary.home.conversions);
+                      const guestConversions = getStatCount(fixture.matchSummary.guest.conversions);
+                      const homePenalties = getStatCount(fixture.matchSummary.home.penalties);
+                      const guestPenalties = getStatCount(fixture.matchSummary.guest.penalties);
+                      const homeDropgoals = getStatCount(fixture.matchSummary.home.dropgoals);
+                      const guestDropgoals = getStatCount(fixture.matchSummary.guest.dropgoals);
 
-                        {fixture.matchSummary.home?.possession && fixture.matchSummary.guest?.possession && (
-                          <div>
-                            <div className="text-xs text-gray-500 uppercase mb-2 text-center">Possession</div>
-                            <div className="flex items-center justify-between">
-                              <span className="text-sm font-semibold">{fixture.matchSummary.home.possession}%</span>
-                              <div className="flex-1 mx-4 bg-gray-200 rounded-full h-4 overflow-hidden">
-                                <div
-                                  className={`h-full ${isHome ? 'bg-blue-600' : 'bg-gray-600'}`}
-                                  style={{ width: `${fixture.matchSummary.home.possession}%` }}
-                                />
+                      return (
+                        <div className="mt-4 pt-4 border-t border-gray-200 space-y-4">
+                          {homeStats?.territory && guestStats?.territory && (
+                            <div>
+                              <div className="text-xs text-gray-500 uppercase mb-2 text-center">Territory</div>
+                              <div className="flex items-center justify-between">
+                                <span className="text-sm font-semibold">{homeStats.territory}%</span>
+                                <div className="flex-1 mx-4 bg-gray-200 rounded-full h-4 overflow-hidden">
+                                  <div
+                                    className={`h-full ${isHome ? 'bg-blue-600' : 'bg-gray-600'}`}
+                                    style={{ width: `${homeStats.territory}%` }}
+                                  />
+                                </div>
+                                <div className="flex-1 mx-4 bg-gray-200 rounded-full h-4 overflow-hidden">
+                                  <div
+                                    className={`h-full ${!isHome ? 'bg-blue-600' : 'bg-gray-600'} ml-auto`}
+                                    style={{ width: `${guestStats.territory}%` }}
+                                  />
+                                </div>
+                                <span className="text-sm font-semibold">{guestStats.territory}%</span>
                               </div>
-                              <div className="flex-1 mx-4 bg-gray-200 rounded-full h-4 overflow-hidden">
-                                <div
-                                  className={`h-full ${!isHome ? 'bg-blue-600' : 'bg-gray-600'} ml-auto`}
-                                  style={{ width: `${fixture.matchSummary.guest.possession}%` }}
-                                />
-                              </div>
-                              <span className="text-sm font-semibold">{fixture.matchSummary.guest.possession}%</span>
                             </div>
-                          </div>
-                        )}
+                          )}
 
-                        <div className="grid grid-cols-3 gap-4 pt-4 border-t border-gray-100">
-                          {(typeof fixture.matchSummary.home?.tries === 'number' || typeof fixture.matchSummary.home?.tries === 'string') && (
+                          {homeStats?.possession && guestStats?.possession && (
+                            <div>
+                              <div className="text-xs text-gray-500 uppercase mb-2 text-center">Possession</div>
+                              <div className="flex items-center justify-between">
+                                <span className="text-sm font-semibold">{homeStats.possession}%</span>
+                                <div className="flex-1 mx-4 bg-gray-200 rounded-full h-4 overflow-hidden">
+                                  <div
+                                    className={`h-full ${isHome ? 'bg-blue-600' : 'bg-gray-600'}`}
+                                    style={{ width: `${homeStats.possession}%` }}
+                                  />
+                                </div>
+                                <div className="flex-1 mx-4 bg-gray-200 rounded-full h-4 overflow-hidden">
+                                  <div
+                                    className={`h-full ${!isHome ? 'bg-blue-600' : 'bg-gray-600'} ml-auto`}
+                                    style={{ width: `${guestStats.possession}%` }}
+                                  />
+                                </div>
+                                <span className="text-sm font-semibold">{guestStats.possession}%</span>
+                              </div>
+                            </div>
+                          )}
+
+                          <div className="grid grid-cols-3 gap-4 pt-4 border-t border-gray-100">
                             <div className="text-center">
                               <div className="text-xs text-gray-500 uppercase mb-1">Tries</div>
                               <div className="flex justify-between text-sm font-semibold">
-                                <span className={isHome ? 'text-blue-700' : ''}>{String(fixture.matchSummary.home.tries)}</span>
+                                <span className={isHome ? 'text-blue-700' : ''}>{homeTries}</span>
                                 <span className="text-gray-400">-</span>
-                                <span className={!isHome ? 'text-blue-700' : ''}>{String(fixture.matchSummary.guest.tries)}</span>
+                                <span className={!isHome ? 'text-blue-700' : ''}>{guestTries}</span>
                               </div>
                             </div>
-                          )}
-                          {(typeof fixture.matchSummary.home?.conversions === 'number' || typeof fixture.matchSummary.home?.conversions === 'string') && (
                             <div className="text-center">
                               <div className="text-xs text-gray-500 uppercase mb-1">Conversions</div>
                               <div className="flex justify-between text-sm font-semibold">
-                                <span className={isHome ? 'text-blue-700' : ''}>{String(fixture.matchSummary.home.conversions)}</span>
+                                <span className={isHome ? 'text-blue-700' : ''}>{homeConversions}</span>
                                 <span className="text-gray-400">-</span>
-                                <span className={!isHome ? 'text-blue-700' : ''}>{String(fixture.matchSummary.guest.conversions)}</span>
+                                <span className={!isHome ? 'text-blue-700' : ''}>{guestConversions}</span>
                               </div>
                             </div>
-                          )}
-                          {(typeof fixture.matchSummary.home?.penalties === 'number' || typeof fixture.matchSummary.home?.penalties === 'string') && (
                             <div className="text-center">
                               <div className="text-xs text-gray-500 uppercase mb-1">Penalties</div>
                               <div className="flex justify-between text-sm font-semibold">
-                                <span className={isHome ? 'text-blue-700' : ''}>{String(fixture.matchSummary.home.penalties)}</span>
+                                <span className={isHome ? 'text-blue-700' : ''}>{homePenalties}</span>
                                 <span className="text-gray-400">-</span>
-                                <span className={!isHome ? 'text-blue-700' : ''}>{String(fixture.matchSummary.guest.penalties)}</span>
+                                <span className={!isHome ? 'text-blue-700' : ''}>{guestPenalties}</span>
                               </div>
                             </div>
-                          )}
-                        </div>
-
-                        <div className="grid grid-cols-3 gap-4 pt-2">
-                          {(typeof fixture.matchSummary.home?.dropgoals === 'number' || typeof fixture.matchSummary.home?.dropgoals === 'string') && (
-                            <div className="text-center">
-                              <div className="text-xs text-gray-500 uppercase mb-1">Drop Goals</div>
-                              <div className="flex justify-between text-sm font-semibold">
-                                <span className={isHome ? 'text-blue-700' : ''}>{String(fixture.matchSummary.home.dropgoals)}</span>
-                                <span className="text-gray-400">-</span>
-                                <span className={!isHome ? 'text-blue-700' : ''}>{String(fixture.matchSummary.guest.dropgoals)}</span>
-                              </div>
-                            </div>
-                          )}
-                          {(typeof fixture.matchSummary.home?.yellowcards === 'number' || typeof fixture.matchSummary.home?.yellowcards === 'string') && (
-                            <div className="text-center">
-                              <div className="text-xs text-gray-500 uppercase mb-1">Yellow Cards</div>
-                              <div className="flex justify-between text-sm font-semibold">
-                                <span className={isHome ? 'text-blue-700' : ''}>{String(fixture.matchSummary.home.yellowcards)}</span>
-                                <span className="text-gray-400">-</span>
-                                <span className={!isHome ? 'text-blue-700' : ''}>{String(fixture.matchSummary.guest.yellowcards)}</span>
-                              </div>
-                            </div>
-                          )}
-                          {(typeof fixture.matchSummary.home?.redcards === 'number' || typeof fixture.matchSummary.home?.redcards === 'string') && (
-                            <div className="text-center">
-                              <div className="text-xs text-gray-500 uppercase mb-1">Red Cards</div>
-                              <div className="flex justify-between text-sm font-semibold">
-                                <span className={isHome ? 'text-blue-700' : ''}>{String(fixture.matchSummary.home.redcards)}</span>
-                                <span className="text-gray-400">-</span>
-                                <span className={!isHome ? 'text-blue-700' : ''}>{String(fixture.matchSummary.guest.redcards)}</span>
-                              </div>
-                            </div>
-                          )}
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-4 pt-4 border-t border-gray-100">
-                          <div className="text-center">
-                            <div className="text-xs text-gray-500 uppercase mb-1">Venue</div>
-                            <div className="text-sm font-medium">{fixture.venue || 'N/A'}</div>
                           </div>
-                          <div className="text-center">
-                            <div className="text-xs text-gray-500 uppercase mb-1">Attendance</div>
-                            <div className="text-sm font-medium">{fixture.attendance || 'N/A'}</div>
+
+                          {(homeDropgoals > 0 || guestDropgoals > 0) && (
+                            <div className="grid grid-cols-3 gap-4">
+                              <div className="text-center">
+                                <div className="text-xs text-gray-500 uppercase mb-1">Drop Goals</div>
+                                <div className="flex justify-between text-sm font-semibold">
+                                  <span className={isHome ? 'text-blue-700' : ''}>{homeDropgoals}</span>
+                                  <span className="text-gray-400">-</span>
+                                  <span className={!isHome ? 'text-blue-700' : ''}>{guestDropgoals}</span>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+
+                          {homeStats && guestStats && (
+                            <div className="pt-4 border-t border-gray-100">
+                              <div className="text-xs text-gray-500 uppercase mb-3 text-center font-semibold">Team Stars (Rating)</div>
+                              <div className="grid grid-cols-4 gap-4">
+                                {['scrum', 'lineout', 'ruck', 'maul', 'attack', 'defense'].map(stat => (
+                                  homeStats[stat] && guestStats[stat] && (
+                                    <div key={stat} className="text-center">
+                                      <div className="text-xs text-gray-500 uppercase mb-1">{stat}</div>
+                                      <div className="flex justify-between text-sm font-semibold">
+                                        <span className={isHome ? 'text-blue-700' : ''}>{homeStats[stat]}</span>
+                                        <span className="text-gray-400">-</span>
+                                        <span className={!isHome ? 'text-blue-700' : ''}>{guestStats[stat]}</span>
+                                      </div>
+                                    </div>
+                                  )
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          <div className="grid grid-cols-2 gap-4 pt-4 border-t border-gray-100">
+                            <div className="text-center">
+                              <div className="text-xs text-gray-500 uppercase mb-1">Venue</div>
+                              <div className="text-sm font-medium">{fixture.venue || homeTeam?.name + ' Stadium' || 'N/A'}</div>
+                            </div>
+                            <div className="text-center">
+                              <div className="text-xs text-gray-500 uppercase mb-1">Attendance</div>
+                              <div className="text-sm font-medium">{getAttendance(fixture)}</div>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    )}
+                      );
+                    })()}
                   </div>
                 </div>
               );
