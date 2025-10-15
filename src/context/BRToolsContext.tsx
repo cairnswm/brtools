@@ -1,27 +1,39 @@
-import { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
-import PropTypes from 'prop-types';
+import { createContext, useState, useEffect, useCallback, useRef, ReactNode } from 'react';
 import { debounce } from '../utils/debounce';
 import { API_BASE_URL } from '../config/api';
+import { Team } from '../types';
 
-export const BRToolsContext = createContext();
+interface BRToolsContextType {
+  memberKey: string;
+  setMemberKey: (key: string) => void;
+  teams: Team[];
+  loading: boolean;
+  error: string | null;
+  cachedTeams: Record<string | number, Team>;
+  addTeamsToCache: (teamIds: (string | number)[]) => void;
+  getTeamById: (teamId: string | number) => Team | undefined;
+  getTeam: (ids: string | number | (string | number)[]) => Team | Team[] | undefined;
+}
 
-BRToolsProvider.propTypes = {
-  children: PropTypes.node.isRequired
-};
+export const BRToolsContext = createContext<BRToolsContextType | undefined>(undefined);
 
-export function BRToolsProvider({ children }) {
+interface BRToolsProviderProps {
+  children: ReactNode;
+}
+
+export function BRToolsProvider({ children }: BRToolsProviderProps) {
   
-  const [memberKey, setMemberKey] = useState(() => {
+  const [memberKey, setMemberKey] = useState<string>(() => {
     const saved = localStorage.getItem('brtools-member-key');
     return saved || '';
   });
 
-  const [teams, setTeams] = useState([]);
-  const [cachedTeams, setCachedTeams] = useState({});
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [teams, setTeams] = useState<Team[]>([]);
+  const [cachedTeams, setCachedTeams] = useState<Record<string | number, Team>>({});
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const fetchTeams = useCallback(async (teamIds) => {
+  const fetchTeams = useCallback(async (teamIds: (string | number)[]) => {
     try {
       const response = await fetch(`${API_BASE_URL}/teams/${teamIds.join(',')}`, {
         headers: { 'accesskey': memberKey }
@@ -29,10 +41,10 @@ export function BRToolsProvider({ children }) {
       const data = await response.json();
       
       if (data.data?.status === 'Ok' && data.data?.teams) {
-        const newTeams = Object.values(data.data.teams);
+        const newTeams = Object.values(data.data.teams) as Team[];
         setCachedTeams(prev => ({
           ...prev,
-          ...newTeams.reduce((acc, team) => ({ ...acc, [team.id]: team }), {})
+          ...newTeams.reduce((acc, team) => ({ ...acc, [team.id]: team }), {} as Record<string | number, Team>)
         }));
       }
     } catch (err) {
@@ -40,7 +52,7 @@ export function BRToolsProvider({ children }) {
     }
   }, [memberKey]);
 
-  const addTeamsToCache = useCallback((teamIds) => {
+  const addTeamsToCache = useCallback((teamIds: (string | number)[]) => {
     const uncachedTeamIds = teamIds.filter(id => !cachedTeams[id]);
     if (uncachedTeamIds.length > 0) {
       fetchTeams(uncachedTeamIds);
@@ -62,12 +74,12 @@ export function BRToolsProvider({ children }) {
         .then(response => response.json())
         .then(data => {
           if (data.data?.status === 'Ok' && data.data?.teams) {
-            const teamsList = Object.values(data.data.teams);
+            const teamsList = Object.values(data.data.teams) as Team[];
             setTeams(teamsList);
             // Add my teams to cache
             setCachedTeams(prev => ({
               ...prev,
-              ...teamsList.reduce((acc, team) => ({ ...acc, [team.id]: team }), {})
+              ...teamsList.reduce((acc, team) => ({ ...acc, [team.id]: team }), {} as Record<string | number, Team>)
             }));
           } else {
             setError('Invalid response from server');
@@ -86,16 +98,17 @@ export function BRToolsProvider({ children }) {
     }
   }, [memberKey]);
 
-  const getTeamById = (teamId) => {
+  const getTeamById = (teamId: string | number): Team | undefined => {
     const team = cachedTeams[teamId];
     if (team) {
       return team;
     }
     getTeam(teamId);
+    return undefined;
   };
 
   // Use a ref to store pending team IDs to avoid dependency issues with debounce
-  const pendingTeamIdsRef = useRef(new Set());
+  const pendingTeamIdsRef = useRef<Set<string | number>>(new Set());
 
   // Debounced function to fetch all pending team IDs in a single call
   const debouncedFetchTeams = useCallback(
@@ -110,7 +123,7 @@ export function BRToolsProvider({ children }) {
     [addTeamsToCache]
   );
 
-  const getTeam = (ids) => {
+  const getTeam = (ids: string | number | (string | number)[]): Team | Team[] | undefined => {
     const idArray = Array.isArray(ids) ? ids : [ids];
     const uncachedTeamIds = idArray.filter(id => !cachedTeams[id]);
 

@@ -1,14 +1,25 @@
-import { createContext, useState, useEffect } from 'react';
+import { createContext, useState, useEffect, ReactNode } from 'react';
 import { useBRTools } from '../hooks/useBRTools';
 import { useTeam } from '../hooks/useTeam';
 import { API_BASE_URL } from '../config/api';
+import { Fixture } from '../types';
 
-export const FixtureContext = createContext();
+interface FixtureContextType {
+  fixtures: Fixture[];
+  loading: boolean;
+  error: string | null;
+}
 
-export const FixtureProvider = ({ children }) => {
-  const [fixtures, setFixtures] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+export const FixtureContext = createContext<FixtureContextType | undefined>(undefined);
+
+interface FixtureProviderProps {
+  children: ReactNode;
+}
+
+export const FixtureProvider = ({ children }: FixtureProviderProps) => {
+  const [fixtures, setFixtures] = useState<Fixture[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
   const { memberKey } = useBRTools();
   const { teamId } = useTeam();
 
