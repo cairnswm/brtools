@@ -1,50 +1,23 @@
-import { createContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useState, useEffect } from 'react';
 import { useBRTools } from '../hooks/useBRTools';
 import * as XLSX from 'xlsx';
+import PropTypes from 'prop-types';
 import { API_BASE_URL } from '../config/api';
-import { Player, YouthPlayer, Standing, SortOption, TeamAveragesGroup, TeamAverages } from '../types';
 
-interface TeamContextType {
-  teamId: string | number | null;
-  setTeamId: (id: string | number | null) => void;
-  players: Player[];
-  youth: YouthPlayer[];
-  standings: Standing[];
-  trainingReport: any;
-  staff: any;
-  facilities: any;
-  loading: boolean;
-  error: string | null;
-  sortField: string;
-  sortDirection: 'asc' | 'desc';
-  handleSort: (field: string) => void;
-  sortOptions: SortOption[];
-  exportToExcel: () => void;
-  exportStandingsToExcel: () => void;
-  standingsView: string;
-  setStandingsView: (view: string) => void;
-  playersView: string;
-  setPlayersView: (view: string) => void;
-  standingsSortField: string;
-  standingsSortDirection: 'asc' | 'desc';
-  handleStandingsSort: (field: string) => void;
-  teamAverages: TeamAveragesGroup;
-}
+export const TeamContext = createContext();
 
-export const TeamContext = createContext<TeamContextType | undefined>(undefined);
-
-const calculateTeamAverages = (players: Player[]): TeamAveragesGroup => {
+const calculateTeamAverages = (players) => {
   const stats = ['age', 'csr', 'energy', 'form', 'stamina', 'handling', 'attack', 'defense', 'technique', 'strength', 'jumping', 'speed', 'agility', 'kicking', 'salary'];
   
   const sortedByCsr = [...players].sort((a, b) => Number(b.csr) - Number(a.csr));
   const top15 = sortedByCsr.slice(0, 15);
   const top22 = sortedByCsr.slice(0, 22);
 
-  const calculateAverages = (playerGroup: Player[]): TeamAverages => {
-    const averages: TeamAverages = {};
+  const calculateAverages = (playerGroup) => {
+    const averages = {};
     stats.forEach(stat => {
-      const sum = playerGroup.reduce((acc, player) => acc + Number((player as any)[stat]), 0);
-      averages[stat] = playerGroup.length ? (sum / playerGroup.length).toFixed(2) : '0';
+      const sum = playerGroup.reduce((acc, player) => acc + Number(player[stat]), 0);
+      averages[stat] = playerGroup.length ? (sum / playerGroup.length).toFixed(2) : 0;
     });
     return averages;
   };
@@ -56,7 +29,7 @@ const calculateTeamAverages = (players: Player[]): TeamAveragesGroup => {
   };
 };
 
-const SORT_OPTIONS: SortOption[] = [
+const SORT_OPTIONS = [
   { value: 'jersey', label: 'Jersey' },
   { value: 'lname', label: 'Name' },
   { value: 'age', label: 'Age' },
@@ -79,26 +52,22 @@ const SORT_OPTIONS: SortOption[] = [
   { value: 'salary', label: 'Salary' }
 ];
 
-interface TeamProviderProps {
-  children: ReactNode;
-}
-
-export function TeamProvider({ children }: TeamProviderProps) {
-  const [teamId, setTeamId] = useState<string | number | null>(null);
-  const [players, setPlayers] = useState<Player[]>([]);
-  const [youth, setYouth] = useState<YouthPlayer[]>([]);
-  const [standings, setStandings] = useState<Standing[]>([]);
-  const [trainingReport, setTrainingReport] = useState<any>(null);
-  const [staff, setStaff] = useState<any>(null);
-  const [facilities, setFacilities] = useState<any>(null);
-  const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
-  const [sortField, setSortField] = useState<string>('jersey');
-  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
-  const [playersView, setPlayersView] = useState<string>('summary'); // Options: 'summary', 'details', 'averages'
-  const [standingsView, setStandingsView] = useState<string>('standings');
-  const [standingsSortField, setStandingsSortField] = useState<string>('points');
-  const [standingsSortDirection, setStandingsSortDirection] = useState<'asc' | 'desc'>('desc');
+export function TeamProvider({ children }) {
+  const [teamId, setTeamId] = useState(null);
+  const [players, setPlayers] = useState([]);
+  const [youth, setYouth] = useState([]);
+  const [standings, setStandings] = useState([]);
+  const [trainingReport, setTrainingReport] = useState(null);
+  const [staff, setStaff] = useState(null);
+  const [facilities, setFacilities] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [sortField, setSortField] = useState('jersey');
+  const [sortDirection, setSortDirection] = useState('asc');
+  const [playersView, setPlayersView] = useState('summary'); // Options: 'summary', 'details', 'averages'
+  const [standingsView, setStandingsView] = useState('standings');
+  const [standingsSortField, setStandingsSortField] = useState('points');
+  const [standingsSortDirection, setStandingsSortDirection] = useState('desc');
   const { memberKey, addTeamsToCache, cachedTeams } = useBRTools();
 
   useEffect(() => {
@@ -114,7 +83,7 @@ export function TeamProvider({ children }: TeamProviderProps) {
         .then(response => response.json())
         .then(data => {
           if (data.data?.status === 'Ok' && data.data?.players) {
-            const playersList = Object.values(data.data.players) as Player[];
+            const playersList = Object.values(data.data.players);
             setPlayers(playersList);
 
             // Fetch youth data
@@ -128,7 +97,7 @@ export function TeamProvider({ children }: TeamProviderProps) {
                 console.log("OK?", youthData)
                 console.log("OK?", youthData.data?.status)
                 if (youthData.data?.status === 'Ok' && youthData.data?.players) {
-                  const youthList = Object.values(youthData.data.players) as YouthPlayer[];
+                  const youthList = Object.values(youthData.data.players);
                   
                 console.log("YouthData", youthList)
                   setYouth(youthList);
@@ -199,7 +168,7 @@ export function TeamProvider({ children }: TeamProviderProps) {
         .then(response => response?.json())
         .then(data => {
           if (data?.data?.status === 'Ok' && data?.data?.standings) {
-            const standingsList = Object.values(data.data.standings) as Standing[];
+            const standingsList = Object.values(data.data.standings);
             setStandings(standingsList);
 
             const teamIds = standingsList.map(standing => standing.teamid);
@@ -223,7 +192,7 @@ export function TeamProvider({ children }: TeamProviderProps) {
     }
   }, [teamId, memberKey, addTeamsToCache, cachedTeams]);
 
-  const handleSort = (field: string) => {
+  const handleSort = (field) => {
     if (sortField === field) {
       setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
     } else {
@@ -232,7 +201,7 @@ export function TeamProvider({ children }: TeamProviderProps) {
     }
   };
 
-  const handleStandingsSort = (field: string) => {
+  const handleStandingsSort = (field) => {
     if (standingsSortField === field) {
       setStandingsSortDirection(standingsSortDirection === 'asc' ? 'desc' : 'asc');
     } else {
@@ -242,8 +211,8 @@ export function TeamProvider({ children }: TeamProviderProps) {
   };
 
   const sortedPlayers = [...players].sort((a, b) => {
-    let aValue: any = (a as any)[sortField];
-    let bValue: any = (b as any)[sortField];
+    let aValue = a[sortField];
+    let bValue = b[sortField];
     
     if (['age', 'csr', 'energy', 'jersey', 'salary', 'height', 'weight', 'form', 'leadership', 'stamina', 'handling', 'attack', 'defense', 'technique', 'strength', 'jumping', 'speed', 'agility', 'kicking'].includes(sortField)) {
       aValue = Number(aValue);
@@ -256,13 +225,13 @@ export function TeamProvider({ children }: TeamProviderProps) {
   });
 
   const sortedYouth = [...youth].sort((a, b) => {
-    let aValue: any = (a as any)[sortField];
-    let bValue: any = (b as any)[sortField];
+    let aValue = a[sortField];
+    let bValue = b[sortField];
     
     // For CSR, we need to calculate it since it's not stored directly
     if (sortField === 'csr') {
-      const calculateCSR = (player: YouthPlayer): number => {
-        const pow = (value: number | string): number => Math.pow(Number(value) - 1, 3.79);
+      const calculateCSR = (player) => {
+        const pow = (value) => Math.pow(value - 1, 3.79);
         return (
           pow(player.stamina) +
           pow(player.handling) +
@@ -294,7 +263,7 @@ export function TeamProvider({ children }: TeamProviderProps) {
     const teamA = cachedTeams[a.teamid];
     const teamB = cachedTeams[b.teamid];
     
-    let aValue: any, bValue: any;
+    let aValue, bValue;
     
     switch (standingsSortField) {
       case 'team':
@@ -318,8 +287,8 @@ export function TeamProvider({ children }: TeamProviderProps) {
         bValue = Number(teamB?.world_rank || 999999);
         break;
       default:
-        aValue = Number((a as any)[standingsSortField] || 0);
-        bValue = Number((b as any)[standingsSortField] || 0);
+        aValue = Number(a[standingsSortField] || 0);
+        bValue = Number(b[standingsSortField] || 0);
     }
     
     if (aValue < bValue) return standingsSortDirection === 'asc' ? -1 : 1;
@@ -327,7 +296,7 @@ export function TeamProvider({ children }: TeamProviderProps) {
     return 0;
   });
 
-  const getNationality = (player: Player | YouthPlayer): string => {
+  const getNationality = (player) => {
     let nat = player.nationality;
     if (player.capped_for && player.capped_for === player.nationality) { nat += '*'; }
     if (player.dualnationality) { nat += `/${player.dualnationality}`; }
@@ -432,3 +401,7 @@ export function TeamProvider({ children }: TeamProviderProps) {
     </TeamContext.Provider>
   );
 }
+
+TeamProvider.propTypes = {
+  children: PropTypes.node.isRequired
+};

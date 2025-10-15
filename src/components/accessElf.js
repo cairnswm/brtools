@@ -1,16 +1,16 @@
 let accessElfApikey = "";
 const accessElfTrackerUrl = "https://accesself.co.za/php/api/track.php";
 
-export const setApiKey = (key: string) => {
+export const setApiKey = (key) => {
   console.log("Setting new APIKey", key);
   accessElfApikey = key;
 };
 
-const accessElfDebounceMap = new Map<string, ReturnType<typeof setTimeout>>();
+const accessElfDebounceMap = new Map();
 
-const sendAccessElfTracking = (page?: string, id?: string, message?: string) => {
+const sendAccessElfTracking = (page, id, message) => {
   const key = (page??"") + "-" + (id??"") + "-" + (message??"");
-  const payload: { page?: string; id?: string; error?: string } = {
+  const payload = {
     page,
     id,
   };
@@ -35,11 +35,11 @@ const sendAccessElfTracking = (page?: string, id?: string, message?: string) => 
   }, 800));
 };
 
-export const track = (page?: string, id?: string) => {
+export const track = (page, id) => {
   sendAccessElfTracking(page, id);
 };
 
-export const error = (page: string, id: string, message: string) => {
+export const error = (page, id, message) => {
   sendAccessElfTracking(page, id, message);
 };
 

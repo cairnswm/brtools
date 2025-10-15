@@ -14,14 +14,15 @@ accessElf.setApiKey("b415c3e1-b415c3ee-4207-bad2-24ca2f5f4673");
 
 const App = () => {
   useEffect(() => {
-    console.log('[Debug] App.tsx: Component mounted')
-    accessElf.track();
-    return () => console.log('[Debug] App.tsx: Component unmounted')
+    console.log('[Debug] App.jsx: Component mounted')
+    return () => console.log('[Debug] App.jsx: Component unmounted')
   }, [])
-  console.log('[Debug] App.tsx: Rendering component')
+  accessElf.track();
+  console.log('[Debug] App.jsx: Rendering component')
   return (
     <BRToolsProvider>
       <Router basename="/brtools">
+        {console.log('[Debug] App.jsx: Router initialized')}
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/home" element={<HomePage />} />

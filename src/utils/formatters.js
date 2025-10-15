@@ -1,9 +1,4 @@
-interface FormattedValue {
-  value: string;
-  color: string;
-}
-
-export function formatCSR(csr: number | string): FormattedValue {
+export function formatCSR(csr) {
   const csrNum = Number(csr);
   if (isNaN(csrNum)) return { value: '--', color: 'text-gray-900' };
   
@@ -24,7 +19,7 @@ export function formatCSR(csr: number | string): FormattedValue {
   };
 }
 
-export function formatRanking(points: number | string): FormattedValue {
+export function formatRanking(points) {
   const rankingPoints = Number(points);
   if (isNaN(rankingPoints)) return { value: 'N/A', color: 'text-gray-900' };
   
@@ -45,7 +40,7 @@ export function formatRanking(points: number | string): FormattedValue {
   };
 }
 
-export function formatSalary(salary: number): string {
+export function formatSalary(salary) {
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency: 'USD',
@@ -53,13 +48,7 @@ export function formatSalary(salary: number): string {
   }).format(salary);
 }
 
-interface Player {
-  nationality: string;
-  dualnationality?: string;
-  capped_for?: string;
-}
-
-export function formatNationality(player: Player): string {
+export function formatNationality(player) {
   let nationality = player.nationality;
   if (player.dualnationality) {
     nationality += `/${player.dualnationality}`;
@@ -70,7 +59,7 @@ export function formatNationality(player: Player): string {
   return nationality;
 }
 
-export function formatBirthday(birthday: string | undefined): string {
+export function formatBirthday(birthday) {
   if (!birthday) return '';
   const [round, day] = birthday.split(':');
   return `R${parseInt(round)}, D${day}`;
