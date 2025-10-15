@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useTeam } from "../hooks/useTeam";
 import { useBRTools } from "../hooks/useBRTools";
 import { accessElf } from "../components/accessElf";
@@ -6,6 +6,7 @@ import { accessElf } from "../components/accessElf";
 const OfficePage = () => {
   const { teamId, players, trainingReport, standings, staff, facilities } = useTeam();
   const { getTeamById } = useBRTools();
+  const [isStaffExpanded, setIsStaffExpanded] = useState(false);
 
   useEffect(() => {
     if (teamId) {
@@ -78,14 +79,16 @@ const OfficePage = () => {
     if (facilitiesData.training_facility && facilitiesData.training_facility.length > 0) {
       facilitiesList.push({
         name: 'Training Facility',
-        level: Number(facilitiesData.training_facility[0].level) || 0
+        level: Number(facilitiesData.training_facility[0].level) || 0,
+        maxLevel: 5
       });
     }
 
     if (facilitiesData.youth_training_facility && facilitiesData.youth_training_facility.length > 0) {
       facilitiesList.push({
         name: 'Youth Training Facility',
-        level: Number(facilitiesData.youth_training_facility[0].level) || 0
+        level: Number(facilitiesData.youth_training_facility[0].level) || 0,
+        maxLevel: 3
       });
     }
 
@@ -403,18 +406,21 @@ const OfficePage = () => {
             {trainingFacilities.length > 0 ? (
               <div className="space-y-4">
                 {trainingFacilities.map((facility, index) => (
-                  <div key={index} className="flex items-center justify-between">
-                    <div className="flex items-center">
-                      <svg className="w-5 h-5 mr-3 text-green-600" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                      </svg>
-                      <span className="text-gray-700">{facility.name}</span>
+                  <div key={index} className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center">
+                        <svg className="w-5 h-5 mr-3 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                        </svg>
+                        <span className="text-gray-700">{facility.name}</span>
+                      </div>
+                      <div className="text-sm font-semibold text-gray-700">Level {facility.level}/{facility.maxLevel}</div>
                     </div>
                     <div className="flex items-center gap-1">
-                      {[...Array(10)].map((_, i) => (
+                      {[...Array(facility.maxLevel)].map((_, i) => (
                         <div
                           key={i}
-                          className={`w-2 h-6 rounded-sm ${
+                          className={`flex-1 h-6 rounded-sm ${
                             i < facility.level ? 'bg-green-600' : 'bg-gray-200'
                           }`}
                         />
@@ -429,8 +435,24 @@ const OfficePage = () => {
 
             {(headCoach || coachingStaff.length > 0 || youthStaff.length > 0) && (
               <div className="mt-6 pt-6 border-t border-gray-200">
-                <h4 className="font-semibold text-gray-700 mb-4">Staff</h4>
-                <div className="space-y-3">
+                <button
+                  onClick={() => setIsStaffExpanded(!isStaffExpanded)}
+                  className="w-full flex items-center justify-between text-left hover:bg-gray-50 p-2 rounded-lg transition-colors"
+                >
+                  <h4 className="font-semibold text-gray-700">Staff</h4>
+                  <svg
+                    className={`w-5 h-5 text-gray-600 transition-transform ${
+                      isStaffExpanded ? 'rotate-180' : ''
+                    }`}
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+                {isStaffExpanded && (
+                <div className="space-y-3 mt-4">
                   {headCoach && (
                     <div className="bg-blue-50 rounded-lg p-3 border-2 border-blue-200">
                       <div className="flex items-center justify-between">
@@ -481,6 +503,7 @@ const OfficePage = () => {
                     </div>
                   )}
                 </div>
+                )}
               </div>
             )}
           </div>
