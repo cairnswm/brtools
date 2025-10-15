@@ -4,7 +4,7 @@ import { useBRTools } from "../hooks/useBRTools";
 import { accessElf } from "../components/accessElf";
 
 const OfficePage = () => {
-  const { teamId, players, trainingReport, standings } = useTeam();
+  const { teamId, players, trainingReport, standings, staff, facilities } = useTeam();
   const { getTeamById } = useBRTools();
 
   useEffect(() => {
@@ -40,10 +40,10 @@ const OfficePage = () => {
     : 0;
 
   const getCoachingStaff = () => {
-    if (!trainingReport?.data?.trainers) return [];
+    if (!staff?.data?.staff) return [];
 
-    const trainers = trainingReport.data.trainers;
-    const staff = [];
+    const staffData = staff.data.staff;
+    const staffList = [];
 
     const trainerTypes = {
       stamina: { label: 'Stamina', skills: ['stamina'] },
@@ -53,29 +53,29 @@ const OfficePage = () => {
     };
 
     Object.entries(trainerTypes).forEach(([type, config]) => {
-      if (trainers[type]) {
-        staff.push({
+      if (staffData[type]) {
+        staffList.push({
           type: config.label,
-          name: `${trainers[type].fname} ${trainers[type].lname}`,
-          level: trainers[type].level,
+          name: `${staffData[type].fname} ${staffData[type].lname}`,
+          level: staffData[type].level,
           skills: config.skills
         });
       }
     });
 
-    return staff;
+    return staffList;
   };
 
   const coachingStaff = getCoachingStaff();
 
   const getTrainingFacilities = () => {
-    if (!trainingReport?.data?.facilities) return [];
+    if (!facilities?.data?.facilities) return [];
 
-    const facilities = trainingReport.data.facilities;
+    const facilitiesData = facilities.data.facilities;
     return [
-      { name: 'Training Pitch', level: facilities.pitch || 0 },
-      { name: 'Gymnasium', level: facilities.gym || 0 },
-      { name: 'Medical Center', level: facilities.medical || 0 }
+      { name: 'Training Pitch', level: facilitiesData.pitch || 0 },
+      { name: 'Gymnasium', level: facilitiesData.gym || 0 },
+      { name: 'Medical Center', level: facilitiesData.medical || 0 }
     ];
   };
 

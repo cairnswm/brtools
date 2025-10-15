@@ -58,6 +58,8 @@ export function TeamProvider({ children }) {
   const [youth, setYouth] = useState([]);
   const [standings, setStandings] = useState([]);
   const [trainingReport, setTrainingReport] = useState(null);
+  const [staff, setStaff] = useState(null);
+  const [facilities, setFacilities] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [sortField, setSortField] = useState('jersey');
@@ -122,6 +124,36 @@ export function TeamProvider({ children }) {
                 console.error('Error fetching training report:', err);
               });
 
+            fetch(`${API_BASE_URL}/team/${teamId}/staff`, {
+              headers: {
+                'accesskey': memberKey
+              }
+            })
+              .then(response => response.json())
+              .then(staffData => {
+                if (staffData.data?.status === 'Ok') {
+                  setStaff(staffData);
+                }
+              })
+              .catch(err => {
+                console.error('Error fetching staff data:', err);
+              });
+
+            fetch(`${API_BASE_URL}/team/${teamId}/facilities`, {
+              headers: {
+                'accesskey': memberKey
+              }
+            })
+              .then(response => response.json())
+              .then(facilitiesData => {
+                if (facilitiesData.data?.status === 'Ok') {
+                  setFacilities(facilitiesData);
+                }
+              })
+              .catch(err => {
+                console.error('Error fetching facilities data:', err);
+              });
+
             if (team?.leagueid) {
               return fetch(`${API_BASE_URL}/league/${team.leagueid}/standings`, {
                 headers: {
@@ -155,6 +187,8 @@ export function TeamProvider({ children }) {
       setYouth([]);
       setStandings([]);
       setTrainingReport(null);
+      setStaff(null);
+      setFacilities(null);
     }
   }, [teamId, memberKey, addTeamsToCache, cachedTeams]);
 
@@ -344,6 +378,8 @@ export function TeamProvider({ children }) {
       youth: sortedYouth,
       standings: sortedStandings,
       trainingReport,
+      staff,
+      facilities,
       loading,
       error,
       sortField,
