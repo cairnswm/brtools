@@ -40,25 +40,26 @@ const OfficePage = () => {
     : 0;
 
   const getCoachingStaff = () => {
-    if (!staff?.data?.staff) return [];
+    if (!staff?.data?.staff?.trainers) return [];
 
-    const staffData = staff.data.staff;
+    const trainers = staff.data.staff.trainers;
     const staffList = [];
 
-    const trainerTypes = {
-      stamina: { label: 'Stamina', skills: ['stamina'] },
+    const trainerTypeMap = {
+      fitness: { label: 'Fitness', skills: ['stamina'] },
       kicking: { label: 'Kicking', skills: ['kicking'] },
       defense: { label: 'Defense', skills: ['defense', 'technique', 'strength', 'jumping'] },
       attack: { label: 'Attack', skills: ['handling', 'attack', 'agility', 'speed'] }
     };
 
-    Object.entries(trainerTypes).forEach(([type, config]) => {
-      if (staffData[type]) {
+    trainers.forEach(trainer => {
+      const typeConfig = trainerTypeMap[trainer.type];
+      if (typeConfig) {
         staffList.push({
-          type: config.label,
-          name: `${staffData[type].fname} ${staffData[type].lname}`,
-          level: staffData[type].level,
-          skills: config.skills
+          type: typeConfig.label,
+          name: trainer.name,
+          level: trainer.level,
+          skills: typeConfig.skills
         });
       }
     });
@@ -72,14 +73,73 @@ const OfficePage = () => {
     if (!facilities?.data?.facilities) return [];
 
     const facilitiesData = facilities.data.facilities;
-    return [
-      { name: 'Training Pitch', level: facilitiesData.pitch || 0 },
-      { name: 'Gymnasium', level: facilitiesData.gym || 0 },
-      { name: 'Medical Center', level: facilitiesData.medical || 0 }
-    ];
+    const facilitiesList = [];
+
+    if (facilitiesData.training_facility && facilitiesData.training_facility.length > 0) {
+      facilitiesList.push({
+        name: 'Training Facility',
+        level: Number(facilitiesData.training_facility[0].level) || 0
+      });
+    }
+
+    if (facilitiesData.youth_training_facility && facilitiesData.youth_training_facility.length > 0) {
+      facilitiesList.push({
+        name: 'Youth Training Facility',
+        level: Number(facilitiesData.youth_training_facility[0].level) || 0
+      });
+    }
+
+    return facilitiesList;
   };
 
   const trainingFacilities = getTrainingFacilities();
+
+  const getHeadCoach = () => {
+    if (!staff?.data?.staff?.coach || staff.data.staff.coach.length === 0) return null;
+
+    const coach = staff.data.staff.coach[0];
+    return {
+      name: coach.name,
+      level: coach.level
+    };
+  };
+
+  const headCoach = getHeadCoach();
+
+  const getYouthStaff = () => {
+    if (!staff?.data?.staff) return [];
+
+    const staffData = staff.data.staff;
+    const youthStaff = [];
+
+    if (staffData.youth_coach && staffData.youth_coach.length > 0) {
+      youthStaff.push({
+        role: 'Youth Coach',
+        name: staffData.youth_coach[0].name,
+        level: staffData.youth_coach[0].level
+      });
+    }
+
+    if (staffData.youth_manager && staffData.youth_manager.length > 0) {
+      youthStaff.push({
+        role: 'Youth Manager',
+        name: staffData.youth_manager[0].name,
+        level: staffData.youth_manager[0].level
+      });
+    }
+
+    if (staffData.youth_scout && staffData.youth_scout.length > 0) {
+      youthStaff.push({
+        role: 'Youth Scout',
+        name: staffData.youth_scout[0].name,
+        level: staffData.youth_scout[0].level
+      });
+    }
+
+    return youthStaff;
+  };
+
+  const youthStaff = getYouthStaff();
 
   const formatCurrency = (value) => {
     if (!value) return '$0';
@@ -367,16 +427,30 @@ const OfficePage = () => {
               <p className="text-gray-500 text-sm">Training facility data unavailable</p>
             )}
 
-            {coachingStaff.length > 0 && (
+            {(headCoach || coachingStaff.length > 0 || youthStaff.length > 0) && (
               <div className="mt-6 pt-6 border-t border-gray-200">
-                <h4 className="font-semibold text-gray-700 mb-4">Coaching Staff</h4>
+                <h4 className="font-semibold text-gray-700 mb-4">Staff</h4>
                 <div className="space-y-3">
+                  {headCoach && (
+                    <div className="bg-blue-50 rounded-lg p-3 border-2 border-blue-200">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className="font-semibold text-blue-900">{headCoach.name}</div>
+                          <div className="text-sm text-blue-700">Head Coach</div>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-lg font-bold text-blue-900">Level {headCoach.level}</div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
                   {coachingStaff.map((coach, index) => (
                     <div key={index} className="bg-gray-50 rounded-lg p-3">
                       <div className="flex items-center justify-between mb-2">
                         <div>
                           <div className="font-semibold text-gray-900">{coach.name}</div>
-                          <div className="text-sm text-gray-600">{coach.type} Coach</div>
+                          <div className="text-sm text-gray-600">{coach.type} Trainer</div>
                         </div>
                         <div className="text-right">
                           <div className="text-lg font-bold text-green-600">Level {coach.level}</div>
@@ -387,6 +461,25 @@ const OfficePage = () => {
                       </div>
                     </div>
                   ))}
+
+                  {youthStaff.length > 0 && (
+                    <div className="mt-4 pt-4 border-t border-gray-200">
+                      <h5 className="text-sm font-semibold text-gray-600 mb-3">Youth Development</h5>
+                      {youthStaff.map((staff, index) => (
+                        <div key={index} className="bg-gray-50 rounded-lg p-3 mb-2">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <div className="font-semibold text-gray-900">{staff.name}</div>
+                              <div className="text-sm text-gray-600">{staff.role}</div>
+                            </div>
+                            <div className="text-right">
+                              <div className="text-lg font-bold text-green-600">Level {staff.level}</div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
             )}
