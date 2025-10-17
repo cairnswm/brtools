@@ -5,6 +5,7 @@ import BRDate from "../components/brdate";
 import { accessElf } from "../components/accessElf";
 import { useTeam } from "../hooks/useTeam";
 import { useBRTools } from "../hooks/useBRTools";
+import * as XLSX from 'xlsx';
 
 const TeamFixtures = () => {
   const { fixtures, loading, error } = useFixtures();
@@ -137,6 +138,105 @@ const TeamFixtures = () => {
     );
   };
 
+  const exportFixturesToExcel = () => {
+    const exportData = fixtures.map(fixture => {
+      const homeTeam = getTeamById(fixture.hometeamid);
+      const guestTeam = getTeamById(fixture.guestteamid);
+      const played = isMatchPlayed(fixture);
+
+      return {
+        'Season': fixture.season,
+        'Round': fixture.round,
+        'Competition': fixture.competition === 'Friendly' && fixture.friendlycompetitionshort
+          ? fixture.friendlycompetitionshort
+          : formatCompetition(fixture.competition),
+        'Date': new Date(fixture.matchstart).toLocaleDateString(),
+        'Time': formatTime(fixture.matchstart),
+        'Home Team': homeTeam?.name || `Team ${fixture.hometeamid}`,
+        'Away Team': guestTeam?.name || `Team ${fixture.guestteamid}`,
+        'Home Score': played ? fixture.matchSummary.home.points : '',
+        'Away Score': played ? fixture.matchSummary.guest.points : '',
+        'Venue': fixture.venue || (homeTeam?.stadium || ''),
+        'Status': played ? 'Played' : 'Upcoming'
+      };
+    });
+
+    const ws = XLSX.utils.json_to_sheet(exportData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Fixtures");
+    XLSX.writeFile(wb, "fixtures.xlsx");
+  };
+
+  const exportMatchStatsToExcel = (fixture) => {
+    const homeTeam = getTeamById(fixture.hometeamid);
+    const guestTeam = getTeamById(fixture.guestteamid);
+    const homeStats = getTeamStats(fixture, true);
+    const guestStats = getTeamStats(fixture, false);
+    const homeReport = fixture.reporterSummary?.home;
+    const guestReport = fixture.reporterSummary?.guest;
+
+    const matchInfo = [
+      { 'Category': 'Match Information', 'Home Team': '', 'Away Team': '' },
+      { 'Category': 'Teams', 'Home Team': homeTeam?.name || '', 'Away Team': guestTeam?.name || '' },
+      { 'Category': 'Date', 'Home Team': new Date(fixture.matchstart).toLocaleDateString(), 'Away Team': '' },
+      { 'Category': 'Competition', 'Home Team': formatCompetition(fixture.competition), 'Away Team': '' },
+      { 'Category': 'Venue', 'Home Team': fixture.venue || '', 'Away Team': '' },
+      { 'Category': 'Attendance', 'Home Team': getAttendance(fixture), 'Away Team': '' },
+      { 'Category': '', 'Home Team': '', 'Away Team': '' },
+      { 'Category': 'Score', 'Home Team': fixture.matchSummary.home.points, 'Away Team': fixture.matchSummary.guest.points },
+    ];
+
+    const scoringStats = [
+      { 'Category': '', 'Home Team': '', 'Away Team': '' },
+      { 'Category': 'Scoring Breakdown', 'Home Team': '', 'Away Team': '' },
+      { 'Category': 'Tries', 'Home Team': getStatCount(fixture.matchSummary.home.tries), 'Away Team': getStatCount(fixture.matchSummary.guest.tries) },
+      { 'Category': 'Conversions', 'Home Team': getStatCount(fixture.matchSummary.home.conversions), 'Away Team': getStatCount(fixture.matchSummary.guest.conversions) },
+      { 'Category': 'Penalties', 'Home Team': getStatCount(fixture.matchSummary.home.penalties), 'Away Team': getStatCount(fixture.matchSummary.guest.penalties) },
+      { 'Category': 'Drop Goals', 'Home Team': getStatCount(fixture.matchSummary.home.dropgoals), 'Away Team': getStatCount(fixture.matchSummary.guest.dropgoals) },
+    ];
+
+    const matchStats = [
+      { 'Category': '', 'Home Team': '', 'Away Team': '' },
+      { 'Category': 'Match Statistics', 'Home Team': '', 'Away Team': '' },
+      { 'Category': 'Territory %', 'Home Team': homeStats?.territory || '', 'Away Team': guestStats?.territory || '' },
+      { 'Category': 'Possession %', 'Home Team': homeStats?.possession || '', 'Away Team': guestStats?.possession || '' },
+    ];
+
+    const teamStars = [
+      { 'Category': '', 'Home Team': '', 'Away Team': '' },
+      { 'Category': 'Team Stars', 'Home Team': '', 'Away Team': '' },
+      { 'Category': 'Scrum', 'Home Team': homeStats?.scrum || '', 'Away Team': guestStats?.scrum || '' },
+      { 'Category': 'Lineout', 'Home Team': homeStats?.lineout || '', 'Away Team': guestStats?.lineout || '' },
+      { 'Category': 'Ruck', 'Home Team': homeStats?.ruck || '', 'Away Team': guestStats?.ruck || '' },
+      { 'Category': 'Maul', 'Home Team': homeStats?.maul || '', 'Away Team': guestStats?.maul || '' },
+      { 'Category': 'Attack', 'Home Team': homeStats?.attack || '', 'Away Team': guestStats?.attack || '' },
+      { 'Category': 'Defense', 'Home Team': homeStats?.defense || '', 'Away Team': guestStats?.defense || '' },
+      { 'Category': 'Kicking', 'Home Team': homeStats?.kicking || '', 'Away Team': guestStats?.kicking || '' },
+      { 'Category': 'Handling', 'Home Team': homeStats?.handling || '', 'Away Team': guestStats?.handling || '' },
+      { 'Category': 'Stamina', 'Home Team': homeStats?.stamina || '', 'Away Team': guestStats?.stamina || '' },
+    ];
+
+    const teamInfo = homeReport && guestReport ? [
+      { 'Category': '', 'Home Team': '', 'Away Team': '' },
+      { 'Category': 'Team Information', 'Home Team': '', 'Away Team': '' },
+      { 'Category': 'World Rank', 'Home Team': homeReport.world_rank, 'Away Team': guestReport.world_rank },
+      { 'Category': 'National Rank', 'Home Team': homeReport.national_rank, 'Away Team': guestReport.national_rank },
+      { 'Category': 'Regional Rank', 'Home Team': homeReport.regional_rank, 'Away Team': guestReport.regional_rank },
+      { 'Category': 'Avg CSR', 'Home Team': homeReport.avg_csr, 'Away Team': guestReport.avg_csr },
+      { 'Category': 'Energy %', 'Home Team': homeReport.energy_level, 'Away Team': guestReport.energy_level },
+      { 'Category': 'Weight (kg)', 'Home Team': homeReport.weight, 'Away Team': guestReport.weight },
+      { 'Category': 'Form', 'Home Team': homeReport.all_form, 'Away Team': guestReport.all_form },
+    ] : [];
+
+    const exportData = [...matchInfo, ...scoringStats, ...matchStats, ...teamStars, ...teamInfo];
+
+    const ws = XLSX.utils.json_to_sheet(exportData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Match Stats");
+    const fileName = `match_${homeTeam?.name || 'Home'}_vs_${guestTeam?.name || 'Away'}.xlsx`.replace(/[^a-z0-9_]/gi, '_');
+    XLSX.writeFile(wb, fileName);
+  };
+
   if (loading) {
     return (
       <div className="text-center py-4">
@@ -158,6 +258,19 @@ const TeamFixtures = () => {
 
   return (
     <div className="space-y-8">
+      {fixtures.length > 0 && (
+        <div className="flex justify-end mb-4">
+          <button
+            onClick={exportFixturesToExcel}
+            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-semibold flex items-center gap-2"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            Export Fixtures
+          </button>
+        </div>
+      )}
       {upcomingFixtures.length > 0 && (
         <div>
           <h2 className="text-2xl font-bold text-gray-900 mb-4">Upcoming Fixtures</h2>
@@ -532,7 +645,7 @@ const TeamFixtures = () => {
                               </div>
                             )}
 
-                            <div className="pt-4 border-t border-gray-200">
+                            <div className="pt-4 border-t border-gray-200 space-y-4">
                               <div className="flex justify-center gap-8 text-center">
                                 <div>
                                   <div className="text-xs text-gray-500 uppercase mb-1">Venue</div>
@@ -542,6 +655,17 @@ const TeamFixtures = () => {
                                   <div className="text-xs text-gray-500 uppercase mb-1">Attendance</div>
                                   <div className="text-sm font-medium">{getAttendance(fixture)}</div>
                                 </div>
+                              </div>
+                              <div className="flex justify-center">
+                                <button
+                                  onClick={() => exportMatchStatsToExcel(fixture)}
+                                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-semibold flex items-center gap-2"
+                                >
+                                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                  </svg>
+                                  Export Match Stats
+                                </button>
                               </div>
                             </div>
                           </div>
