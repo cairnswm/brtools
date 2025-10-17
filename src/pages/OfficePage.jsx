@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useTeam } from "../hooks/useTeam";
 import { useBRTools } from "../hooks/useBRTools";
 import { accessElf } from "../components/accessElf";
+import { Link } from "react-router-dom";
 
 const OfficePage = () => {
   const { teamId, players, trainingReport, standings, staff, facilities } = useTeam();
@@ -306,32 +307,34 @@ const OfficePage = () => {
                 {index + 1}
               </div>
 
-              <div className="bg-gradient-to-br from-gray-50 to-white rounded-xl p-6 border-2 border-gray-200 hover:border-blue-400 transition-all transform group-hover:scale-105 group-hover:shadow-xl">
-                <div className="text-center mb-4">
-                  <div className="w-20 h-20 mx-auto mb-3 bg-gradient-to-br from-blue-500 to-blue-700 rounded-full flex items-center justify-center text-white text-2xl font-bold shadow-lg">
-                    {player.jersey}
+              <Link to={`/team/${teamId}/player/${player.id}`} className="block">
+                <div className="bg-gradient-to-br from-gray-50 to-white rounded-xl p-6 border-2 border-gray-200 hover:border-blue-400 transition-all transform group-hover:scale-105 group-hover:shadow-xl">
+                  <div className="text-center mb-4">
+                    <div className="w-20 h-20 mx-auto mb-3 bg-gradient-to-br from-blue-500 to-blue-700 rounded-full flex items-center justify-center text-white text-2xl font-bold shadow-lg">
+                      {player.jersey}
+                    </div>
+                    <h3 className="text-xl font-bold text-gray-900">
+                      {player.fname} {player.lname}
+                    </h3>
+                    <p className="text-sm text-gray-600 capitalize">{player.position}</p>
                   </div>
-                  <h3 className="text-xl font-bold text-gray-900">
-                    {player.fname} {player.lname}
-                  </h3>
-                  <p className="text-sm text-gray-600 capitalize">{player.position}</p>
-                </div>
 
-                <div className="space-y-2 pt-4 border-t border-gray-200">
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-600">CSR</span>
-                    <span className="font-bold text-blue-900">{Number(player.csr).toLocaleString()}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-600">Age</span>
-                    <span className="font-semibold text-gray-700">{player.age}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-600">Form</span>
-                    <span className="font-semibold text-gray-700">{player.form}/11</span>
+                  <div className="space-y-2 pt-4 border-t border-gray-200">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600">CSR</span>
+                      <span className="font-bold text-blue-900">{Number(player.csr).toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600">Age</span>
+                      <span className="font-semibold text-gray-700">{player.age}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600">Form</span>
+                      <span className="font-semibold text-gray-700">{player.form}/11</span>
+                    </div>
                   </div>
                 </div>
-              </div>
+              </Link>
             </div>
           ))}
         </div>

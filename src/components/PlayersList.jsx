@@ -1,10 +1,11 @@
 import { useTeam } from '../hooks/useTeam';
 import { formatCSR } from "../utils/formatters";
 import PlayerSortBar from "./PlayerSortBar";
-import { Link } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 
 function PlayersList({ players }) {
   const { sortField, sortDirection, handleSort } = useTeam();
+  const { teamId } = useParams();
 
   const SortIcon = ({ field }) => {
     if (sortField !== field) return null;
@@ -62,7 +63,12 @@ function PlayersList({ players }) {
                   {player.jersey !== "255" ? player.jersey : ""}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                  {player.fname} {player.lname}
+                  <Link
+                    to={`/team/${teamId}/player/${player.id}`}
+                    className="text-blue-600 hover:text-blue-800 hover:underline"
+                  >
+                    {player.fname} {player.lname}
+                  </Link>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">
                   {player.age}

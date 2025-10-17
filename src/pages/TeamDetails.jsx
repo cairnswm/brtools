@@ -4,7 +4,7 @@ import { useTeam } from '../hooks/useTeam';
 import Header from "../components/Header";
 import TeamMenu from "../components/TeamMenu";
 import PlayerPage from "./PlayerPage";
-import PlayerDetails from "./playerDetails";
+import PlayerDetailPage from "./PlayerDetailPage";
 import TeamStandingsPage from "./TeamStandingsPage";
 import TeamFixturesPage from "./TeamFixturesPage";
 import YouthPage from "./YouthPage";
@@ -39,7 +39,7 @@ const TeamDetails = () => {
           <Route path="standings" element={<TeamStandingsPage />} />
           <Route path="youth" element={<YouthPage />} />
           <Route path="training" element={<TrainingPage />} />
-          <Route path="player/:playerId" element={<PlayerDetails />} />
+          <Route path="player/:playerId" element={<PlayerDetailPage />} />
           <Route path="/" element={<OfficePage />} />
         </Routes>
       </div>
