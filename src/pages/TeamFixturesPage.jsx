@@ -233,7 +233,7 @@ const TeamFixtures = () => {
     const ws = XLSX.utils.json_to_sheet(exportData);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Match Stats");
-    const fileName = `match_${homeTeam?.name || 'Home'}_vs_${guestTeam?.name || 'Away'}.xlsx`.replace(/[^a-z0-9_]/gi, '_');
+    const fileName = `match_${homeTeam?.name || 'Home'}_vs_${guestTeam?.name || 'Away'}`.replace(/[^a-z0-9_]/gi, '_') + '.xlsx';
     XLSX.writeFile(wb, fileName);
   };
 
