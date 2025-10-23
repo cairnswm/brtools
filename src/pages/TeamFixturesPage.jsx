@@ -6,12 +6,16 @@ import { accessElf } from "../components/accessElf";
 import { useTeam } from "../hooks/useTeam";
 import { useBRTools } from "../hooks/useBRTools";
 import * as XLSX from 'xlsx';
+import { API_BASE_URL } from "../config/api";
 
 const TeamFixtures = () => {
   const { fixtures, loading, error } = useFixtures();
   const { teamId } = useTeam();
-  const { getTeamById } = useBRTools();
+  const { getTeamById, memberKey } = useBRTools();
   const [expandedFixture, setExpandedFixture] = useState(null);
+  const [expandedTab, setExpandedTab] = useState({});
+  const [fixtureStats, setFixtureStats] = useState({});
+  const [loadingStats, setLoadingStats] = useState({});
 
   useEffect(() => {
     accessElf.track("Team/Fixtures", teamId);
@@ -19,6 +23,40 @@ const TeamFixtures = () => {
 
   const toggleExpand = (fixtureId) => {
     setExpandedFixture(expandedFixture === fixtureId ? null : fixtureId);
+    if (expandedFixture !== fixtureId) {
+      setExpandedTab(prev => ({ ...prev, [fixtureId]: 'matchstats' }));
+    }
+  };
+
+  const fetchFixtureStatistics = async (fixtureId) => {
+    if (fixtureStats[fixtureId] || loadingStats[fixtureId]) return;
+
+    setLoadingStats(prev => ({ ...prev, [fixtureId]: true }));
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/fixturestatistics/${fixtureId}`, {
+        headers: { 'accesskey': memberKey }
+      });
+      const data = await response.json();
+
+      if (data.data?.status === 'Ok' && data.data?.fixtures?.[fixtureId]) {
+        setFixtureStats(prev => ({
+          ...prev,
+          [fixtureId]: data.data.fixtures[fixtureId]
+        }));
+      }
+    } catch (err) {
+      console.error('Error fetching fixture statistics:', err);
+    } finally {
+      setLoadingStats(prev => ({ ...prev, [fixtureId]: false }));
+    }
+  };
+
+  const handleTabChange = (fixtureId, tab) => {
+    setExpandedTab(prev => ({ ...prev, [fixtureId]: tab }));
+    if (tab === 'statistics' && !fixtureStats[fixtureId]) {
+      fetchFixtureStatistics(fixtureId);
+    }
   };
 
   const isMatchPlayed = (fixture) => {
@@ -337,7 +375,7 @@ const TeamFixtures = () => {
                         className="w-full flex items-center justify-center text-sm text-gray-600 hover:text-blue-700 transition-colors"
                       >
                         <span className="font-medium">
-                          {expandedFixture === fixture.id ? 'Hide Details' : 'Show Details'}
+                          {expandedFixture === fixture.id ? 'less' : 'more'}
                         </span>
                         <svg
                           className={`ml-2 w-4 h-4 transition-transform ${expandedFixture === fixture.id ? 'rotate-180' : ''}`}
@@ -449,7 +487,7 @@ const TeamFixtures = () => {
                         className="w-full flex items-center justify-center text-sm text-gray-600 hover:text-blue-700 transition-colors"
                       >
                         <span className="font-medium">
-                          {expandedFixture === fixture.id ? 'Hide Match Stats' : 'Show Match Stats'}
+                          {expandedFixture === fixture.id ? 'less' : 'more'}
                         </span>
                         <svg
                           className={`ml-2 w-4 h-4 transition-transform ${expandedFixture === fixture.id ? 'rotate-180' : ''}`}
@@ -476,8 +514,37 @@ const TeamFixtures = () => {
                       const homeDropgoals = getStatCount(fixture.matchSummary.home.dropgoals);
                       const guestDropgoals = getStatCount(fixture.matchSummary.guest.dropgoals);
 
+                      const currentTab = expandedTab[fixture.id] || 'matchstats';
+                      const stats = fixtureStats[fixture.id];
+
                       return (
                         <div className="mt-4 pt-4 border-t border-gray-200">
+                          <div className="border-b border-gray-200 mb-6">
+                            <div className="flex justify-center space-x-8">
+                              <button
+                                onClick={() => handleTabChange(fixture.id, 'matchstats')}
+                                className={`py-3 px-4 border-b-2 font-medium text-sm transition-colors ${
+                                  currentTab === 'matchstats'
+                                    ? 'border-blue-600 text-blue-600'
+                                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                                }`}
+                              >
+                                Match Stats
+                              </button>
+                              <button
+                                onClick={() => handleTabChange(fixture.id, 'statistics')}
+                                className={`py-3 px-4 border-b-2 font-medium text-sm transition-colors ${
+                                  currentTab === 'statistics'
+                                    ? 'border-blue-600 text-blue-600'
+                                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                                }`}
+                              >
+                                Statistics
+                              </button>
+                            </div>
+                          </div>
+
+                          {currentTab === 'matchstats' && (
                           <div className="max-w-4xl mx-auto space-y-6">
 
                             <div className="space-y-3">
@@ -669,6 +736,134 @@ const TeamFixtures = () => {
                               </div>
                             </div>
                           </div>
+                          )}
+
+                          {currentTab === 'statistics' && (
+                            <div className="max-w-4xl mx-auto">
+                              {loadingStats[fixture.id] ? (
+                                <div className="text-center py-8">
+                                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+                                  <p className="text-gray-600 mt-4">Loading statistics...</p>
+                                </div>
+                              ) : stats ? (
+                                <div className="space-y-6">
+                                  <div className="grid md:grid-cols-2 gap-6">
+                                    <div className="bg-gray-50 rounded-lg p-6">
+                                      <h3 className="text-lg font-bold text-gray-900 mb-4 text-center">{homeTeam?.name || 'Home Team'}</h3>
+                                      <div className="space-y-3">
+                                        <div className="flex justify-between border-b pb-2">
+                                          <span className="text-sm text-gray-600">Tackles</span>
+                                          <span className="font-semibold">{stats['home team stats']?.tackles || 0}</span>
+                                        </div>
+                                        <div className="flex justify-between border-b pb-2">
+                                          <span className="text-sm text-gray-600">Metres Gained</span>
+                                          <span className="font-semibold">{stats['home team stats']?.['metres gained'] || 0}</span>
+                                        </div>
+                                        <div className="flex justify-between border-b pb-2">
+                                          <span className="text-sm text-gray-600">Linebreaks</span>
+                                          <span className="font-semibold">{stats['home team stats']?.linebreaks || 0}</span>
+                                        </div>
+                                        <div className="flex justify-between border-b pb-2">
+                                          <span className="text-sm text-gray-600">Missed Tackles</span>
+                                          <span className="font-semibold">{stats['home team stats']?.['missed tackles'] || 0}</span>
+                                        </div>
+                                        <div className="flex justify-between border-b pb-2">
+                                          <span className="text-sm text-gray-600">Turnovers</span>
+                                          <span className="font-semibold">{stats['home team stats']?.turnovers || 0}</span>
+                                        </div>
+                                        <div className="flex justify-between border-b pb-2">
+                                          <span className="text-sm text-gray-600">Knock-ons</span>
+                                          <span className="font-semibold">{stats['home team stats']?.knockons || 0}</span>
+                                        </div>
+                                        <div className="flex justify-between border-b pb-2">
+                                          <span className="text-sm text-gray-600">Penalties Conceded</span>
+                                          <span className="font-semibold">{stats['home team stats']?.['penalties conceded'] || 0}</span>
+                                        </div>
+                                        <div className="flex justify-between border-b pb-2">
+                                          <span className="text-sm text-gray-600">Lineouts Won/Lost</span>
+                                          <span className="font-semibold">{stats['home team stats']?.['lineouts won'] || 0}/{stats['home team stats']?.['lineouts lost'] || 0}</span>
+                                        </div>
+                                        <div className="flex justify-between border-b pb-2">
+                                          <span className="text-sm text-gray-600">Scrums Won/Lost</span>
+                                          <span className="font-semibold">{stats['home team stats']?.['scrums won'] || 0}/{stats['home team stats']?.['scrums lost'] || 0}</span>
+                                        </div>
+                                        <div className="flex justify-between border-b pb-2">
+                                          <span className="text-sm text-gray-600">Rucks Won</span>
+                                          <span className="font-semibold">{stats['home team stats']?.['rucks won'] || 0}</span>
+                                        </div>
+                                        <div className="flex justify-between border-b pb-2">
+                                          <span className="text-sm text-gray-600">Mauls Won</span>
+                                          <span className="font-semibold">{stats['home team stats']?.['mauls won'] || 0}</span>
+                                        </div>
+                                        <div className="flex justify-between border-b pb-2">
+                                          <span className="text-sm text-gray-600">Kicking Metres</span>
+                                          <span className="font-semibold">{stats['home team stats']?.['kicking metres'] || 0}</span>
+                                        </div>
+                                      </div>
+                                    </div>
+
+                                    <div className="bg-gray-50 rounded-lg p-6">
+                                      <h3 className="text-lg font-bold text-gray-900 mb-4 text-center">{guestTeam?.name || 'Away Team'}</h3>
+                                      <div className="space-y-3">
+                                        <div className="flex justify-between border-b pb-2">
+                                          <span className="text-sm text-gray-600">Tackles</span>
+                                          <span className="font-semibold">{stats['guest team stats']?.tackles || 0}</span>
+                                        </div>
+                                        <div className="flex justify-between border-b pb-2">
+                                          <span className="text-sm text-gray-600">Metres Gained</span>
+                                          <span className="font-semibold">{stats['guest team stats']?.['metres gained'] || 0}</span>
+                                        </div>
+                                        <div className="flex justify-between border-b pb-2">
+                                          <span className="text-sm text-gray-600">Linebreaks</span>
+                                          <span className="font-semibold">{stats['guest team stats']?.linebreaks || 0}</span>
+                                        </div>
+                                        <div className="flex justify-between border-b pb-2">
+                                          <span className="text-sm text-gray-600">Missed Tackles</span>
+                                          <span className="font-semibold">{stats['guest team stats']?.['missed tackles'] || 0}</span>
+                                        </div>
+                                        <div className="flex justify-between border-b pb-2">
+                                          <span className="text-sm text-gray-600">Turnovers</span>
+                                          <span className="font-semibold">{stats['guest team stats']?.turnovers || 0}</span>
+                                        </div>
+                                        <div className="flex justify-between border-b pb-2">
+                                          <span className="text-sm text-gray-600">Knock-ons</span>
+                                          <span className="font-semibold">{stats['guest team stats']?.knockons || 0}</span>
+                                        </div>
+                                        <div className="flex justify-between border-b pb-2">
+                                          <span className="text-sm text-gray-600">Penalties Conceded</span>
+                                          <span className="font-semibold">{stats['guest team stats']?.['penalties conceded'] || 0}</span>
+                                        </div>
+                                        <div className="flex justify-between border-b pb-2">
+                                          <span className="text-sm text-gray-600">Lineouts Won/Lost</span>
+                                          <span className="font-semibold">{stats['guest team stats']?.['lineouts won'] || 0}/{stats['guest team stats']?.['lineouts lost'] || 0}</span>
+                                        </div>
+                                        <div className="flex justify-between border-b pb-2">
+                                          <span className="text-sm text-gray-600">Scrums Won/Lost</span>
+                                          <span className="font-semibold">{stats['guest team stats']?.['scrums won'] || 0}/{stats['guest team stats']?.['scrums lost'] || 0}</span>
+                                        </div>
+                                        <div className="flex justify-between border-b pb-2">
+                                          <span className="text-sm text-gray-600">Rucks Won</span>
+                                          <span className="font-semibold">{stats['guest team stats']?.['rucks won'] || 0}</span>
+                                        </div>
+                                        <div className="flex justify-between border-b pb-2">
+                                          <span className="text-sm text-gray-600">Mauls Won</span>
+                                          <span className="font-semibold">{stats['guest team stats']?.['mauls won'] || 0}</span>
+                                        </div>
+                                        <div className="flex justify-between border-b pb-2">
+                                          <span className="text-sm text-gray-600">Kicking Metres</span>
+                                          <span className="font-semibold">{stats['guest team stats']?.['kicking metres'] || 0}</span>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              ) : (
+                                <div className="text-center py-8 text-gray-600">
+                                  No statistics available for this match.
+                                </div>
+                              )}
+                            </div>
+                          )}
                         </div>
                       );
                     })()}
