@@ -22,9 +22,11 @@ const TeamFixtures = () => {
   }, [teamId]);
 
   const toggleExpand = (fixtureId) => {
-    setExpandedFixture(expandedFixture === fixtureId ? null : fixtureId);
-    if (expandedFixture !== fixtureId) {
+    const willExpand = expandedFixture !== fixtureId;
+    setExpandedFixture(willExpand ? fixtureId : null);
+    if (willExpand) {
       setExpandedTab(prev => ({ ...prev, [fixtureId]: 'matchstats' }));
+      fetchFixtureStatistics(fixtureId);
     }
   };
 
@@ -54,9 +56,6 @@ const TeamFixtures = () => {
 
   const handleTabChange = (fixtureId, tab) => {
     setExpandedTab(prev => ({ ...prev, [fixtureId]: tab }));
-    if (tab === 'statistics' && !fixtureStats[fixtureId]) {
-      fetchFixtureStatistics(fixtureId);
-    }
   };
 
   const isMatchPlayed = (fixture) => {
@@ -272,6 +271,73 @@ const TeamFixtures = () => {
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Match Stats");
     const fileName = `match_${homeTeam?.name || 'Home'}_vs_${guestTeam?.name || 'Away'}`.replace(/[^a-z0-9_]/gi, '_') + '.xlsx';
+    XLSX.writeFile(wb, fileName);
+  };
+
+  const exportStatisticsToExcel = (fixture) => {
+    const homeTeam = getTeamById(fixture.hometeamid);
+    const guestTeam = getTeamById(fixture.guestteamid);
+    const stats = fixtureStats[fixture.id];
+
+    if (!stats) {
+      alert('Statistics not available for this match');
+      return;
+    }
+
+    const homeStats = stats['home team stats'];
+    const guestStats = stats['guest team stats'];
+
+    const exportData = [
+      { 'Statistic': 'Tackles', 'Home Team': homeStats?.tackles || 0, 'Away Team': guestStats?.tackles || 0 },
+      { 'Statistic': 'Metres Gained', 'Home Team': homeStats?.['metres gained'] || 0, 'Away Team': guestStats?.['metres gained'] || 0 },
+      { 'Statistic': 'Tries', 'Home Team': homeStats?.tries || 0, 'Away Team': guestStats?.tries || 0 },
+      { 'Statistic': 'Conversions', 'Home Team': homeStats?.conversions || 0, 'Away Team': guestStats?.conversions || 0 },
+      { 'Statistic': 'Missed Conversions', 'Home Team': homeStats?.['missed conversions'] || 0, 'Away Team': guestStats?.['missed conversions'] || 0 },
+      { 'Statistic': 'Penalties', 'Home Team': homeStats?.penalties || 0, 'Away Team': guestStats?.penalties || 0 },
+      { 'Statistic': 'Missed Penalties', 'Home Team': homeStats?.['missed penalties'] || 0, 'Away Team': guestStats?.['missed penalties'] || 0 },
+      { 'Statistic': 'Drop Goals', 'Home Team': homeStats?.dropgoals || 0, 'Away Team': guestStats?.dropgoals || 0 },
+      { 'Statistic': 'Total Points', 'Home Team': homeStats?.['total points'] || 0, 'Away Team': guestStats?.['total points'] || 0 },
+      { 'Statistic': 'Linebreaks', 'Home Team': homeStats?.linebreaks || 0, 'Away Team': guestStats?.linebreaks || 0 },
+      { 'Statistic': 'Intercepts', 'Home Team': homeStats?.intercepts || 0, 'Away Team': guestStats?.intercepts || 0 },
+      { 'Statistic': 'Missed Tackles', 'Home Team': homeStats?.['missed tackles'] || 0, 'Away Team': guestStats?.['missed tackles'] || 0 },
+      { 'Statistic': 'Turnovers', 'Home Team': homeStats?.turnovers || 0, 'Away Team': guestStats?.turnovers || 0 },
+      { 'Statistic': 'Turnovers Conceded', 'Home Team': homeStats?.['turnovers conceded'] || 0, 'Away Team': guestStats?.['turnovers conceded'] || 0 },
+      { 'Statistic': 'Knock-ons', 'Home Team': homeStats?.knockons || 0, 'Away Team': guestStats?.knockons || 0 },
+      { 'Statistic': 'Forward Passes', 'Home Team': homeStats?.['forward passes'] || 0, 'Away Team': guestStats?.['forward passes'] || 0 },
+      { 'Statistic': 'Handling Errors', 'Home Team': homeStats?.['handling errors'] || 0, 'Away Team': guestStats?.['handling errors'] || 0 },
+      { 'Statistic': 'Phases', 'Home Team': homeStats?.phases || 0, 'Away Team': guestStats?.phases || 0 },
+      { 'Statistic': '7+ Phases', 'Home Team': homeStats?.['7+ phases'] || 0, 'Away Team': guestStats?.['7+ phases'] || 0 },
+      { 'Statistic': 'Penalties Conceded', 'Home Team': homeStats?.['penalties conceded'] || 0, 'Away Team': guestStats?.['penalties conceded'] || 0 },
+      { 'Statistic': 'Penalties Won', 'Home Team': homeStats?.['penalties won'] || 0, 'Away Team': guestStats?.['penalties won'] || 0 },
+      { 'Statistic': 'Lineouts Won', 'Home Team': homeStats?.['lineouts won'] || 0, 'Away Team': guestStats?.['lineouts won'] || 0 },
+      { 'Statistic': 'Lineouts Lost', 'Home Team': homeStats?.['lineouts lost'] || 0, 'Away Team': guestStats?.['lineouts lost'] || 0 },
+      { 'Statistic': 'Lineouts Thrown', 'Home Team': homeStats?.['lineouts thrown'] || 0, 'Away Team': guestStats?.['lineouts thrown'] || 0 },
+      { 'Statistic': 'Lineouts Secured', 'Home Team': homeStats?.['lineouts secured'] || 0, 'Away Team': guestStats?.['lineouts secured'] || 0 },
+      { 'Statistic': 'Scrums Won', 'Home Team': homeStats?.['scrums won'] || 0, 'Away Team': guestStats?.['scrums won'] || 0 },
+      { 'Statistic': 'Scrums Lost', 'Home Team': homeStats?.['scrums lost'] || 0, 'Away Team': guestStats?.['scrums lost'] || 0 },
+      { 'Statistic': 'Scrums Put In', 'Home Team': homeStats?.['scrums put in'] || 0, 'Away Team': guestStats?.['scrums put in'] || 0 },
+      { 'Statistic': 'Scrums Secured', 'Home Team': homeStats?.['scrums secured'] || 0, 'Away Team': guestStats?.['scrums secured'] || 0 },
+      { 'Statistic': 'Rucks Won', 'Home Team': homeStats?.['rucks won'] || 0, 'Away Team': guestStats?.['rucks won'] || 0 },
+      { 'Statistic': 'Mauls Won', 'Home Team': homeStats?.['mauls won'] || 0, 'Away Team': guestStats?.['mauls won'] || 0 },
+      { 'Statistic': 'Kicks', 'Home Team': homeStats?.kicks || 0, 'Away Team': guestStats?.kicks || 0 },
+      { 'Statistic': 'Good Kicks', 'Home Team': homeStats?.['good kicks'] || 0, 'Away Team': guestStats?.['good kicks'] || 0 },
+      { 'Statistic': 'Bad Kicks', 'Home Team': homeStats?.['bad kicks'] || 0, 'Away Team': guestStats?.['bad kicks'] || 0 },
+      { 'Statistic': 'Kicks Out on Full', 'Home Team': homeStats?.['kicks out on the full'] || 0, 'Away Team': guestStats?.['kicks out on the full'] || 0 },
+      { 'Statistic': 'Kicking Metres', 'Home Team': homeStats?.['kicking metres'] || 0, 'Away Team': guestStats?.['kicking metres'] || 0 },
+      { 'Statistic': 'Possession', 'Home Team': homeStats?.possession || 0, 'Away Team': guestStats?.possession || 0 },
+      { 'Statistic': 'Territory', 'Home Team': homeStats?.territory || 0, 'Away Team': guestStats?.territory || 0 },
+      { 'Statistic': 'Minutes in 22', 'Home Team': homeStats?.['minutes in 22'] || 0, 'Away Team': guestStats?.['minutes in 22'] || 0 },
+      { 'Statistic': 'Ball Time', 'Home Team': homeStats?.['ball time'] || 0, 'Away Team': guestStats?.['ball time'] || 0 },
+      { 'Statistic': 'Yellow Cards', 'Home Team': homeStats?.['yellow cards'] || 0, 'Away Team': guestStats?.['yellow cards'] || 0 },
+      { 'Statistic': 'Red Cards', 'Home Team': homeStats?.['red cards'] || 0, 'Away Team': guestStats?.['red cards'] || 0 },
+      { 'Statistic': 'Injuries', 'Home Team': homeStats?.injuries || 0, 'Away Team': guestStats?.injuries || 0 },
+      { 'Statistic': 'Injury Breaks', 'Home Team': homeStats?.['injury breaks'] || 0, 'Away Team': guestStats?.['injury breaks'] || 0 },
+    ];
+
+    const ws = XLSX.utils.json_to_sheet(exportData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Statistics");
+    const fileName = `statistics_${homeTeam?.name || 'Home'}_vs_${guestTeam?.name || 'Away'}`.replace(/[^a-z0-9_]/gi, '_') + '.xlsx';
     XLSX.writeFile(wb, fileName);
   };
 
@@ -712,7 +778,7 @@ const TeamFixtures = () => {
                               </div>
                             )}
 
-                            <div className="pt-4 border-t border-gray-200 space-y-4">
+                            <div className="pt-4 border-t border-gray-200">
                               <div className="flex justify-center gap-8 text-center">
                                 <div>
                                   <div className="text-xs text-gray-500 uppercase mb-1">Venue</div>
@@ -722,17 +788,6 @@ const TeamFixtures = () => {
                                   <div className="text-xs text-gray-500 uppercase mb-1">Attendance</div>
                                   <div className="text-sm font-medium">{getAttendance(fixture)}</div>
                                 </div>
-                              </div>
-                              <div className="flex justify-center">
-                                <button
-                                  onClick={() => exportMatchStatsToExcel(fixture)}
-                                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-semibold flex items-center gap-2"
-                                >
-                                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                  </svg>
-                                  Export Match Stats
-                                </button>
                               </div>
                             </div>
                           </div>
@@ -864,6 +919,20 @@ const TeamFixtures = () => {
                               )}
                             </div>
                           )}
+
+                          <div className="mt-6 pt-4 border-t border-gray-200">
+                            <div className="flex justify-center">
+                              <button
+                                onClick={() => currentTab === 'matchstats' ? exportMatchStatsToExcel(fixture) : exportStatisticsToExcel(fixture)}
+                                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-semibold flex items-center gap-2"
+                              >
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                </svg>
+                                Export {currentTab === 'matchstats' ? 'Match Stats' : 'Statistics'}
+                              </button>
+                            </div>
+                          </div>
                         </div>
                       );
                     })()}
