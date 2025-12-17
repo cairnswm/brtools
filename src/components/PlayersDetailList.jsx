@@ -7,6 +7,7 @@ function PlayersDetailList({ players }) {
     <div className="space-y-4">
       {players.map((player) => {
         const csrFormatted = formatCSR(player.csr);
+        const showStars = player.scouting_stars_used !== undefined && player.scouting_stars_used !== null;
         return (
           <div key={player.id} className="bg-white rounded-lg shadow-md p-6">
             <div className="flex justify-between items-start mb-4">
@@ -15,7 +16,7 @@ function PlayersDetailList({ players }) {
                   {player.jersey !== "255" ? `${player.jersey}. ` : ""}{player.fname} {player.lname}
                 </h3>
                 <p className="text-gray-600">
-                  {player.age} y/o ({formatBirthday(player.birthday)}) | <span className={csrFormatted.color}>{csrFormatted.value}</span> CSR | {formatSalary(player.salary)} p.w. | {player.height}cm | {player.weight}kg | {formatNationality(player)}
+                  {player.age} y/o ({formatBirthday(player.birthday)}) | {showStars ? `${player.scouting_stars_used} Stars` : <><span className={csrFormatted.color}>{csrFormatted.value}</span> CSR</>} | {formatSalary(player.salary)} p.w. | {player.height}cm | {player.weight}kg | {formatNationality(player)}
                 </p>
               </div>
               <div className="text-right">
