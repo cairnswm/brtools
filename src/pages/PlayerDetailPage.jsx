@@ -21,17 +21,10 @@ const PlayerDetailPage = () => {
   useEffect(() => {
     if (playerId && teamId) {
       accessElf.track("Team/Player/Detail", teamId);
-    }
-  }, [playerId, teamId]);
-
-  useEffect(() => {
-    if (activeTab === 'statistics' && !playerStats && !loadingStats) {
       fetchPlayerStats();
-    }
-    if (activeTab === 'history' && !playerHistory && !loadingHistory) {
       fetchPlayerHistory();
     }
-  }, [activeTab]);
+  }, [playerId, teamId]);
 
   const fetchPlayerStats = async () => {
     if (!playerId || loadingStats) return;
