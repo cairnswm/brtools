@@ -13,8 +13,10 @@ const PlayerDetailPage = () => {
   const [activeTab, setActiveTab] = useState('information');
   const [playerStats, setPlayerStats] = useState(null);
   const [playerHistory, setPlayerHistory] = useState(null);
+  const [playerTraining, setPlayerTraining] = useState(null);
   const [loadingStats, setLoadingStats] = useState(false);
   const [loadingHistory, setLoadingHistory] = useState(false);
+  const [loadingTraining, setLoadingTraining] = useState(false);
   const [historyFilter, setHistoryFilter] = useState('');
 
   const player = players.find(p => p.id === playerId);
@@ -24,6 +26,7 @@ const PlayerDetailPage = () => {
       accessElf.track("Team/Player/Detail", teamId);
       fetchPlayerStats();
       fetchPlayerHistory();
+      fetchPlayerTraining();
     }
   }, [playerId, teamId]);
 
@@ -64,6 +67,26 @@ const PlayerDetailPage = () => {
       console.error('Error fetching player history:', err);
     } finally {
       setLoadingHistory(false);
+    }
+  };
+
+  const fetchPlayerTraining = async () => {
+    if (!playerId || loadingTraining) return;
+
+    setLoadingTraining(true);
+    try {
+      const response = await fetch(`${API_BASE_URL}/player/${playerId}/training`, {
+        headers: { 'accesskey': memberKey }
+      });
+      const data = await response.json();
+
+      if (data.data?.status === 'Ok') {
+        setPlayerTraining(data);
+      }
+    } catch (err) {
+      console.error('Error fetching player training:', err);
+    } finally {
+      setLoadingTraining(false);
     }
   };
 
@@ -855,9 +878,147 @@ const PlayerDetailPage = () => {
         );
 
       case 'training':
+        if (loadingTraining) {
+          return (
+            <div className="bg-gray-50 rounded-lg p-8 text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+              <p className="text-gray-600 mt-4">Loading training data...</p>
+            </div>
+          );
+        }
+
+        if (!playerTraining) {
+          return (
+            <div className="bg-gray-50 rounded-lg p-8 text-center">
+              <p className="text-gray-600">No training data available for this player.</p>
+            </div>
+          );
+        }
+
+        const trainingData = playerTraining.data?.report?.report;
+        const individualPlayer = trainingData?.individual?.players ? Object.values(trainingData.individual.players).find(p => p.id === playerId) : null;
+        const teamPlayer = trainingData?.team?.players ? Object.values(trainingData.team.players).find(p => p.id === playerId) : null;
+
+        if (!individualPlayer && !teamPlayer) {
+          return (
+            <div className="bg-gray-50 rounded-lg p-8 text-center">
+              <p className="text-gray-600">No training data found for this player in the latest report.</p>
+            </div>
+          );
+        }
+
         return (
-          <div className="bg-gray-50 rounded-lg p-8 text-center">
-            <p className="text-gray-600">Training information coming soon...</p>
+          <div className="space-y-6">
+            <div className="bg-white rounded-lg shadow-md p-6">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-bold text-gray-800">Player Training Report</h2>
+                <div className="text-sm text-gray-600">
+                  Season {playerTraining.data.report.season} - Round {playerTraining.data.report.round}
+                </div>
+              </div>
+
+              {teamPlayer && (
+                <div className="mb-6">
+                  <h3 className="text-lg font-semibold text-gray-700 border-b pb-2 mb-4">Team Training Results</h3>
+                  <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
+                    <div className="flex justify-between items-start mb-2">
+                      <span className="font-semibold text-gray-800">{player.fname} {player.lname}</span>
+                      <div className="text-right text-sm">
+                        <div className={`font-medium ${Number(teamPlayer.csr.is) - Number(teamPlayer.csr.was) > 0 ? 'text-green-600' : Number(teamPlayer.csr.is) - Number(teamPlayer.csr.was) < 0 ? 'text-red-600' : 'text-gray-600'}`}>
+                          CSR: {Number(teamPlayer.csr.was).toLocaleString()} → {Number(teamPlayer.csr.is).toLocaleString()}
+                          ({Number(teamPlayer.csr.is) - Number(teamPlayer.csr.was) > 0 ? '+' : ''}{(Number(teamPlayer.csr.is) - Number(teamPlayer.csr.was)).toLocaleString()})
+                        </div>
+                        <div className="text-gray-600">
+                          Energy: {teamPlayer.energy.was} → {teamPlayer.energy.is} ({Number(teamPlayer.energy.is) - Number(teamPlayer.energy.was) > 0 ? '+' : ''}{Number(teamPlayer.energy.is) - Number(teamPlayer.energy.was)})
+                        </div>
+                      </div>
+                    </div>
+
+                    {teamPlayer.pops && teamPlayer.pops.length > 0 && (
+                      <div className="flex flex-wrap gap-2 mt-2">
+                        {teamPlayer.pops.map((pop, idx) => (
+                          <span key={idx} className="px-2 py-1 bg-green-100 text-green-800 rounded text-xs font-medium">
+                            ↑ {pop.skill}: {pop.was} → {pop.is}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+
+                    {teamPlayer.drops && teamPlayer.drops.length > 0 && (
+                      <div className="flex flex-wrap gap-2 mt-2">
+                        {teamPlayer.drops.map((drop, idx) => (
+                          <span key={idx} className="px-2 py-1 bg-red-100 text-red-800 rounded text-xs font-medium">
+                            ↓ {drop.skill}: {drop.was} → {drop.is}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {trainingData.team?.skills && (
+                    <div className="mt-4">
+                      <h4 className="text-md font-semibold text-gray-700 mb-2">Team Training Focus</h4>
+                      <div className="flex flex-wrap gap-2">
+                        {trainingData.team.skills.map((skill, index) => (
+                          <span key={index} className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium capitalize">
+                            {skill}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {individualPlayer && individualPlayer.skills && individualPlayer.skills.length > 0 && (
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-700 border-b pb-2 mb-4">Individual Training Sessions</h3>
+                  <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
+                    <div className="flex justify-between items-start mb-3">
+                      <span className="font-semibold text-gray-800">{player.fname} {player.lname}</span>
+                      <div className="text-right text-sm">
+                        <div className={`font-medium ${Number(individualPlayer.csr.is) - Number(individualPlayer.csr.was) > 0 ? 'text-green-600' : Number(individualPlayer.csr.is) - Number(individualPlayer.csr.was) < 0 ? 'text-red-600' : 'text-gray-600'}`}>
+                          CSR: {Number(individualPlayer.csr.was).toLocaleString()} → {Number(individualPlayer.csr.is).toLocaleString()}
+                          ({Number(individualPlayer.csr.is) - Number(individualPlayer.csr.was) > 0 ? '+' : ''}{(Number(individualPlayer.csr.is) - Number(individualPlayer.csr.was)).toLocaleString()})
+                        </div>
+                        <div className="text-gray-600">
+                          Energy: {individualPlayer.energy.was} → {individualPlayer.energy.is} ({Number(individualPlayer.energy.is) - Number(individualPlayer.energy.was) > 0 ? '+' : ''}{Number(individualPlayer.energy.is) - Number(individualPlayer.energy.was)})
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      {individualPlayer.skills.map((skillTraining, idx) => (
+                        <div key={idx} className="p-3 bg-white rounded border border-gray-200">
+                          <div className="flex justify-between items-center mb-1">
+                            <span className="font-medium text-gray-700 capitalize">{skillTraining.skill}</span>
+                            <span className="text-sm text-gray-600">{skillTraining.sessions} sessions</span>
+                          </div>
+                          <div className="text-xs text-gray-500">
+                            Trainer: {skillTraining.trainer} (Level {skillTraining.trainerlevel} - {skillTraining.trainertype})
+                          </div>
+                          {skillTraining.pops && skillTraining.pops.length > 0 && (
+                            <div className="flex flex-wrap gap-2 mt-2">
+                              {skillTraining.pops.map((pop, popIdx) => (
+                                <span key={popIdx} className="px-2 py-1 bg-green-100 text-green-800 rounded text-xs font-medium">
+                                  ↑ {pop.skill}: {pop.was} → {pop.is}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {!individualPlayer?.skills?.length && !teamPlayer && (
+                <div className="text-center py-8">
+                  <p className="text-gray-600">This player did not participate in any training during this round.</p>
+                </div>
+              )}
+            </div>
           </div>
         );
 
