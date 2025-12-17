@@ -1,13 +1,20 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useTeam } from '../hooks/useTeam';
+import { useBRTools } from '../hooks/useBRTools';
 import { accessElf } from "../components/accessElf";
 import { formatCSR } from "../utils/formatters";
+import { API_BASE_URL } from "../config/api";
 
 const PlayerDetailPage = () => {
   const { playerId, teamId } = useParams();
   const { players } = useTeam();
+  const { memberKey } = useBRTools();
   const [activeTab, setActiveTab] = useState('information');
+  const [playerStats, setPlayerStats] = useState(null);
+  const [playerHistory, setPlayerHistory] = useState(null);
+  const [loadingStats, setLoadingStats] = useState(false);
+  const [loadingHistory, setLoadingHistory] = useState(false);
 
   const player = players.find(p => p.id === playerId);
 
@@ -16,6 +23,55 @@ const PlayerDetailPage = () => {
       accessElf.track("Team/Player/Detail", teamId);
     }
   }, [playerId, teamId]);
+
+  useEffect(() => {
+    if (activeTab === 'statistics' && !playerStats && !loadingStats) {
+      fetchPlayerStats();
+    }
+    if (activeTab === 'history' && !playerHistory && !loadingHistory) {
+      fetchPlayerHistory();
+    }
+  }, [activeTab]);
+
+  const fetchPlayerStats = async () => {
+    if (!playerId || loadingStats) return;
+
+    setLoadingStats(true);
+    try {
+      const response = await fetch(`${API_BASE_URL}/player/${playerId}/stats`, {
+        headers: { 'accesskey': memberKey }
+      });
+      const data = await response.json();
+
+      if (data.data?.status === 'Ok' && data.data?.stats) {
+        setPlayerStats(data.data.stats);
+      }
+    } catch (err) {
+      console.error('Error fetching player stats:', err);
+    } finally {
+      setLoadingStats(false);
+    }
+  };
+
+  const fetchPlayerHistory = async () => {
+    if (!playerId || loadingHistory) return;
+
+    setLoadingHistory(true);
+    try {
+      const response = await fetch(`${API_BASE_URL}/player/${playerId}/history`, {
+        headers: { 'accesskey': memberKey }
+      });
+      const data = await response.json();
+
+      if (data.data?.status === 'Ok' && data.data?.history) {
+        setPlayerHistory(data.data.history);
+      }
+    } catch (err) {
+      console.error('Error fetching player history:', err);
+    } finally {
+      setLoadingHistory(false);
+    }
+  };
 
   if (!player) {
     return (
@@ -276,23 +332,255 @@ const PlayerDetailPage = () => {
         );
 
       case 'statistics':
+        if (loadingStats) {
+          return (
+            <div className="bg-gray-50 rounded-lg p-8 text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+              <p className="text-gray-600 mt-4">Loading statistics...</p>
+            </div>
+          );
+        }
+
+        if (!playerStats) {
+          return (
+            <div className="bg-gray-50 rounded-lg p-8 text-center">
+              <p className="text-gray-600">No statistics available for this player.</p>
+            </div>
+          );
+        }
+
         return (
-          <div className="bg-gray-50 rounded-lg p-8 text-center">
-            <p className="text-gray-600">Statistics coming soon...</p>
+          <div className="space-y-6">
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="bg-gray-50 rounded-lg p-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Career Statistics</h3>
+                <div className="space-y-3">
+                  {playerStats.matches_played !== undefined && (
+                    <div className="flex justify-between border-b pb-2">
+                      <span className="text-sm text-gray-600">Matches Played</span>
+                      <span className="font-semibold">{playerStats.matches_played}</span>
+                    </div>
+                  )}
+                  {playerStats.tries !== undefined && (
+                    <div className="flex justify-between border-b pb-2">
+                      <span className="text-sm text-gray-600">Tries</span>
+                      <span className="font-semibold">{playerStats.tries}</span>
+                    </div>
+                  )}
+                  {playerStats.conversions !== undefined && (
+                    <div className="flex justify-between border-b pb-2">
+                      <span className="text-sm text-gray-600">Conversions</span>
+                      <span className="font-semibold">{playerStats.conversions}</span>
+                    </div>
+                  )}
+                  {playerStats.penalties !== undefined && (
+                    <div className="flex justify-between border-b pb-2">
+                      <span className="text-sm text-gray-600">Penalties</span>
+                      <span className="font-semibold">{playerStats.penalties}</span>
+                    </div>
+                  )}
+                  {playerStats.dropgoals !== undefined && (
+                    <div className="flex justify-between border-b pb-2">
+                      <span className="text-sm text-gray-600">Drop Goals</span>
+                      <span className="font-semibold">{playerStats.dropgoals}</span>
+                    </div>
+                  )}
+                  {playerStats.total_points !== undefined && (
+                    <div className="flex justify-between border-b pb-2">
+                      <span className="text-sm text-gray-600">Total Points</span>
+                      <span className="font-semibold">{playerStats.total_points}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="bg-gray-50 rounded-lg p-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Performance Stats</h3>
+                <div className="space-y-3">
+                  {playerStats.tackles !== undefined && (
+                    <div className="flex justify-between border-b pb-2">
+                      <span className="text-sm text-gray-600">Tackles</span>
+                      <span className="font-semibold">{playerStats.tackles}</span>
+                    </div>
+                  )}
+                  {playerStats.missed_tackles !== undefined && (
+                    <div className="flex justify-between border-b pb-2">
+                      <span className="text-sm text-gray-600">Missed Tackles</span>
+                      <span className="font-semibold">{playerStats.missed_tackles}</span>
+                    </div>
+                  )}
+                  {playerStats.metres_gained !== undefined && (
+                    <div className="flex justify-between border-b pb-2">
+                      <span className="text-sm text-gray-600">Metres Gained</span>
+                      <span className="font-semibold">{playerStats.metres_gained}</span>
+                    </div>
+                  )}
+                  {playerStats.linebreaks !== undefined && (
+                    <div className="flex justify-between border-b pb-2">
+                      <span className="text-sm text-gray-600">Linebreaks</span>
+                      <span className="font-semibold">{playerStats.linebreaks}</span>
+                    </div>
+                  )}
+                  {playerStats.turnovers !== undefined && (
+                    <div className="flex justify-between border-b pb-2">
+                      <span className="text-sm text-gray-600">Turnovers</span>
+                      <span className="font-semibold">{playerStats.turnovers}</span>
+                    </div>
+                  )}
+                  {playerStats.yellow_cards !== undefined && (
+                    <div className="flex justify-between border-b pb-2">
+                      <span className="text-sm text-gray-600">Yellow Cards</span>
+                      <span className="font-semibold">{playerStats.yellow_cards}</span>
+                    </div>
+                  )}
+                  {playerStats.red_cards !== undefined && (
+                    <div className="flex justify-between border-b pb-2">
+                      <span className="text-sm text-gray-600">Red Cards</span>
+                      <span className="font-semibold">{playerStats.red_cards}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {(playerStats.injuries !== undefined || playerStats.category_1_injuries !== undefined) && (
+              <div className="bg-gray-50 rounded-lg p-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Injury Record</h3>
+                <div className="grid md:grid-cols-3 gap-4">
+                  {playerStats.injuries !== undefined && (
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-gray-900">{playerStats.injuries}</div>
+                      <div className="text-sm text-gray-600">Total Injuries</div>
+                    </div>
+                  )}
+                  {playerStats.category_1_injuries !== undefined && (
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-gray-900">{playerStats.category_1_injuries}</div>
+                      <div className="text-sm text-gray-600">Category 1</div>
+                    </div>
+                  )}
+                  {playerStats.category_2_injuries !== undefined && (
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-gray-900">{playerStats.category_2_injuries}</div>
+                      <div className="text-sm text-gray-600">Category 2</div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         );
 
       case 'caps':
         return (
-          <div className="bg-gray-50 rounded-lg p-8 text-center">
-            <p className="text-gray-600">Caps information coming soon...</p>
+          <div className="space-y-6">
+            <div className="bg-gray-50 rounded-lg p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">International Caps</h3>
+              <div className="space-y-3">
+                {player.capped_for && (
+                  <div className="bg-white rounded-lg p-4 border border-gray-200">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600">Capped For</span>
+                      <span className="font-semibold text-lg">{player.capped_for}</span>
+                    </div>
+                    <div className="mt-2 text-xs text-gray-500">
+                      This player has represented {player.capped_for} at the international level
+                    </div>
+                  </div>
+                )}
+                {!player.capped_for && (
+                  <div className="text-center py-8">
+                    <p className="text-gray-600">This player has not yet been capped at international level.</p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="bg-gray-50 rounded-lg p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Eligibility</h3>
+              <div className="space-y-3">
+                <div className="flex justify-between">
+                  <span className="text-sm text-gray-600">Primary Nationality</span>
+                  <span className="font-semibold">{player.nationality}</span>
+                </div>
+                {player.dualnationality && (
+                  <div className="flex justify-between">
+                    <span className="text-sm text-gray-600">Dual Nationality</span>
+                    <span className="font-semibold">{player.dualnationality}</span>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         );
 
       case 'history':
+        if (loadingHistory) {
+          return (
+            <div className="bg-gray-50 rounded-lg p-8 text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+              <p className="text-gray-600 mt-4">Loading history...</p>
+            </div>
+          );
+        }
+
+        if (!playerHistory || playerHistory.length === 0) {
+          return (
+            <div className="bg-gray-50 rounded-lg p-8 text-center">
+              <p className="text-gray-600">No history available for this player.</p>
+            </div>
+          );
+        }
+
         return (
-          <div className="bg-gray-50 rounded-lg p-8 text-center">
-            <p className="text-gray-600">Player history coming soon...</p>
+          <div className="space-y-4">
+            <div className="bg-gray-50 rounded-lg p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Career History</h3>
+              <div className="space-y-3">
+                {playerHistory.map((entry, index) => (
+                  <div key={index} className="bg-white rounded-lg p-4 border border-gray-200">
+                    <div className="grid md:grid-cols-2 gap-4">
+                      {entry.season !== undefined && (
+                        <div>
+                          <span className="text-sm text-gray-600">Season:</span>
+                          <span className="ml-2 font-semibold">{entry.season}</span>
+                        </div>
+                      )}
+                      {entry.team_name !== undefined && (
+                        <div>
+                          <span className="text-sm text-gray-600">Team:</span>
+                          <span className="ml-2 font-semibold">{entry.team_name}</span>
+                        </div>
+                      )}
+                      {entry.competition !== undefined && (
+                        <div>
+                          <span className="text-sm text-gray-600">Competition:</span>
+                          <span className="ml-2 font-semibold">{entry.competition}</span>
+                        </div>
+                      )}
+                      {entry.matches_played !== undefined && (
+                        <div>
+                          <span className="text-sm text-gray-600">Matches:</span>
+                          <span className="ml-2 font-semibold">{entry.matches_played}</span>
+                        </div>
+                      )}
+                      {entry.tries !== undefined && (
+                        <div>
+                          <span className="text-sm text-gray-600">Tries:</span>
+                          <span className="ml-2 font-semibold">{entry.tries}</span>
+                        </div>
+                      )}
+                      {entry.points !== undefined && (
+                        <div>
+                          <span className="text-sm text-gray-600">Points:</span>
+                          <span className="ml-2 font-semibold">{entry.points}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         );
 
