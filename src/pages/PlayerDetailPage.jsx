@@ -112,6 +112,16 @@ const PlayerDetailPage = () => {
                     <span className="text-gray-600">Experience</span>
                     <span className="font-semibold text-gray-900">{player.experience}</span>
                   </div>
+                  
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Discipline</span>
+                    <span className="font-semibold text-gray-900">{player.discipline}</span>
+                  </div>
+                  
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Aggression</span>
+                    <span className="font-semibold text-gray-900">{player.aggression}</span>
+                  </div>
                 </div>
               </div>
 
