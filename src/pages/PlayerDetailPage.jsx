@@ -351,14 +351,80 @@ const PlayerDetailPage = () => {
 
         return (
           <div className="space-y-6">
-            <div className="grid md:grid-cols-2 gap-6">
+            <div className="grid md:grid-cols-3 gap-6">
               <div className="bg-gray-50 rounded-lg p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Career Statistics</h3>
-                <div className="space-y-3">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Match Caps</h3>
+                <div className="space-y-2">
+                  {playerStats.leaguecaps !== undefined && (
+                    <div className="flex justify-between border-b pb-2">
+                      <span className="text-sm text-gray-600">League</span>
+                      <span className="font-semibold">{playerStats.leaguecaps}</span>
+                    </div>
+                  )}
+                  {playerStats.friendlycaps !== undefined && (
+                    <div className="flex justify-between border-b pb-2">
+                      <span className="text-sm text-gray-600">Friendly</span>
+                      <span className="font-semibold">{playerStats.friendlycaps}</span>
+                    </div>
+                  )}
+                  {playerStats.cupcaps !== undefined && (
+                    <div className="flex justify-between border-b pb-2">
+                      <span className="text-sm text-gray-600">Cup</span>
+                      <span className="font-semibold">{playerStats.cupcaps}</span>
+                    </div>
+                  )}
+                  {playerStats.nationalcaps !== undefined && (
+                    <div className="flex justify-between border-b pb-2">
+                      <span className="text-sm text-gray-600">National</span>
+                      <span className="font-semibold">{playerStats.nationalcaps}</span>
+                    </div>
+                  )}
+                  {playerStats.worldcupcaps !== undefined && (
+                    <div className="flex justify-between border-b pb-2">
+                      <span className="text-sm text-gray-600">World Cup</span>
+                      <span className="font-semibold">{playerStats.worldcupcaps}</span>
+                    </div>
+                  )}
+                  {playerStats.undertwentycaps !== undefined && (
+                    <div className="flex justify-between border-b pb-2">
+                      <span className="text-sm text-gray-600">Under 20</span>
+                      <span className="font-semibold">{playerStats.undertwentycaps}</span>
+                    </div>
+                  )}
+                  {playerStats.undertwentyworldcupcaps !== undefined && (
+                    <div className="flex justify-between border-b pb-2">
+                      <span className="text-sm text-gray-600">U20 World Cup</span>
+                      <span className="font-semibold">{playerStats.undertwentyworldcupcaps}</span>
+                    </div>
+                  )}
+                  {playerStats.othercaps !== undefined && (
+                    <div className="flex justify-between border-b pb-2">
+                      <span className="text-sm text-gray-600">Other</span>
+                      <span className="font-semibold">{playerStats.othercaps}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="bg-gray-50 rounded-lg p-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Scoring</h3>
+                <div className="space-y-2">
+                  {playerStats.totalpoints !== undefined && (
+                    <div className="flex justify-between border-b pb-2">
+                      <span className="text-sm text-gray-600">Total Points</span>
+                      <span className="font-semibold">{playerStats.totalpoints}</span>
+                    </div>
+                  )}
                   {playerStats.tries !== undefined && (
                     <div className="flex justify-between border-b pb-2">
                       <span className="text-sm text-gray-600">Tries</span>
                       <span className="font-semibold">{playerStats.tries}</span>
+                    </div>
+                  )}
+                  {playerStats.tryassists !== undefined && (
+                    <div className="flex justify-between border-b pb-2">
+                      <span className="text-sm text-gray-600">Try Assists</span>
+                      <span className="font-semibold">{playerStats.tryassists}</span>
                     </div>
                   )}
                   {playerStats.conversions !== undefined && (
@@ -367,10 +433,22 @@ const PlayerDetailPage = () => {
                       <span className="font-semibold">{playerStats.conversions}</span>
                     </div>
                   )}
+                  {playerStats.missedconversions !== undefined && (
+                    <div className="flex justify-between border-b pb-2">
+                      <span className="text-sm text-gray-600">Missed Conversions</span>
+                      <span className="font-semibold">{playerStats.missedconversions}</span>
+                    </div>
+                  )}
                   {playerStats.penalties !== undefined && (
                     <div className="flex justify-between border-b pb-2">
                       <span className="text-sm text-gray-600">Penalties</span>
                       <span className="font-semibold">{playerStats.penalties}</span>
+                    </div>
+                  )}
+                  {playerStats.missedpenalties !== undefined && (
+                    <div className="flex justify-between border-b pb-2">
+                      <span className="text-sm text-gray-600">Missed Penalties</span>
+                      <span className="font-semibold">{playerStats.missedpenalties}</span>
                     </div>
                   )}
                   {playerStats.dropgoals !== undefined && (
@@ -379,28 +457,28 @@ const PlayerDetailPage = () => {
                       <span className="font-semibold">{playerStats.dropgoals}</span>
                     </div>
                   )}
-                  {playerStats.cupcaps !== undefined && (
+                  {playerStats.misseddropgoals !== undefined && (
                     <div className="flex justify-between border-b pb-2">
-                      <span className="text-sm text-gray-600">Cup Caps</span>
-                      <span className="font-semibold">{playerStats.cupcaps}</span>
+                      <span className="text-sm text-gray-600">Missed Drop Goals</span>
+                      <span className="font-semibold">{playerStats.misseddropgoals}</span>
                     </div>
                   )}
                 </div>
               </div>
 
               <div className="bg-gray-50 rounded-lg p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Performance Stats</h3>
-                <div className="space-y-3">
-                  {playerStats.tackles !== undefined && (
-                    <div className="flex justify-between border-b pb-2">
-                      <span className="text-sm text-gray-600">Tackles</span>
-                      <span className="font-semibold">{playerStats.tackles}</span>
-                    </div>
-                  )}
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Attack</h3>
+                <div className="space-y-2">
                   {playerStats.metresgained !== undefined && (
                     <div className="flex justify-between border-b pb-2">
                       <span className="text-sm text-gray-600">Metres Gained</span>
                       <span className="font-semibold">{playerStats.metresgained}</span>
+                    </div>
+                  )}
+                  {playerStats.linebreaks !== undefined && (
+                    <div className="flex justify-between border-b pb-2">
+                      <span className="text-sm text-gray-600">Line Breaks</span>
+                      <span className="font-semibold">{playerStats.linebreaks}</span>
                     </div>
                   )}
                   {playerStats.beatendefenders !== undefined && (
@@ -415,16 +493,90 @@ const PlayerDetailPage = () => {
                       <span className="font-semibold">{playerStats.balltime}</span>
                     </div>
                   )}
-                  {playerStats.fights !== undefined && (
+                  {playerStats.intercepts !== undefined && (
                     <div className="flex justify-between border-b pb-2">
-                      <span className="text-sm text-gray-600">Fights</span>
-                      <span className="font-semibold">{playerStats.fights}</span>
+                      <span className="text-sm text-gray-600">Intercepts</span>
+                      <span className="font-semibold">{playerStats.intercepts}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-6">
+              <div className="bg-gray-50 rounded-lg p-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Defense</h3>
+                <div className="space-y-2">
+                  {playerStats.tackles !== undefined && (
+                    <div className="flex justify-between border-b pb-2">
+                      <span className="text-sm text-gray-600">Tackles</span>
+                      <span className="font-semibold">{playerStats.tackles}</span>
+                    </div>
+                  )}
+                  {playerStats.missedtackles !== undefined && (
+                    <div className="flex justify-between border-b pb-2">
+                      <span className="text-sm text-gray-600">Missed Tackles</span>
+                      <span className="font-semibold">{playerStats.missedtackles}</span>
+                    </div>
+                  )}
+                  {playerStats.turnoverswon !== undefined && (
+                    <div className="flex justify-between border-b pb-2">
+                      <span className="text-sm text-gray-600">Turnovers Won</span>
+                      <span className="font-semibold">{playerStats.turnoverswon}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="bg-gray-50 rounded-lg p-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Kicking</h3>
+                <div className="space-y-2">
+                  {playerStats.kicks !== undefined && (
+                    <div className="flex justify-between border-b pb-2">
+                      <span className="text-sm text-gray-600">Kicks</span>
+                      <span className="font-semibold">{playerStats.kicks}</span>
+                    </div>
+                  )}
+                  {playerStats.goodkicks !== undefined && (
+                    <div className="flex justify-between border-b pb-2">
+                      <span className="text-sm text-gray-600">Good Kicks</span>
+                      <span className="font-semibold">{playerStats.goodkicks}</span>
                     </div>
                   )}
                   {playerStats.badkicks !== undefined && (
                     <div className="flex justify-between border-b pb-2">
                       <span className="text-sm text-gray-600">Bad Kicks</span>
                       <span className="font-semibold">{playerStats.badkicks}</span>
+                    </div>
+                  )}
+                  {playerStats.kicksoutonthefull !== undefined && (
+                    <div className="flex justify-between border-b pb-2">
+                      <span className="text-sm text-gray-600">Kicks Out on Full</span>
+                      <span className="font-semibold">{playerStats.kicksoutonthefull}</span>
+                    </div>
+                  )}
+                  {playerStats.kickingmetres !== undefined && (
+                    <div className="flex justify-between border-b pb-2">
+                      <span className="text-sm text-gray-600">Kicking Metres</span>
+                      <span className="font-semibold">{playerStats.kickingmetres}</span>
+                    </div>
+                  )}
+                  {playerStats.avkickingmetres !== undefined && (
+                    <div className="flex justify-between border-b pb-2">
+                      <span className="text-sm text-gray-600">Avg Kicking Metres</span>
+                      <span className="font-semibold">{playerStats.avkickingmetres}</span>
+                    </div>
+                  )}
+                  {playerStats.upandunders !== undefined && (
+                    <div className="flex justify-between border-b pb-2">
+                      <span className="text-sm text-gray-600">Up & Unders</span>
+                      <span className="font-semibold">{playerStats.upandunders}</span>
+                    </div>
+                  )}
+                  {playerStats.goodupandunders !== undefined && (
+                    <div className="flex justify-between border-b pb-2">
+                      <span className="text-sm text-gray-600">Good Up & Unders</span>
+                      <span className="font-semibold">{playerStats.goodupandunders}</span>
                     </div>
                   )}
                   {playerStats.badupandunders !== undefined && (
@@ -435,19 +587,111 @@ const PlayerDetailPage = () => {
                   )}
                 </div>
               </div>
-            </div>
 
-            {playerStats.avkickingmetres !== undefined && (
               <div className="bg-gray-50 rounded-lg p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Kicking Stats</h3>
-                <div className="space-y-3">
-                  <div className="flex justify-between border-b pb-2">
-                    <span className="text-sm text-gray-600">Average Kicking Metres</span>
-                    <span className="font-semibold">{playerStats.avkickingmetres}</span>
-                  </div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Line-outs</h3>
+                <div className="space-y-2">
+                  {playerStats.lineoutssecured !== undefined && (
+                    <div className="flex justify-between border-b pb-2">
+                      <span className="text-sm text-gray-600">Secured</span>
+                      <span className="font-semibold">{playerStats.lineoutssecured}</span>
+                    </div>
+                  )}
+                  {playerStats.lineoutsstolen !== undefined && (
+                    <div className="flex justify-between border-b pb-2">
+                      <span className="text-sm text-gray-600">Stolen</span>
+                      <span className="font-semibold">{playerStats.lineoutsstolen}</span>
+                    </div>
+                  )}
+                  {playerStats.lineoutsconceded !== undefined && (
+                    <div className="flex justify-between border-b pb-2">
+                      <span className="text-sm text-gray-600">Conceded</span>
+                      <span className="font-semibold">{playerStats.lineoutsconceded}</span>
+                    </div>
+                  )}
+                  {playerStats.successfullineoutthrows !== undefined && (
+                    <div className="flex justify-between border-b pb-2">
+                      <span className="text-sm text-gray-600">Successful Throws</span>
+                      <span className="font-semibold">{playerStats.successfullineoutthrows}</span>
+                    </div>
+                  )}
+                  {playerStats.unsuccessfullineoutthrows !== undefined && (
+                    <div className="flex justify-between border-b pb-2">
+                      <span className="text-sm text-gray-600">Unsuccessful Throws</span>
+                      <span className="font-semibold">{playerStats.unsuccessfullineoutthrows}</span>
+                    </div>
+                  )}
                 </div>
               </div>
-            )}
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-6">
+              <div className="bg-gray-50 rounded-lg p-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Errors</h3>
+                <div className="space-y-2">
+                  {playerStats.handlingerrors !== undefined && (
+                    <div className="flex justify-between border-b pb-2">
+                      <span className="text-sm text-gray-600">Handling Errors</span>
+                      <span className="font-semibold">{playerStats.handlingerrors}</span>
+                    </div>
+                  )}
+                  {playerStats.knockons !== undefined && (
+                    <div className="flex justify-between border-b pb-2">
+                      <span className="text-sm text-gray-600">Knock-ons</span>
+                      <span className="font-semibold">{playerStats.knockons}</span>
+                    </div>
+                  )}
+                  {playerStats.forwardpasses !== undefined && (
+                    <div className="flex justify-between border-b pb-2">
+                      <span className="text-sm text-gray-600">Forward Passes</span>
+                      <span className="font-semibold">{playerStats.forwardpasses}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="bg-gray-50 rounded-lg p-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Discipline</h3>
+                <div className="space-y-2">
+                  {playerStats.penaltiesconceded !== undefined && (
+                    <div className="flex justify-between border-b pb-2">
+                      <span className="text-sm text-gray-600">Penalties Conceded</span>
+                      <span className="font-semibold">{playerStats.penaltiesconceded}</span>
+                    </div>
+                  )}
+                  {playerStats.penaltytime !== undefined && (
+                    <div className="flex justify-between border-b pb-2">
+                      <span className="text-sm text-gray-600">Penalty Time</span>
+                      <span className="font-semibold">{playerStats.penaltytime}</span>
+                    </div>
+                  )}
+                  {playerStats.redcards !== undefined && (
+                    <div className="flex justify-between border-b pb-2">
+                      <span className="text-sm text-gray-600">Red Cards</span>
+                      <span className="font-semibold">{playerStats.redcards}</span>
+                    </div>
+                  )}
+                  {playerStats.fights !== undefined && (
+                    <div className="flex justify-between border-b pb-2">
+                      <span className="text-sm text-gray-600">Fights</span>
+                      <span className="font-semibold">{playerStats.fights}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="bg-gray-50 rounded-lg p-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Injuries</h3>
+                <div className="space-y-2">
+                  {playerStats.injuries !== undefined && (
+                    <div className="flex justify-between border-b pb-2">
+                      <span className="text-sm text-gray-600">Total Injuries</span>
+                      <span className="font-semibold">{playerStats.injuries}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
           </div>
         );
 
