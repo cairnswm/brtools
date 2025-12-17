@@ -67,21 +67,61 @@ const PlayerDetailPage = () => {
   };
 
   const parseHistoryEvent = (eventText) => {
-    const skillTypeRegex = /<skill type=(\w+) \/>/g;
-    const rankValueRegex = /<rank value=(\d+) \/>/g;
-
-    let parsed = eventText;
-
-    parsed = parsed.replace(skillTypeRegex, (match, skillType) => {
-      const formatted = skillType.charAt(0).toUpperCase() + skillType.slice(1);
-      return formatted;
+    // Replace skill tags
+    let parsed = eventText.replace(/<skill type=(\w+) \/>/g, (match, skillType) => {
+      return skillType.charAt(0).toUpperCase() + skillType.slice(1);
     });
 
-    parsed = parsed.replace(rankValueRegex, (match, rankValue) => {
+    // Replace rank tags
+    parsed = parsed.replace(/<rank value=(\d+) \/>/g, (match, rankValue) => {
       return rankValue;
     });
 
-    return parsed;
+    // Replace comp tags
+    parsed = parsed.replace(/<comp type=(\w+) \/>/g, (match, compType) => {
+      return compType;
+    });
+
+    // Parse and create React elements
+    const parts = [];
+    let lastIndex = 0;
+    const anchorRegex = /<a href="([^"]+)">([^<]+)<\/a>/g;
+    let match;
+
+    while ((match = anchorRegex.exec(parsed)) !== null) {
+      // Add text before the link
+      if (match.index > lastIndex) {
+        parts.push(parsed.substring(lastIndex, match.index));
+      }
+
+      // Add the link as a React element
+      const href = `https://www.blackoutrugby.com/game/${match[1]}`;
+      parts.push(
+        <a
+          key={match.index}
+          href={href}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-blue-600 hover:text-blue-800 underline"
+        >
+          {match[2]}
+        </a>
+      );
+
+      lastIndex = anchorRegex.lastIndex;
+    }
+
+    // Add remaining text
+    if (lastIndex < parsed.length) {
+      parts.push(parsed.substring(lastIndex));
+    }
+
+    // If no links found, return the parsed text
+    if (parts.length === 0) {
+      return parsed;
+    }
+
+    return parts;
   };
 
   if (!player) {
