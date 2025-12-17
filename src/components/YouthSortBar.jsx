@@ -1,12 +1,12 @@
 import { useTeam } from '../hooks/useTeam';
 
 function YouthSortBar() {
-  const { 
-    sortField, 
-    sortDirection, 
-    handleSort, 
-    sortOptions, 
-    exportToExcel,
+  const {
+    sortField,
+    sortDirection,
+    handleSort,
+    sortOptions,
+    exportYouthToExcel,
     playersView,
     setPlayersView
   } = useTeam();
@@ -60,7 +60,7 @@ function YouthSortBar() {
           </button>
         </div>
         <button
-          onClick={exportToExcel}
+          onClick={exportYouthToExcel}
           className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
         >
           Export to Excel

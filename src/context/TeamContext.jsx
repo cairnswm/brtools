@@ -378,6 +378,42 @@ export function TeamProvider({ children }) {
     XLSX.writeFile(wb, "players.xlsx");
   };
 
+  const exportYouthToExcel = () => {
+    const exportData = sortedYouth.map(player => ({
+      Jersey: player.jersey !== "255" ? player.jersey : "",
+      'First Name': player.fname,
+      'Last Name': player.lname,
+      Age: Number(player.age),
+      CSR: Number(player.csr),
+      Energy: Number(player.energy),
+      Form: Number(player.form),
+      Leadership: Number(player.leadership),
+      Experience: Number(player.experience),
+      Discipline: Number(player.discipline),
+      Aggression: Number(player.aggression),
+      Height: Number(player.height),
+      Weight: Number(player.weight),
+      Nationality: getNationality(player),
+      Salary: "",
+      Stamina: Number(player.stamina),
+      Handling: Number(player.handling),
+      Attack: Number(player.attack),
+      Defense: Number(player.defense),
+      Technique: Number(player.technique),
+      Strength: Number(player.strength),
+      Jumping: Number(player.jumping),
+      Speed: Number(player.speed),
+      Agility: Number(player.agility),
+      Kicking: Number(player.kicking),
+      Stars: player.scouting_stars_used || ""
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(exportData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Youth");
+    XLSX.writeFile(wb, "youth.xlsx");
+  };
+
   const exportStandingsToExcel = () => {
     const exportData = sortedStandings.map(standing => {
       const team = cachedTeams[standing.teamid];
@@ -433,6 +469,7 @@ export function TeamProvider({ children }) {
       handleSort,
       sortOptions: SORT_OPTIONS,
       exportToExcel,
+      exportYouthToExcel,
       exportStandingsToExcel,
       standingsView,
       setStandingsView,
