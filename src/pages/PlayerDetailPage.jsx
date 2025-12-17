@@ -73,6 +73,24 @@ const PlayerDetailPage = () => {
     }
   };
 
+  const parseHistoryEvent = (eventText) => {
+    const skillTypeRegex = /<skill type=(\w+) \/>/g;
+    const rankValueRegex = /<rank value=(\d+) \/>/g;
+
+    let parsed = eventText;
+
+    parsed = parsed.replace(skillTypeRegex, (match, skillType) => {
+      const formatted = skillType.charAt(0).toUpperCase() + skillType.slice(1);
+      return formatted;
+    });
+
+    parsed = parsed.replace(rankValueRegex, (match, rankValue) => {
+      return rankValue;
+    });
+
+    return parsed;
+  };
+
   if (!player) {
     return (
       <div className="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded relative">
@@ -351,61 +369,7 @@ const PlayerDetailPage = () => {
 
         return (
           <div className="space-y-6">
-            <div className="grid md:grid-cols-3 gap-6">
-              <div className="bg-gray-50 rounded-lg p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Match Caps</h3>
-                <div className="space-y-2">
-                  {playerStats.leaguecaps !== undefined && (
-                    <div className="flex justify-between border-b pb-2">
-                      <span className="text-sm text-gray-600">League</span>
-                      <span className="font-semibold">{playerStats.leaguecaps}</span>
-                    </div>
-                  )}
-                  {playerStats.friendlycaps !== undefined && (
-                    <div className="flex justify-between border-b pb-2">
-                      <span className="text-sm text-gray-600">Friendly</span>
-                      <span className="font-semibold">{playerStats.friendlycaps}</span>
-                    </div>
-                  )}
-                  {playerStats.cupcaps !== undefined && (
-                    <div className="flex justify-between border-b pb-2">
-                      <span className="text-sm text-gray-600">Cup</span>
-                      <span className="font-semibold">{playerStats.cupcaps}</span>
-                    </div>
-                  )}
-                  {playerStats.nationalcaps !== undefined && (
-                    <div className="flex justify-between border-b pb-2">
-                      <span className="text-sm text-gray-600">National</span>
-                      <span className="font-semibold">{playerStats.nationalcaps}</span>
-                    </div>
-                  )}
-                  {playerStats.worldcupcaps !== undefined && (
-                    <div className="flex justify-between border-b pb-2">
-                      <span className="text-sm text-gray-600">World Cup</span>
-                      <span className="font-semibold">{playerStats.worldcupcaps}</span>
-                    </div>
-                  )}
-                  {playerStats.undertwentycaps !== undefined && (
-                    <div className="flex justify-between border-b pb-2">
-                      <span className="text-sm text-gray-600">Under 20</span>
-                      <span className="font-semibold">{playerStats.undertwentycaps}</span>
-                    </div>
-                  )}
-                  {playerStats.undertwentyworldcupcaps !== undefined && (
-                    <div className="flex justify-between border-b pb-2">
-                      <span className="text-sm text-gray-600">U20 World Cup</span>
-                      <span className="font-semibold">{playerStats.undertwentyworldcupcaps}</span>
-                    </div>
-                  )}
-                  {playerStats.othercaps !== undefined && (
-                    <div className="flex justify-between border-b pb-2">
-                      <span className="text-sm text-gray-600">Other</span>
-                      <span className="font-semibold">{playerStats.othercaps}</span>
-                    </div>
-                  )}
-                </div>
-              </div>
-
+            <div className="grid md:grid-cols-2 gap-6">
               <div className="bg-gray-50 rounded-lg p-6">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">Scoring</h3>
                 <div className="space-y-2">
@@ -699,6 +663,60 @@ const PlayerDetailPage = () => {
         return (
           <div className="space-y-6">
             <div className="bg-gray-50 rounded-lg p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Match Caps</h3>
+              <div className="space-y-2">
+                {playerStats.leaguecaps !== undefined && (
+                  <div className="flex justify-between border-b pb-2">
+                    <span className="text-sm text-gray-600">League</span>
+                    <span className="font-semibold">{playerStats.leaguecaps}</span>
+                  </div>
+                )}
+                {playerStats.friendlycaps !== undefined && (
+                  <div className="flex justify-between border-b pb-2">
+                    <span className="text-sm text-gray-600">Friendly</span>
+                    <span className="font-semibold">{playerStats.friendlycaps}</span>
+                  </div>
+                )}
+                {playerStats.cupcaps !== undefined && (
+                  <div className="flex justify-between border-b pb-2">
+                    <span className="text-sm text-gray-600">Cup</span>
+                    <span className="font-semibold">{playerStats.cupcaps}</span>
+                  </div>
+                )}
+                {playerStats.nationalcaps !== undefined && (
+                  <div className="flex justify-between border-b pb-2">
+                    <span className="text-sm text-gray-600">National</span>
+                    <span className="font-semibold">{playerStats.nationalcaps}</span>
+                  </div>
+                )}
+                {playerStats.worldcupcaps !== undefined && (
+                  <div className="flex justify-between border-b pb-2">
+                    <span className="text-sm text-gray-600">World Cup</span>
+                    <span className="font-semibold">{playerStats.worldcupcaps}</span>
+                  </div>
+                )}
+                {playerStats.undertwentycaps !== undefined && (
+                  <div className="flex justify-between border-b pb-2">
+                    <span className="text-sm text-gray-600">Under 20</span>
+                    <span className="font-semibold">{playerStats.undertwentycaps}</span>
+                  </div>
+                )}
+                {playerStats.undertwentyworldcupcaps !== undefined && (
+                  <div className="flex justify-between border-b pb-2">
+                    <span className="text-sm text-gray-600">U20 World Cup</span>
+                    <span className="font-semibold">{playerStats.undertwentyworldcupcaps}</span>
+                  </div>
+                )}
+                {playerStats.othercaps !== undefined && (
+                  <div className="flex justify-between border-b pb-2">
+                    <span className="text-sm text-gray-600">Other</span>
+                    <span className="font-semibold">{playerStats.othercaps}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="bg-gray-50 rounded-lg p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">International Caps</h3>
               <div className="space-y-3">
                 {player.capped_for && (
@@ -774,10 +792,9 @@ const PlayerDetailPage = () => {
                         })}
                       </span>
                     </div>
-                    <div
-                      className="text-gray-900"
-                      dangerouslySetInnerHTML={{ __html: entry.event }}
-                    />
+                    <div className="text-gray-900">
+                      {parseHistoryEvent(entry.event)}
+                    </div>
                   </div>
                 ))}
               </div>
