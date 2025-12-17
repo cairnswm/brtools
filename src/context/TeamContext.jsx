@@ -319,6 +319,8 @@ export function TeamProvider({ children }) {
       Form: Number(player.form),
       Leadership: Number(player.leadership),
       Experience: Number(player.experience),
+      Discipline: Number(player.discipline),
+      Aggression: Number(player.aggression),
       Height: Number(player.height),
       Weight: Number(player.weight),
       Nationality: getNationality(player),
