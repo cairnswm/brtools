@@ -15,6 +15,7 @@ const PlayerDetailPage = () => {
   const [playerHistory, setPlayerHistory] = useState(null);
   const [loadingStats, setLoadingStats] = useState(false);
   const [loadingHistory, setLoadingHistory] = useState(false);
+  const [historyFilter, setHistoryFilter] = useState('');
 
   const player = players.find(p => p.id === playerId);
 
@@ -807,15 +808,33 @@ const PlayerDetailPage = () => {
           );
         }
 
+        const filteredHistory = playerHistory.filter(entry =>
+          entry.event.toLowerCase().includes(historyFilter.toLowerCase())
+        );
+
         return (
           <div className="space-y-4">
+            <div className="bg-white rounded-lg p-4 border border-gray-200">
+              <input
+                type="text"
+                placeholder="Filter history..."
+                value={historyFilter}
+                onChange={(e) => setHistoryFilter(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+            </div>
+
             <div className="bg-gray-50 rounded-lg p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Career History</h3>
-              <div className="space-y-3">
-                {playerHistory.map((entry) => (
-                  <div key={entry.id} className="bg-white rounded-lg p-4 border border-gray-200">
-                    <div className="flex justify-between items-start mb-2">
-                      <span className="text-sm text-gray-500">
+              {filteredHistory.length === 0 ? (
+                <div className="text-center py-8 text-gray-600">
+                  No history entries match your filter.
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {filteredHistory.map((entry) => (
+                    <div key={entry.id} className="grid grid-cols-[200px_1fr] gap-4 py-2 border-b border-gray-200 last:border-b-0">
+                      <div className="text-sm text-gray-500">
                         {new Date(entry.date).toLocaleDateString('en-NZ', {
                           year: 'numeric',
                           month: 'short',
@@ -823,14 +842,14 @@ const PlayerDetailPage = () => {
                           hour: '2-digit',
                           minute: '2-digit'
                         })}
-                      </span>
+                      </div>
+                      <div className="text-gray-900">
+                        {parseHistoryEvent(entry.event)}
+                      </div>
                     </div>
-                    <div className="text-gray-900">
-                      {parseHistoryEvent(entry.event)}
-                    </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         );
