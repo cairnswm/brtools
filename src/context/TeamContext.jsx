@@ -1,4 +1,4 @@
-import { createContext, useState, useEffect } from 'react';
+import { createContext, useState, useEffect, useRef } from 'react';
 import { useBRTools } from '../hooks/useBRTools';
 import * as XLSX from 'xlsx';
 import PropTypes from 'prop-types';
@@ -71,12 +71,28 @@ export function TeamProvider({ children }) {
   const [standingsSortField, setStandingsSortField] = useState('points');
   const [standingsSortDirection, setStandingsSortDirection] = useState('desc');
   const { memberKey, addTeamsToCache, cachedTeams } = useBRTools();
+  const teamDataCacheRef = useRef({});
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   useEffect(() => {
     if (teamId && memberKey) {
+      if (teamDataCacheRef.current[teamId] && refreshTrigger === 0) {
+        const cached = teamDataCacheRef.current[teamId];
+        setPlayers(cached.players || []);
+        setYouth(cached.youth || []);
+        setStandings(cached.standings || []);
+        setTrainingReport(cached.trainingReport || null);
+        setStaff(cached.staff || null);
+        setFacilities(cached.facilities || null);
+        setLoading(false);
+        return;
+      }
+
       setLoading(true);
       setError(null);
-      
+
+      const fetchedData = {};
+
       fetch(`${API_BASE_URL}/team/${teamId}/players`, {
         headers: {
           'accesskey': memberKey
@@ -87,8 +103,8 @@ export function TeamProvider({ children }) {
           if (data.data?.status === 'Ok' && data.data?.players) {
             const playersList = Object.values(data.data.players);
             setPlayers(playersList);
+            fetchedData.players = playersList;
 
-            // Fetch youth data
             fetch(`${API_BASE_URL}/team/${teamId}/youth`, {
               headers: {
                 'accesskey': memberKey
@@ -96,17 +112,17 @@ export function TeamProvider({ children }) {
             })
               .then(response => response.json())
               .then(youthData => {
-                console.log("OK?", youthData)
-                console.log("OK?", youthData.data?.status)
                 if (youthData.data?.status === 'Ok' && youthData.data?.players) {
                   const youthList = Object.values(youthData.data.players);
-                  
-                console.log("YouthData", youthList)
                   setYouth(youthList);
+                  fetchedData.youth = youthList;
+                } else {
+                  fetchedData.youth = [];
                 }
               })
               .catch(err => {
                 console.error('Error fetching youth data:', err);
+                fetchedData.youth = [];
               });
 
             const team = cachedTeams[teamId];
@@ -120,10 +136,14 @@ export function TeamProvider({ children }) {
               .then(trainingData => {
                 if (trainingData.data?.status === 'Ok') {
                   setTrainingReport(trainingData);
+                  fetchedData.trainingReport = trainingData;
+                } else {
+                  fetchedData.trainingReport = null;
                 }
               })
               .catch(err => {
                 console.error('Error fetching training report:', err);
+                fetchedData.trainingReport = null;
               });
 
             fetch(`${API_BASE_URL}/team/${teamId}/staff`, {
@@ -135,10 +155,14 @@ export function TeamProvider({ children }) {
               .then(staffData => {
                 if (staffData.data?.status === 'Ok') {
                   setStaff(staffData);
+                  fetchedData.staff = staffData;
+                } else {
+                  fetchedData.staff = null;
                 }
               })
               .catch(err => {
                 console.error('Error fetching staff data:', err);
+                fetchedData.staff = null;
               });
 
             fetch(`${API_BASE_URL}/team/${teamId}/facilities`, {
@@ -150,10 +174,14 @@ export function TeamProvider({ children }) {
               .then(facilitiesData => {
                 if (facilitiesData.data?.status === 'Ok') {
                   setFacilities(facilitiesData);
+                  fetchedData.facilities = facilitiesData;
+                } else {
+                  fetchedData.facilities = null;
                 }
               })
               .catch(err => {
                 console.error('Error fetching facilities data:', err);
+                fetchedData.facilities = null;
               });
 
             if (team?.leagueid) {
@@ -172,9 +200,12 @@ export function TeamProvider({ children }) {
           if (data?.data?.status === 'Ok' && data?.data?.standings) {
             const standingsList = Object.values(data.data.standings);
             setStandings(standingsList);
+            fetchedData.standings = standingsList;
 
             const teamIds = standingsList.map(standing => standing.teamid);
             addTeamsToCache(teamIds);
+          } else {
+            fetchedData.standings = [];
           }
         })
         .catch(err => {
@@ -182,6 +213,10 @@ export function TeamProvider({ children }) {
           console.error('Error:', err);
         })
         .finally(() => {
+          setTimeout(() => {
+            teamDataCacheRef.current[teamId] = fetchedData;
+            setRefreshTrigger(0);
+          }, 500);
           setLoading(false);
         });
     } else {
@@ -192,7 +227,7 @@ export function TeamProvider({ children }) {
       setStaff(null);
       setFacilities(null);
     }
-  }, [teamId, memberKey, addTeamsToCache, cachedTeams]);
+  }, [teamId, memberKey, addTeamsToCache, cachedTeams, refreshTrigger]);
 
   const handleSort = (field) => {
     if (sortField === field) {
@@ -372,6 +407,13 @@ export function TeamProvider({ children }) {
     XLSX.writeFile(wb, `${standingsView}.xlsx`);
   };
 
+  const refreshTeamData = () => {
+    if (teamId) {
+      delete teamDataCacheRef.current[teamId];
+      setRefreshTrigger(prev => prev + 1);
+    }
+  };
+
   const teamAverages = calculateTeamAverages(sortedPlayers);
 
   return (
@@ -399,7 +441,8 @@ export function TeamProvider({ children }) {
       standingsSortField,
       standingsSortDirection,
       handleStandingsSort,
-      teamAverages
+      teamAverages,
+      refreshTeamData
     }}>
       {children}
     </TeamContext.Provider>
