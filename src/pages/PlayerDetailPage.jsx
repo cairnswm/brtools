@@ -8,15 +8,13 @@ import { API_BASE_URL } from "../config/api";
 
 const PlayerDetailPage = () => {
   const { playerId, teamId } = useParams();
-  const { players } = useTeam();
+  const { players, trainingReport, loading: teamLoading } = useTeam();
   const { memberKey } = useBRTools();
   const [activeTab, setActiveTab] = useState('information');
   const [playerStats, setPlayerStats] = useState(null);
   const [playerHistory, setPlayerHistory] = useState(null);
-  const [playerTraining, setPlayerTraining] = useState(null);
   const [loadingStats, setLoadingStats] = useState(false);
   const [loadingHistory, setLoadingHistory] = useState(false);
-  const [loadingTraining, setLoadingTraining] = useState(false);
   const [historyFilter, setHistoryFilter] = useState('');
 
   const player = players.find(p => p.id === playerId);
@@ -26,7 +24,6 @@ const PlayerDetailPage = () => {
       accessElf.track("Team/Player/Detail", teamId);
       fetchPlayerStats();
       fetchPlayerHistory();
-      fetchPlayerTraining();
     }
   }, [playerId, teamId]);
 
@@ -67,26 +64,6 @@ const PlayerDetailPage = () => {
       console.error('Error fetching player history:', err);
     } finally {
       setLoadingHistory(false);
-    }
-  };
-
-  const fetchPlayerTraining = async () => {
-    if (!playerId || loadingTraining) return;
-
-    setLoadingTraining(true);
-    try {
-      const response = await fetch(`${API_BASE_URL}/player/${playerId}/training`, {
-        headers: { 'accesskey': memberKey }
-      });
-      const data = await response.json();
-
-      if (data.data?.status === 'Ok') {
-        setPlayerTraining(data);
-      }
-    } catch (err) {
-      console.error('Error fetching player training:', err);
-    } finally {
-      setLoadingTraining(false);
     }
   };
 
@@ -878,7 +855,7 @@ const PlayerDetailPage = () => {
         );
 
       case 'training':
-        if (loadingTraining) {
+        if (teamLoading) {
           return (
             <div className="bg-gray-50 rounded-lg p-8 text-center">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
@@ -887,17 +864,26 @@ const PlayerDetailPage = () => {
           );
         }
 
-        if (!playerTraining) {
+        if (!trainingReport) {
           return (
             <div className="bg-gray-50 rounded-lg p-8 text-center">
-              <p className="text-gray-600">No training data available for this player.</p>
+              <p className="text-gray-600">No training data available.</p>
             </div>
           );
         }
 
-        const trainingData = playerTraining.data?.report?.report;
-        const individualPlayer = trainingData?.individual?.players ? Object.values(trainingData.individual.players).find(p => p.id === playerId) : null;
-        const teamPlayer = trainingData?.team?.players ? Object.values(trainingData.team.players).find(p => p.id === playerId) : null;
+        const trainingData = trainingReport.data?.report?.report;
+
+        if (!trainingData) {
+          return (
+            <div className="bg-gray-50 rounded-lg p-8 text-center">
+              <p className="text-gray-600">No training report data available.</p>
+            </div>
+          );
+        }
+
+        const individualPlayer = trainingData.individual?.players ? Object.values(trainingData.individual.players).find(p => p.id === playerId) : null;
+        const teamPlayer = trainingData.team?.players ? Object.values(trainingData.team.players).find(p => p.id === playerId) : null;
 
         if (!individualPlayer && !teamPlayer) {
           return (
@@ -913,7 +899,7 @@ const PlayerDetailPage = () => {
               <div className="flex justify-between items-center mb-6">
                 <h2 className="text-2xl font-bold text-gray-800">Player Training Report</h2>
                 <div className="text-sm text-gray-600">
-                  Season {playerTraining.data.report.season} - Round {playerTraining.data.report.round}
+                  Season {trainingReport.data.report.season} - Round {trainingReport.data.report.round}
                 </div>
               </div>
 
