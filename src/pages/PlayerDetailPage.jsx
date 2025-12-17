@@ -897,7 +897,7 @@ const PlayerDetailPage = () => {
           <div className="space-y-6">
             <div className="bg-white rounded-lg shadow-md p-6">
               <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-bold text-gray-800">Player Training Report</h2>
+                <h2 className="text-2xl font-bold text-gray-800">{player.fname} {player.lname} - Training Report</h2>
                 <div className="text-sm text-gray-600">
                   Season {trainingReport.data.report.season} - Round {trainingReport.data.report.round}
                 </div>
@@ -907,16 +907,13 @@ const PlayerDetailPage = () => {
                 <div className="mb-6">
                   <h3 className="text-lg font-semibold text-gray-700 border-b pb-2 mb-4">Team Training Results</h3>
                   <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
-                    <div className="flex justify-between items-start mb-2">
-                      <span className="font-semibold text-gray-800">{player.fname} {player.lname}</span>
-                      <div className="text-right text-sm">
-                        <div className={`font-medium ${Number(teamPlayer.csr.is) - Number(teamPlayer.csr.was) > 0 ? 'text-green-600' : Number(teamPlayer.csr.is) - Number(teamPlayer.csr.was) < 0 ? 'text-red-600' : 'text-gray-600'}`}>
-                          CSR: {Number(teamPlayer.csr.was).toLocaleString()} → {Number(teamPlayer.csr.is).toLocaleString()}
-                          ({Number(teamPlayer.csr.is) - Number(teamPlayer.csr.was) > 0 ? '+' : ''}{(Number(teamPlayer.csr.is) - Number(teamPlayer.csr.was)).toLocaleString()})
-                        </div>
-                        <div className="text-gray-600">
-                          Energy: {teamPlayer.energy.was} → {teamPlayer.energy.is} ({Number(teamPlayer.energy.is) - Number(teamPlayer.energy.was) > 0 ? '+' : ''}{Number(teamPlayer.energy.is) - Number(teamPlayer.energy.was)})
-                        </div>
+                    <div className="text-right text-sm mb-2">
+                      <div className={`font-medium ${Number(teamPlayer.csr.is) - Number(teamPlayer.csr.was) > 0 ? 'text-green-600' : Number(teamPlayer.csr.is) - Number(teamPlayer.csr.was) < 0 ? 'text-red-600' : 'text-gray-600'}`}>
+                        CSR: {Number(teamPlayer.csr.was).toLocaleString()} → {Number(teamPlayer.csr.is).toLocaleString()}
+                        ({Number(teamPlayer.csr.is) - Number(teamPlayer.csr.was) > 0 ? '+' : ''}{(Number(teamPlayer.csr.is) - Number(teamPlayer.csr.was)).toLocaleString()})
+                      </div>
+                      <div className="text-gray-600">
+                        Energy: {teamPlayer.energy.was} → {teamPlayer.energy.is} ({Number(teamPlayer.energy.is) - Number(teamPlayer.energy.was) > 0 ? '+' : ''}{Number(teamPlayer.energy.is) - Number(teamPlayer.energy.was)})
                       </div>
                     </div>
 
@@ -960,16 +957,13 @@ const PlayerDetailPage = () => {
                 <div>
                   <h3 className="text-lg font-semibold text-gray-700 border-b pb-2 mb-4">Individual Training Sessions</h3>
                   <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
-                    <div className="flex justify-between items-start mb-3">
-                      <span className="font-semibold text-gray-800">{player.fname} {player.lname}</span>
-                      <div className="text-right text-sm">
-                        <div className={`font-medium ${Number(individualPlayer.csr.is) - Number(individualPlayer.csr.was) > 0 ? 'text-green-600' : Number(individualPlayer.csr.is) - Number(individualPlayer.csr.was) < 0 ? 'text-red-600' : 'text-gray-600'}`}>
-                          CSR: {Number(individualPlayer.csr.was).toLocaleString()} → {Number(individualPlayer.csr.is).toLocaleString()}
-                          ({Number(individualPlayer.csr.is) - Number(individualPlayer.csr.was) > 0 ? '+' : ''}{(Number(individualPlayer.csr.is) - Number(individualPlayer.csr.was)).toLocaleString()})
-                        </div>
-                        <div className="text-gray-600">
-                          Energy: {individualPlayer.energy.was} → {individualPlayer.energy.is} ({Number(individualPlayer.energy.is) - Number(individualPlayer.energy.was) > 0 ? '+' : ''}{Number(individualPlayer.energy.is) - Number(individualPlayer.energy.was)})
-                        </div>
+                    <div className="text-right text-sm mb-3">
+                      <div className={`font-medium ${Number(individualPlayer.csr.is) - Number(individualPlayer.csr.was) > 0 ? 'text-green-600' : Number(individualPlayer.csr.is) - Number(individualPlayer.csr.was) < 0 ? 'text-red-600' : 'text-gray-600'}`}>
+                        CSR: {Number(individualPlayer.csr.was).toLocaleString()} → {Number(individualPlayer.csr.is).toLocaleString()}
+                        ({Number(individualPlayer.csr.is) - Number(individualPlayer.csr.was) > 0 ? '+' : ''}{(Number(individualPlayer.csr.is) - Number(individualPlayer.csr.was)).toLocaleString()})
+                      </div>
+                      <div className="text-gray-600">
+                        Energy: {individualPlayer.energy.was} → {individualPlayer.energy.is} ({Number(individualPlayer.energy.is) - Number(individualPlayer.energy.was) > 0 ? '+' : ''}{Number(individualPlayer.energy.is) - Number(individualPlayer.energy.was)})
                       </div>
                     </div>
 
