@@ -37,6 +37,8 @@ const SORT_OPTIONS = [
   { value: 'energy', label: 'Energy' },
   { value: 'form', label: 'Form' },
   { value: 'leadership', label: 'Leadership' },
+  { value: 'discipline', label: 'Discipline' },
+  { value: 'aggression', label: 'Aggression' },
   { value: 'height', label: 'Height' },
   { value: 'weight', label: 'Weight' },
   { value: 'stamina', label: 'Stamina' },
