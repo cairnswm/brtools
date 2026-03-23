@@ -2,11 +2,13 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { BRToolsProvider } from './context/BRToolsContext';
 import { TeamProvider } from './context/TeamContext';
 import { FixtureProvider } from './context/FixtureContext';
+import { ImportProvider } from './context/ImportContext';
 import LandingPage from './pages/LandingPage';
 import HomePage from './pages/HomePage';
 import StadiumCalculator from './pages/StadiumCalculator';
 import TeamDetails from './pages/TeamDetails';
 import SettingsPage from './pages/SettingsPage';
+import ImportPage from './pages/ImportPage';
 import { useEffect } from 'react';
 import { accessElf } from './components/accessElf';
 
@@ -28,6 +30,14 @@ const App = () => {
           <Route path="/home" element={<HomePage />} />
           <Route path="/stadium-calculator" element={<StadiumCalculator />} />
           <Route path="/settings" element={<SettingsPage />} />
+          <Route
+            path="/import"
+            element={
+              <ImportProvider>
+                <ImportPage />
+              </ImportProvider>
+            }
+          />
           <Route
             path="/team/:teamId/*"
             element={
