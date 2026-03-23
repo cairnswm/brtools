@@ -11,7 +11,7 @@ function Header() {
   };
 
   const memberId = getMemberId();
-  const showImport = memberId === '25233';
+  const showImport = memberId === '25233' || memberId === '68952';
 
   return (
     <nav className="bg-white shadow-md">
