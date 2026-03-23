@@ -40,13 +40,16 @@ export function ImportProvider({ children }) {
           throw new Error(`Failed to fetch batch ${batch + 1}: ${response.statusText}`);
         }
 
-        const data = await response.json();
+        const result = await response.json();
 
-        if (data && Array.isArray(data)) {
-          setRankings(prev => [...prev, ...data]);
-          setTotalLoaded(prev => prev + data.length);
+        if (result?.data?.status === 'Ok' && result?.data?.rankings) {
+          const rankingsArray = Object.values(result.data.rankings);
+
+          setRankings(prev => [...prev, ...rankingsArray]);
+          setTotalLoaded(prev => prev + rankingsArray.length);
         } else {
-          console.warn(`Batch ${batch + 1} returned unexpected data format`);
+          console.warn(`Batch ${batch + 1} returned unexpected data format`, result);
+          break;
         }
       }
     } catch (err) {

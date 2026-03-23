@@ -70,18 +70,18 @@ function ImportPage() {
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                   {rankings.map((ranking, index) => (
-                    <tr key={`${ranking.id || index}-${ranking.teamid}`} className="hover:bg-gray-50">
+                    <tr key={`${ranking.id}-${index}`} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {ranking.id || index + 1}
+                        {index + 1}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {ranking.teamid}
+                        {ranking.id}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {ranking.teamname || 'N/A'}
+                        {ranking.name || 'N/A'}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {ranking.ranking_points || ranking.points || 'N/A'}
+                        {ranking.points || 'N/A'}
                       </td>
                     </tr>
                   ))}
