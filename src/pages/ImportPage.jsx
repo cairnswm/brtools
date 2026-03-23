@@ -2,7 +2,17 @@ import { useImport } from '../hooks/useImport';
 import Header from '../components/Header';
 
 function ImportPage() {
-  const { rankings, loading, error, totalLoaded, isImporting, fetchRankings } = useImport();
+  const {
+    rankings,
+    loading,
+    error,
+    totalLoaded,
+    isImporting,
+    fetchRankings,
+    teamsProcessed,
+    totalTeamsToProcess,
+    isProcessingTeams
+  } = useImport();
 
   const handleImportRankings = async () => {
     await fetchRankings();
@@ -37,11 +47,22 @@ function ImportPage() {
 
         {totalLoaded > 0 && (
           <div className="bg-white rounded-lg shadow-md p-6">
-            <div className="mb-4 flex items-center justify-between">
-              <h2 className="text-xl font-semibold text-gray-900">Rankings Data</h2>
-              <div className="text-lg font-bold text-blue-600">
-                Records Loaded: {totalLoaded}
+            <div className="mb-4">
+              <div className="flex items-center justify-between mb-2">
+                <h2 className="text-xl font-semibold text-gray-900">Rankings Data</h2>
+                <div className="text-lg font-bold text-blue-600">
+                  Records Loaded: {totalLoaded}
+                </div>
               </div>
+
+              {totalTeamsToProcess > 0 && (
+                <div className="flex items-center justify-end">
+                  <div className="text-lg font-bold text-green-600">
+                    Teams Processed: {teamsProcessed} of {totalTeamsToProcess}
+                    {isProcessingTeams && ' (processing...)'}
+                  </div>
+                </div>
+              )}
             </div>
 
             {loading && (

@@ -13,6 +13,11 @@ export function ImportProvider({ children }) {
   const [error, setError] = useState(null);
   const [totalLoaded, setTotalLoaded] = useState(0);
   const [isImporting, setIsImporting] = useState(false);
+  const [teamsProcessed, setTeamsProcessed] = useState(0);
+  const [totalTeamsToProcess, setTotalTeamsToProcess] = useState(0);
+  const [isProcessingTeams, setIsProcessingTeams] = useState(false);
+
+  const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
   const fetchRankings = async () => {
     setLoading(true);
@@ -20,10 +25,14 @@ export function ImportProvider({ children }) {
     setIsImporting(true);
     setRankings([]);
     setTotalLoaded(0);
+    setTeamsProcessed(0);
+    setTotalTeamsToProcess(0);
 
     const BATCH_SIZE = 100;
     const TOTAL_BATCHES = 20;
     const BASE_URL = 'https://thegamedeveloper.co.za/brexport/api/api.php/rankings';
+
+    const allRankings = [];
 
     try {
       for (let batch = 0; batch < TOTAL_BATCHES; batch++) {
@@ -45,6 +54,7 @@ export function ImportProvider({ children }) {
         if (result?.data?.status === 'Ok' && result?.data?.rankings) {
           const rankingsArray = Object.values(result.data.rankings);
 
+          allRankings.push(...rankingsArray);
           setRankings(prev => [...prev, ...rankingsArray]);
           setTotalLoaded(prev => prev + rankingsArray.length);
         } else {
@@ -52,12 +62,56 @@ export function ImportProvider({ children }) {
           break;
         }
       }
+
+      setLoading(false);
+
+      const teamsToProcess = allRankings.filter(ranking => ranking.points !== '25');
+      setTotalTeamsToProcess(teamsToProcess.length);
+      setIsProcessingTeams(true);
+
+      await fetchBulkPlayers(teamsToProcess);
+
     } catch (err) {
       setError(err.message);
       console.error('Error fetching rankings:', err);
     } finally {
       setLoading(false);
       setIsImporting(false);
+      setIsProcessingTeams(false);
+    }
+  };
+
+  const fetchBulkPlayers = async (teams) => {
+    const TEAMS_PER_BATCH = 10;
+    const DELAY_MS = 3000;
+    const BASE_URL = 'https://thegamedeveloper.co.za/brexport/api/api.php/bulk';
+
+    try {
+      for (let i = 0; i < teams.length; i += TEAMS_PER_BATCH) {
+        const batch = teams.slice(i, i + TEAMS_PER_BATCH);
+        const teamIds = batch.map(team => team.id).join(',');
+
+        const response = await fetch(`${BASE_URL}/${teamIds}`, {
+          headers: {
+            'Accept': 'application/json'
+          }
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          console.log(`Processed teams ${i + 1} to ${Math.min(i + TEAMS_PER_BATCH, teams.length)}`, data);
+        } else {
+          console.warn(`Failed to fetch bulk data for batch starting at ${i + 1}`);
+        }
+
+        setTeamsProcessed(prev => prev + batch.length);
+
+        if (i + TEAMS_PER_BATCH < teams.length) {
+          await sleep(DELAY_MS);
+        }
+      }
+    } catch (err) {
+      console.error('Error fetching bulk player data:', err);
     }
   };
 
@@ -68,7 +122,10 @@ export function ImportProvider({ children }) {
       error,
       totalLoaded,
       isImporting,
-      fetchRankings
+      fetchRankings,
+      teamsProcessed,
+      totalTeamsToProcess,
+      isProcessingTeams
     }}>
       {children}
     </ImportContext.Provider>
