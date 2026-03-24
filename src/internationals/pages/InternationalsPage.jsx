@@ -31,7 +31,17 @@ function InternationalsPage() {
   };
 
   const isOwnedByUser = (team) => {
-    return memberData && team.owner && team.owner === memberData.id;
+    const owned = memberData && team.owner && team.owner === memberData.id;
+    console.log('Team ownership check:', {
+      teamName: team.name,
+      teamOwner: team.owner,
+      teamOwnerType: typeof team.owner,
+      memberDataId: memberData?.id,
+      memberDataIdType: typeof memberData?.id,
+      isMatch: owned,
+      memberData: memberData
+    });
+    return owned;
   };
 
   const currentTeams = activeTab === 'national' ? nationalTeams : u20Teams;
