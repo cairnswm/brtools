@@ -41,7 +41,10 @@ function HomePage() {
         {memberData && (
           <div className="bg-white shadow rounded-lg p-4 mb-6">
             <div className="flex items-center gap-2 text-gray-700">
-              <span className="font-semibold">{memberData.username}</span>
+              <span className="font-semibold">
+                {memberData.username}
+                {memberData.premium === 1 && <span className="text-amber-600"> (Premium)</span>}
+              </span>
               <span className="text-gray-500">•</span>
               <span className="text-sm">Playing since {formatDate(memberData.dateregistered)}</span>
             </div>
