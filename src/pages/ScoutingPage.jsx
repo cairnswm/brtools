@@ -311,9 +311,19 @@ function ScoutingPage() {
         {/* Results section */}
         {hasSearched && (
           <div className="mt-6 bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">
-              Search Results {searchResults.length > 0 && `(${searchResults.length} players)`}
-            </h2>
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-semibold text-gray-900">
+                Search Results {searchResults.length > 0 && `(${searchResults.length} players)`}
+              </h2>
+              {searchResults.length > 0 && (
+                <button
+                  onClick={exportToExcel}
+                  className="px-6 py-2 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition-colors"
+                >
+                  Export to Excel
+                </button>
+              )}
+            </div>
 
             {isLoading && searchResults.length === 0 && (
               <div className="text-center py-8">
@@ -410,13 +420,7 @@ function ScoutingPage() {
                   </table>
                 </div>
 
-                <div className="mt-4 flex justify-between items-center">
-                  <button
-                    onClick={exportToExcel}
-                    className="px-6 py-2 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition-colors"
-                  >
-                    Export to Excel
-                  </button>
+                <div className="mt-4 flex justify-center">
                   <button
                     onClick={handleLoadMore}
                     disabled={isLoading}
@@ -424,7 +428,6 @@ function ScoutingPage() {
                   >
                     {isLoading ? 'Loading...' : 'Load More'}
                   </button>
-                  <div className="w-40"></div>
                 </div>
               </>
             )}
