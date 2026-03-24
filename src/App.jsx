@@ -9,6 +9,7 @@ import StadiumCalculator from './pages/StadiumCalculator';
 import TeamDetails from './pages/TeamDetails';
 import SettingsPage from './pages/SettingsPage';
 import ImportPage from './pages/ImportPage';
+import ScoutingPage from './pages/ScoutingPage';
 import { useEffect } from 'react';
 import { accessElf } from './components/accessElf';
 
@@ -29,6 +30,7 @@ const App = () => {
           <Route path="/" element={<LandingPage />} />
           <Route path="/home" element={<HomePage />} />
           <Route path="/stadium-calculator" element={<StadiumCalculator />} />
+          <Route path="/scouting" element={<ScoutingPage />} />
           <Route path="/settings" element={<SettingsPage />} />
           <Route
             path="/import"
