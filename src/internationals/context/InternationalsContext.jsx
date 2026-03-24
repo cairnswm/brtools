@@ -2,6 +2,7 @@ import { createContext, useState, useEffect } from 'react';
 import { useBRTools } from '../../hooks/useBRTools';
 import PropTypes from 'prop-types';
 import { API_BASE_URL } from '../../config/api';
+import * as XLSX from 'xlsx';
 
 export const InternationalsContext = createContext();
 
@@ -101,6 +102,24 @@ export function InternationalsProvider({ children }) {
   const sortedNationalTeams = sortTeams(nationalTeams);
   const sortedU20Teams = sortTeams(u20Teams);
 
+  const exportToExcel = () => {
+    const currentTeams = activeTab === 'national' ? sortedNationalTeams : sortedU20Teams;
+    const exportData = currentTeams.map(team => ({
+      'Team Name': team.name,
+      'Average Top 15 CSR': team.average_top15_csr ? Number(team.average_top15_csr) : 0,
+      'Ranking Points': team.ranking_points ? Number(team.ranking_points).toFixed(2) : 0,
+      'World Rank': team.world_rank || 'N/A',
+      'Owner': team.owner || 'N/A'
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(exportData);
+    const wb = XLSX.utils.book_new();
+    const sheetName = activeTab === 'national' ? 'National Teams' : 'U20 Teams';
+    XLSX.utils.book_append_sheet(wb, ws, sheetName);
+    const fileName = activeTab === 'national' ? 'national_teams.xlsx' : 'u20_teams.xlsx';
+    XLSX.writeFile(wb, fileName);
+  };
+
   return (
     <InternationalsContext.Provider value={{
       nationalTeams: sortedNationalTeams,
@@ -115,7 +134,8 @@ export function InternationalsProvider({ children }) {
       sortField,
       sortDirection,
       handleSort,
-      refreshInternationalsData: fetchInternationalsData
+      refreshInternationalsData: fetchInternationalsData,
+      exportToExcel
     }}>
       {children}
     </InternationalsContext.Provider>

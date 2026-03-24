@@ -18,7 +18,8 @@ function InternationalsPage() {
     error,
     sortField,
     sortDirection,
-    handleSort
+    handleSort,
+    exportToExcel
   } = useInternationalsHook();
 
   const handleTeamClick = (teamId) => {
@@ -72,7 +73,7 @@ function InternationalsPage() {
         </div>
 
         <div className="bg-white rounded-lg shadow-md overflow-hidden">
-          <div className="border-b border-gray-200">
+          <div className="border-b border-gray-200 flex justify-between items-center">
             <nav className="flex -mb-px">
               <button
                 onClick={() => setActiveTab('national')}
@@ -95,6 +96,12 @@ function InternationalsPage() {
                 Under 20
               </button>
             </nav>
+            <button
+              onClick={exportToExcel}
+              className="mr-4 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors text-sm font-medium"
+            >
+              Export to Excel
+            </button>
           </div>
 
           <div className="overflow-x-auto">
