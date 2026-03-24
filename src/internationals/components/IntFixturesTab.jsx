@@ -1,8 +1,933 @@
+import { useState, useEffect } from "react";
+import { useInternationalsHook } from '../hooks/useInternationalsHook';
+import { useBRTools } from '../../hooks/useBRTools';
+import { accessElf } from "../../components/accessElf";
+import * as XLSX from 'xlsx';
+import { API_BASE_URL } from "../../config/api";
+
 function IntFixturesTab() {
+  const { internationalFixtures, loadingFixtures, activeInternational, activeInternationalId, activeInternationalType } = useInternationalsHook();
+  const { memberKey } = useBRTools();
+  const [expandedFixture, setExpandedFixture] = useState(null);
+  const [expandedTab, setExpandedTab] = useState({});
+  const [fixtureStats, setFixtureStats] = useState({});
+  const [loadingStats, setLoadingStats] = useState({});
+
+  useEffect(() => {
+    if (activeInternationalId && activeInternationalType) {
+      accessElf.track(`International/${activeInternationalType}/Fixtures`, activeInternationalId);
+    }
+  }, [activeInternationalId, activeInternationalType]);
+
+  const toggleExpand = (fixtureId) => {
+    const willExpand = expandedFixture !== fixtureId;
+    setExpandedFixture(willExpand ? fixtureId : null);
+    if (willExpand) {
+      setExpandedTab(prev => ({ ...prev, [fixtureId]: 'matchstats' }));
+      fetchFixtureStatistics(fixtureId);
+    }
+  };
+
+  const fetchFixtureStatistics = async (fixtureId) => {
+    if (fixtureStats[fixtureId] || loadingStats[fixtureId]) return;
+
+    setLoadingStats(prev => ({ ...prev, [fixtureId]: true }));
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/fixturestatistics/${fixtureId}`, {
+        headers: { 'accesskey': memberKey }
+      });
+      const data = await response.json();
+
+      if (data.data?.status === 'Ok' && data.data?.fixtures?.[fixtureId]) {
+        setFixtureStats(prev => ({
+          ...prev,
+          [fixtureId]: data.data.fixtures[fixtureId]
+        }));
+      }
+    } catch (err) {
+      console.error('Error fetching fixture statistics:', err);
+    } finally {
+      setLoadingStats(prev => ({ ...prev, [fixtureId]: false }));
+    }
+  };
+
+  const handleTabChange = (fixtureId, tab) => {
+    setExpandedTab(prev => ({ ...prev, [fixtureId]: tab }));
+  };
+
+  const getTeamNameById = (teamId) => {
+    return `Team ${teamId}`;
+  };
+
+  const isMatchPlayed = (fixture) => {
+    return fixture.matchSummary && (fixture.matchSummary.home.points > 0 || fixture.matchSummary.guest.points > 0);
+  };
+
+  const getMatchResult = (fixture) => {
+    const homePoints = Number(fixture.matchSummary.home.points);
+    const guestPoints = Number(fixture.matchSummary.guest.points);
+    const isHome = String(fixture.hometeamid) === String(activeInternationalId);
+
+    if (homePoints === guestPoints) return { status: 'draw', color: 'bg-gray-500' };
+    if ((isHome && homePoints > guestPoints) || (!isHome && guestPoints > homePoints)) {
+      return { status: 'win', color: 'bg-green-600' };
+    }
+    return { status: 'loss', color: 'bg-red-600' };
+  };
+
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    const day = date.getDate();
+    const month = date.toLocaleString('default', { month: 'short' });
+    return { day, month };
+  };
+
+  const formatCompetition = (competition) => {
+    if (!competition) return '';
+    return competition
+      .replace(/([A-Z])/g, ' $1')
+      .replace(/([a-z])([A-Z])/g, '$1 $2')
+      .trim();
+  };
+
+  const formatTime = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleString('default', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false
+    });
+  };
+
+  const getStatCount = (stat) => {
+    if (!stat || Array.isArray(stat) && stat.length === 0) return 0;
+    if (stat.player) {
+      if (Array.isArray(stat.player)) {
+        return stat.player.reduce((sum, p) => sum + Number(p.number || 0), 0);
+      }
+      return Number(stat.player.number || 0);
+    }
+    return 0;
+  };
+
+  const getAttendance = (fixture) => {
+    if (!fixture.matchSummary?.attendance) return 'N/A';
+    const att = fixture.matchSummary.attendance;
+    const total = Number(att.standing || 0) + Number(att.uncovered || 0) +
+                  Number(att.covered || 0) + Number(att.members || 0) +
+                  Number(att.corporate || 0);
+    return total.toLocaleString();
+  };
+
+  const getTeamStats = (fixture, isHome) => {
+    const summary = isHome ? fixture.reporterSummary?.home : fixture.reporterSummary?.guest;
+    if (!summary) return null;
+
+    return {
+      territory: summary.territory ? Math.round(Number(summary.territory) / 2) : null,
+      possession: summary.possession ? Math.round(Number(summary.possession) / 2) : null,
+      scrum: summary.scrum ? Math.round(Number(summary.scrum) / 2) : null,
+      lineout: summary.lineout ? Math.round(Number(summary.lineout) / 2) : null,
+      ruck: summary.ruck ? Math.round(Number(summary.ruck) / 2) : null,
+      maul: summary.maul ? Math.round(Number(summary.maul) / 2) : null,
+      attack: summary.attack ? Math.round(Number(summary.attack) / 2) : null,
+      defense: summary.defense ? Math.round(Number(summary.defense) / 2) : null,
+      kicking: summary.kicking ? Math.round(Number(summary.kicking) / 2) : null,
+      handling: summary.handling ? Math.round(Number(summary.handling) / 2) : null,
+      stamina: summary.stamina ? Math.round(Number(summary.stamina) / 2) : null,
+      pickandgo: summary.pickandgo ? Math.round(Number(summary.pickandgo) / 2) : null,
+      driving: summary.driving ? Math.round(Number(summary.driving) / 2) : null,
+      expansive: summary.expansive ? Math.round(Number(summary.expansive) / 2) : null,
+      creative: summary.creative ? Math.round(Number(summary.creative) / 2) : null
+    };
+  };
+
+  const renderStars = (count) => {
+    if (!count) return null;
+    return (
+      <div className="flex justify-center gap-0.5">
+        {[...Array(Math.min(count, 10))].map((_, i) => (
+          <svg key={i} className="w-3 h-3 fill-yellow-400" viewBox="0 0 20 20">
+            <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z" />
+          </svg>
+        ))}
+      </div>
+    );
+  };
+
+  const renderForm = (formString) => {
+    if (!formString) return null;
+    const results = formString.split(',');
+    return (
+      <div className="flex justify-center gap-1">
+        {results.map((result, i) => (
+          <span
+            key={i}
+            className={`w-5 h-5 flex items-center justify-center text-xs font-bold rounded ${
+              result === 'W' ? 'bg-green-600 text-white' :
+              result === 'L' ? 'bg-red-600 text-white' :
+              'bg-gray-400 text-white'
+            }`}
+          >
+            {result}
+          </span>
+        ))}
+      </div>
+    );
+  };
+
+  const exportFixturesToExcel = () => {
+    const exportData = internationalFixtures.map(fixture => {
+      const played = isMatchPlayed(fixture);
+
+      return {
+        'Season': fixture.season,
+        'Round': fixture.round,
+        'Competition': fixture.competition === 'Friendly' && fixture.friendlycompetitionshort
+          ? fixture.friendlycompetitionshort
+          : formatCompetition(fixture.competition),
+        'Date': new Date(fixture.matchstart).toLocaleDateString(),
+        'Time': formatTime(fixture.matchstart),
+        'Home Team': getTeamNameById(fixture.hometeamid),
+        'Away Team': getTeamNameById(fixture.guestteamid),
+        'Home Score': played ? fixture.matchSummary.home.points : '',
+        'Away Score': played ? fixture.matchSummary.guest.points : '',
+        'Venue': fixture.venue || '',
+        'Status': played ? 'Played' : 'Upcoming'
+      };
+    });
+
+    const ws = XLSX.utils.json_to_sheet(exportData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Fixtures");
+    XLSX.writeFile(wb, `${activeInternational?.name}_fixtures.xlsx`);
+  };
+
+  const exportMatchStatsToExcel = (fixture) => {
+    const homeStats = getTeamStats(fixture, true);
+    const guestStats = getTeamStats(fixture, false);
+    const homeReport = fixture.reporterSummary?.home;
+    const guestReport = fixture.reporterSummary?.guest;
+
+    const matchInfo = [
+      { 'Category': 'Match Information', 'Home Team': '', 'Away Team': '' },
+      { 'Category': 'Teams', 'Home Team': getTeamNameById(fixture.hometeamid), 'Away Team': getTeamNameById(fixture.guestteamid) },
+      { 'Category': 'Date', 'Home Team': new Date(fixture.matchstart).toLocaleDateString(), 'Away Team': '' },
+      { 'Category': 'Competition', 'Home Team': formatCompetition(fixture.competition), 'Away Team': '' },
+      { 'Category': 'Venue', 'Home Team': fixture.venue || '', 'Away Team': '' },
+      { 'Category': 'Attendance', 'Home Team': getAttendance(fixture), 'Away Team': '' },
+      { 'Category': '', 'Home Team': '', 'Away Team': '' },
+      { 'Category': 'Score', 'Home Team': fixture.matchSummary.home.points, 'Away Team': fixture.matchSummary.guest.points },
+    ];
+
+    const scoringStats = [
+      { 'Category': '', 'Home Team': '', 'Away Team': '' },
+      { 'Category': 'Scoring Breakdown', 'Home Team': '', 'Away Team': '' },
+      { 'Category': 'Tries', 'Home Team': getStatCount(fixture.matchSummary.home.tries), 'Away Team': getStatCount(fixture.matchSummary.guest.tries) },
+      { 'Category': 'Conversions', 'Home Team': getStatCount(fixture.matchSummary.home.conversions), 'Away Team': getStatCount(fixture.matchSummary.guest.conversions) },
+      { 'Category': 'Penalties', 'Home Team': getStatCount(fixture.matchSummary.home.penalties), 'Away Team': getStatCount(fixture.matchSummary.guest.penalties) },
+      { 'Category': 'Drop Goals', 'Home Team': getStatCount(fixture.matchSummary.home.dropgoals), 'Away Team': getStatCount(fixture.matchSummary.guest.dropgoals) },
+    ];
+
+    const matchStats = [
+      { 'Category': '', 'Home Team': '', 'Away Team': '' },
+      { 'Category': 'Match Statistics', 'Home Team': '', 'Away Team': '' },
+      { 'Category': 'Territory %', 'Home Team': homeStats?.territory || '', 'Away Team': guestStats?.territory || '' },
+      { 'Category': 'Possession %', 'Home Team': homeStats?.possession || '', 'Away Team': guestStats?.possession || '' },
+    ];
+
+    const teamStars = [
+      { 'Category': '', 'Home Team': '', 'Away Team': '' },
+      { 'Category': 'Team Stars', 'Home Team': '', 'Away Team': '' },
+      { 'Category': 'Scrum', 'Home Team': homeStats?.scrum || '', 'Away Team': guestStats?.scrum || '' },
+      { 'Category': 'Lineout', 'Home Team': homeStats?.lineout || '', 'Away Team': guestStats?.lineout || '' },
+      { 'Category': 'Ruck', 'Home Team': homeStats?.ruck || '', 'Away Team': guestStats?.ruck || '' },
+      { 'Category': 'Maul', 'Home Team': homeStats?.maul || '', 'Away Team': guestStats?.maul || '' },
+      { 'Category': 'Attack', 'Home Team': homeStats?.attack || '', 'Away Team': guestStats?.attack || '' },
+      { 'Category': 'Defense', 'Home Team': homeStats?.defense || '', 'Away Team': guestStats?.defense || '' },
+      { 'Category': 'Kicking', 'Home Team': homeStats?.kicking || '', 'Away Team': guestStats?.kicking || '' },
+      { 'Category': 'Handling', 'Home Team': homeStats?.handling || '', 'Away Team': guestStats?.handling || '' },
+      { 'Category': 'Stamina', 'Home Team': homeStats?.stamina || '', 'Away Team': guestStats?.stamina || '' },
+    ];
+
+    const teamInfo = homeReport && guestReport ? [
+      { 'Category': '', 'Home Team': '', 'Away Team': '' },
+      { 'Category': 'Team Information', 'Home Team': '', 'Away Team': '' },
+      { 'Category': 'World Rank', 'Home Team': homeReport.world_rank, 'Away Team': guestReport.world_rank },
+      { 'Category': 'National Rank', 'Home Team': homeReport.national_rank, 'Away Team': guestReport.national_rank },
+      { 'Category': 'Regional Rank', 'Home Team': homeReport.regional_rank, 'Away Team': guestReport.regional_rank },
+      { 'Category': 'Avg CSR', 'Home Team': homeReport.avg_csr, 'Away Team': guestReport.avg_csr },
+      { 'Category': 'Energy %', 'Home Team': homeReport.energy_level, 'Away Team': guestReport.energy_level },
+      { 'Category': 'Weight (kg)', 'Home Team': homeReport.weight, 'Away Team': guestReport.weight },
+      { 'Category': 'Form', 'Home Team': homeReport.all_form, 'Away Team': guestReport.all_form },
+    ] : [];
+
+    const exportData = [...matchInfo, ...scoringStats, ...matchStats, ...teamStars, ...teamInfo];
+
+    const ws = XLSX.utils.json_to_sheet(exportData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Match Stats");
+    const fileName = `match_stats_${fixture.id}.xlsx`;
+    XLSX.writeFile(wb, fileName);
+  };
+
+  const exportStatisticsToExcel = (fixture) => {
+    const stats = fixtureStats[fixture.id];
+
+    if (!stats) {
+      alert('Statistics not available for this match');
+      return;
+    }
+
+    const homeStats = stats['home team stats'];
+    const guestStats = stats['guest team stats'];
+
+    const exportData = [
+      { 'Statistic': 'Tackles', 'Home Team': homeStats?.tackles || 0, 'Away Team': guestStats?.tackles || 0 },
+      { 'Statistic': 'Metres Gained', 'Home Team': homeStats?.['metres gained'] || 0, 'Away Team': guestStats?.['metres gained'] || 0 },
+      { 'Statistic': 'Tries', 'Home Team': homeStats?.tries || 0, 'Away Team': guestStats?.tries || 0 },
+      { 'Statistic': 'Conversions', 'Home Team': homeStats?.conversions || 0, 'Away Team': guestStats?.conversions || 0 },
+      { 'Statistic': 'Missed Conversions', 'Home Team': homeStats?.['missed conversions'] || 0, 'Away Team': guestStats?.['missed conversions'] || 0 },
+      { 'Statistic': 'Penalties', 'Home Team': homeStats?.penalties || 0, 'Away Team': guestStats?.penalties || 0 },
+      { 'Statistic': 'Missed Penalties', 'Home Team': homeStats?.['missed penalties'] || 0, 'Away Team': guestStats?.['missed penalties'] || 0 },
+      { 'Statistic': 'Drop Goals', 'Home Team': homeStats?.dropgoals || 0, 'Away Team': guestStats?.dropgoals || 0 },
+      { 'Statistic': 'Total Points', 'Home Team': homeStats?.['total points'] || 0, 'Away Team': guestStats?.['total points'] || 0 },
+      { 'Statistic': 'Linebreaks', 'Home Team': homeStats?.linebreaks || 0, 'Away Team': guestStats?.linebreaks || 0 },
+      { 'Statistic': 'Intercepts', 'Home Team': homeStats?.intercepts || 0, 'Away Team': guestStats?.intercepts || 0 },
+      { 'Statistic': 'Missed Tackles', 'Home Team': homeStats?.['missed tackles'] || 0, 'Away Team': guestStats?.['missed tackles'] || 0 },
+      { 'Statistic': 'Turnovers', 'Home Team': homeStats?.turnovers || 0, 'Away Team': guestStats?.turnovers || 0 },
+      { 'Statistic': 'Turnovers Conceded', 'Home Team': homeStats?.['turnovers conceded'] || 0, 'Away Team': guestStats?.['turnovers conceded'] || 0 },
+      { 'Statistic': 'Knock-ons', 'Home Team': homeStats?.knockons || 0, 'Away Team': guestStats?.knockons || 0 },
+      { 'Statistic': 'Forward Passes', 'Home Team': homeStats?.['forward passes'] || 0, 'Away Team': guestStats?.['forward passes'] || 0 },
+      { 'Statistic': 'Handling Errors', 'Home Team': homeStats?.['handling errors'] || 0, 'Away Team': guestStats?.['handling errors'] || 0 },
+      { 'Statistic': 'Phases', 'Home Team': homeStats?.phases || 0, 'Away Team': guestStats?.phases || 0 },
+      { 'Statistic': '7+ Phases', 'Home Team': homeStats?.['7+ phases'] || 0, 'Away Team': guestStats?.['7+ phases'] || 0 },
+      { 'Statistic': 'Penalties Conceded', 'Home Team': homeStats?.['penalties conceded'] || 0, 'Away Team': guestStats?.['penalties conceded'] || 0 },
+      { 'Statistic': 'Penalties Won', 'Home Team': homeStats?.['penalties won'] || 0, 'Away Team': guestStats?.['penalties won'] || 0 },
+      { 'Statistic': 'Lineouts Won', 'Home Team': homeStats?.['lineouts won'] || 0, 'Away Team': guestStats?.['lineouts won'] || 0 },
+      { 'Statistic': 'Lineouts Lost', 'Home Team': homeStats?.['lineouts lost'] || 0, 'Away Team': guestStats?.['lineouts lost'] || 0 },
+      { 'Statistic': 'Lineouts Thrown', 'Home Team': homeStats?.['lineouts thrown'] || 0, 'Away Team': guestStats?.['lineouts thrown'] || 0 },
+      { 'Statistic': 'Lineouts Secured', 'Home Team': homeStats?.['lineouts secured'] || 0, 'Away Team': guestStats?.['lineouts secured'] || 0 },
+      { 'Statistic': 'Scrums Won', 'Home Team': homeStats?.['scrums won'] || 0, 'Away Team': guestStats?.['scrums won'] || 0 },
+      { 'Statistic': 'Scrums Lost', 'Home Team': homeStats?.['scrums lost'] || 0, 'Away Team': guestStats?.['scrums lost'] || 0 },
+      { 'Statistic': 'Scrums Put In', 'Home Team': homeStats?.['scrums put in'] || 0, 'Away Team': guestStats?.['scrums put in'] || 0 },
+      { 'Statistic': 'Scrums Secured', 'Home Team': homeStats?.['scrums secured'] || 0, 'Away Team': guestStats?.['scrums secured'] || 0 },
+      { 'Statistic': 'Rucks Won', 'Home Team': homeStats?.['rucks won'] || 0, 'Away Team': guestStats?.['rucks won'] || 0 },
+      { 'Statistic': 'Mauls Won', 'Home Team': homeStats?.['mauls won'] || 0, 'Away Team': guestStats?.['mauls won'] || 0 },
+      { 'Statistic': 'Kicks', 'Home Team': homeStats?.kicks || 0, 'Away Team': guestStats?.kicks || 0 },
+      { 'Statistic': 'Good Kicks', 'Home Team': homeStats?.['good kicks'] || 0, 'Away Team': guestStats?.['good kicks'] || 0 },
+      { 'Statistic': 'Bad Kicks', 'Home Team': homeStats?.['bad kicks'] || 0, 'Away Team': guestStats?.['bad kicks'] || 0 },
+      { 'Statistic': 'Kicks Out on Full', 'Home Team': homeStats?.['kicks out on the full'] || 0, 'Away Team': guestStats?.['kicks out on the full'] || 0 },
+      { 'Statistic': 'Kicking Metres', 'Home Team': homeStats?.['kicking metres'] || 0, 'Away Team': guestStats?.['kicking metres'] || 0 },
+      { 'Statistic': 'Possession', 'Home Team': homeStats?.possession || 0, 'Away Team': guestStats?.possession || 0 },
+      { 'Statistic': 'Territory', 'Home Team': homeStats?.territory || 0, 'Away Team': guestStats?.territory || 0 },
+      { 'Statistic': 'Minutes in 22', 'Home Team': homeStats?.['minutes in 22'] || 0, 'Away Team': guestStats?.['minutes in 22'] || 0 },
+      { 'Statistic': 'Ball Time', 'Home Team': homeStats?.['ball time'] || 0, 'Away Team': guestStats?.['ball time'] || 0 },
+      { 'Statistic': 'Yellow Cards', 'Home Team': homeStats?.['yellow cards'] || 0, 'Away Team': guestStats?.['yellow cards'] || 0 },
+      { 'Statistic': 'Red Cards', 'Home Team': homeStats?.['red cards'] || 0, 'Away Team': guestStats?.['red cards'] || 0 },
+      { 'Statistic': 'Injuries', 'Home Team': homeStats?.injuries || 0, 'Away Team': guestStats?.injuries || 0 },
+      { 'Statistic': 'Injury Breaks', 'Home Team': homeStats?.['injury breaks'] || 0, 'Away Team': guestStats?.['injury breaks'] || 0 },
+    ];
+
+    const ws = XLSX.utils.json_to_sheet(exportData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Statistics");
+    const fileName = `statistics_${fixture.id}.xlsx`;
+    XLSX.writeFile(wb, fileName);
+  };
+
+  if (loadingFixtures) {
+    return (
+      <div className="text-center py-4">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
+      </div>
+    );
+  }
+
+  const playedFixtures = internationalFixtures.filter(f => isMatchPlayed(f));
+  const upcomingFixtures = internationalFixtures.filter(f => !isMatchPlayed(f));
+
   return (
-    <div className="bg-white rounded-lg shadow p-6">
-      <h2 className="text-xl font-semibold mb-4">Fixtures</h2>
-      <p className="text-gray-600">International fixtures will be displayed here.</p>
+    <div className="space-y-8">
+      {internationalFixtures.length > 0 && (
+        <div className="flex justify-end mb-4">
+          <button
+            onClick={exportFixturesToExcel}
+            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-semibold flex items-center gap-2"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            Export Fixtures
+          </button>
+        </div>
+      )}
+
+      {playedFixtures.length > 0 && (
+        <div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">Results</h2>
+          <div className="grid gap-4">
+            {playedFixtures.map((fixture) => {
+              const dateInfo = formatDate(fixture.matchstart);
+              const result = getMatchResult(fixture);
+              const isHome = String(fixture.hometeamid) === String(activeInternationalId);
+              const homePoints = Number(fixture.matchSummary.home.points);
+              const guestPoints = Number(fixture.matchSummary.guest.points);
+
+              return (
+                <div
+                  key={fixture.id}
+                  className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow"
+                >
+                  <div className={`${result.color} text-white px-6 py-3 opacity-90`}>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm font-medium">
+                        Season {fixture.season} • Round {fixture.round} • {
+                          fixture.competition === 'Friendly' && fixture.friendlycompetitionshort
+                            ? fixture.friendlycompetitionshort
+                            : formatCompetition(fixture.competition)
+                        }
+                      </span>
+                      <span className="text-sm font-bold uppercase">
+                        {result.status === 'win' ? 'Victory' : result.status === 'draw' ? 'Draw' : 'Defeat'}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="p-6">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-4 flex-1">
+                        <div className="text-center w-16">
+                          <div className="text-2xl font-bold text-gray-700">{dateInfo.day}</div>
+                          <div className="text-xs text-gray-500 uppercase">{dateInfo.month}</div>
+                        </div>
+
+                        <div className="flex-1">
+                          <div className={`text-lg font-semibold ${isHome ? 'text-blue-700' : 'text-gray-900'}`}>
+                            {getTeamNameById(fixture.hometeamid)}
+                          </div>
+                        </div>
+
+                        <div className="text-3xl font-bold text-gray-900">
+                          {homePoints}
+                        </div>
+                      </div>
+
+                      <div className="px-6 text-center">
+                        <span className="text-2xl font-bold text-gray-400">-</span>
+                      </div>
+
+                      <div className="flex items-center space-x-4 flex-1 justify-end">
+                        <div className="text-3xl font-bold text-gray-900">
+                          {guestPoints}
+                        </div>
+
+                        <div className="flex-1 text-right">
+                          <div className={`text-lg font-semibold ${!isHome ? 'text-blue-700' : 'text-gray-900'}`}>
+                            {getTeamNameById(fixture.guestteamid)}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="mt-4 pt-4 border-t border-gray-200">
+                      <button
+                        onClick={() => toggleExpand(fixture.id)}
+                        className="w-full flex items-center justify-center text-sm text-gray-600 hover:text-blue-700 transition-colors"
+                      >
+                        <span className="font-medium">
+                          {expandedFixture === fixture.id ? 'less' : 'more'}
+                        </span>
+                        <svg
+                          className={`ml-2 w-4 h-4 transition-transform ${expandedFixture === fixture.id ? 'rotate-180' : ''}`}
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        </svg>
+                      </button>
+                    </div>
+
+                    {expandedFixture === fixture.id && fixture.matchSummary && (() => {
+                      const homeStats = getTeamStats(fixture, true);
+                      const guestStats = getTeamStats(fixture, false);
+                      const homeReport = fixture.reporterSummary?.home;
+                      const guestReport = fixture.reporterSummary?.guest;
+                      const homeTries = getStatCount(fixture.matchSummary.home.tries);
+                      const guestTries = getStatCount(fixture.matchSummary.guest.tries);
+                      const homeConversions = getStatCount(fixture.matchSummary.home.conversions);
+                      const guestConversions = getStatCount(fixture.matchSummary.guest.conversions);
+                      const homePenalties = getStatCount(fixture.matchSummary.home.penalties);
+                      const guestPenalties = getStatCount(fixture.matchSummary.guest.penalties);
+                      const homeDropgoals = getStatCount(fixture.matchSummary.home.dropgoals);
+                      const guestDropgoals = getStatCount(fixture.matchSummary.guest.dropgoals);
+
+                      const currentTab = expandedTab[fixture.id] || 'matchstats';
+                      const stats = fixtureStats[fixture.id];
+
+                      return (
+                        <div className="mt-4 pt-4 border-t border-gray-200">
+                          <div className="border-b border-gray-200 mb-6">
+                            <div className="flex justify-center space-x-8">
+                              <button
+                                onClick={() => handleTabChange(fixture.id, 'matchstats')}
+                                className={`py-3 px-4 border-b-2 font-medium text-sm transition-colors ${
+                                  currentTab === 'matchstats'
+                                    ? 'border-blue-600 text-blue-600'
+                                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                                }`}
+                              >
+                                Match Stats
+                              </button>
+                              <button
+                                onClick={() => handleTabChange(fixture.id, 'statistics')}
+                                className={`py-3 px-4 border-b-2 font-medium text-sm transition-colors ${
+                                  currentTab === 'statistics'
+                                    ? 'border-blue-600 text-blue-600'
+                                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                                }`}
+                              >
+                                Statistics
+                              </button>
+                            </div>
+                          </div>
+
+                          {currentTab === 'matchstats' && (
+                          <div className="max-w-4xl mx-auto space-y-6">
+
+                            <div className="space-y-3">
+                              <h3 className="text-sm font-bold text-gray-700 text-center uppercase tracking-wide">Scoring</h3>
+                              <div className="flex justify-center gap-8">
+                                <div className="text-center">
+                                  <div className="text-xs text-gray-500 uppercase mb-1">Tries</div>
+                                  <div className="text-lg font-bold">{homeTries} - {guestTries}</div>
+                                </div>
+                                <div className="text-center">
+                                  <div className="text-xs text-gray-500 uppercase mb-1">Conversions</div>
+                                  <div className="text-lg font-bold">{homeConversions} - {guestConversions}</div>
+                                </div>
+                                <div className="text-center">
+                                  <div className="text-xs text-gray-500 uppercase mb-1">Penalties</div>
+                                  <div className="text-lg font-bold">{homePenalties} - {guestPenalties}</div>
+                                </div>
+                                {(homeDropgoals > 0 || guestDropgoals > 0) && (
+                                  <div className="text-center">
+                                    <div className="text-xs text-gray-500 uppercase mb-1">Drop Goals</div>
+                                    <div className="text-lg font-bold">{homeDropgoals} - {guestDropgoals}</div>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+
+                            <div className="pt-4 border-t border-gray-200 space-y-3">
+                              <h3 className="text-sm font-bold text-gray-700 text-center uppercase tracking-wide">Match Stats</h3>
+                              {homeStats?.territory && guestStats?.territory && (
+                                <div>
+                                  <div className="text-xs text-gray-500 uppercase mb-2 text-center">Territory</div>
+                                  <div className="flex items-center justify-center gap-3">
+                                    <span className="text-sm font-semibold w-12 text-right">{homeStats.territory}%</span>
+                                    <div className="w-48 bg-gray-200 rounded-full h-4 overflow-hidden flex">
+                                      <div
+                                        className={`h-full ${isHome ? 'bg-blue-600' : 'bg-gray-600'}`}
+                                        style={{ width: `${homeStats.territory}%` }}
+                                      />
+                                      <div
+                                        className={`h-full ${!isHome ? 'bg-blue-600' : 'bg-gray-600'}`}
+                                        style={{ width: `${guestStats.territory}%` }}
+                                      />
+                                    </div>
+                                    <span className="text-sm font-semibold w-12 text-left">{guestStats.territory}%</span>
+                                  </div>
+                                </div>
+                              )}
+
+                              {homeStats?.possession && guestStats?.possession && (
+                                <div>
+                                  <div className="text-xs text-gray-500 uppercase mb-2 text-center">Possession</div>
+                                  <div className="flex items-center justify-center gap-3">
+                                    <span className="text-sm font-semibold w-12 text-right">{homeStats.possession}%</span>
+                                    <div className="w-48 bg-gray-200 rounded-full h-4 overflow-hidden flex">
+                                      <div
+                                        className={`h-full ${isHome ? 'bg-blue-600' : 'bg-gray-600'}`}
+                                        style={{ width: `${homeStats.possession}%` }}
+                                      />
+                                      <div
+                                        className={`h-full ${!isHome ? 'bg-blue-600' : 'bg-gray-600'}`}
+                                        style={{ width: `${guestStats.possession}%` }}
+                                      />
+                                    </div>
+                                    <span className="text-sm font-semibold w-12 text-left">{guestStats.possession}%</span>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+
+                            {homeStats && guestStats && (
+                              <div className="pt-4 border-t border-gray-200 space-y-3">
+                                <h3 className="text-sm font-bold text-gray-700 text-center uppercase tracking-wide">Team Stars</h3>
+                                <div className="space-y-2">
+                                  {['scrum', 'lineout', 'ruck', 'maul', 'attack', 'defense', 'kicking', 'handling', 'stamina'].map(stat => (
+                                    homeStats[stat] && guestStats[stat] && (
+                                      <div key={stat} className="flex items-center justify-center gap-4">
+                                        <div className={`w-32 text-right ${isHome ? 'opacity-100' : 'opacity-50'}`}>
+                                          {renderStars(homeStats[stat])}
+                                        </div>
+                                        <div className="text-xs text-gray-500 uppercase w-20 text-center">{stat}</div>
+                                        <div className={`w-32 text-left ${!isHome ? 'opacity-100' : 'opacity-50'}`}>
+                                          {renderStars(guestStats[stat])}
+                                        </div>
+                                      </div>
+                                    )
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+
+                            {homeReport && guestReport && (
+                              <div className="pt-4 border-t border-gray-200 space-y-3">
+                                <h3 className="text-sm font-bold text-gray-700 text-center uppercase tracking-wide">Team Information</h3>
+                                <div className="space-y-3">
+                                  <div className="flex items-center justify-center gap-4">
+                                    <div className="w-32 text-right">
+                                      {renderForm(homeReport.all_form)}
+                                    </div>
+                                    <div className="text-xs text-gray-500 uppercase w-20 text-center">Form</div>
+                                    <div className="w-32 text-left">
+                                      {renderForm(guestReport.all_form)}
+                                    </div>
+                                  </div>
+
+                                  <div className="flex items-center justify-center gap-4">
+                                    <div className="w-32 text-right">
+                                      <div className="text-sm font-semibold">{homeReport.world_rank}</div>
+                                    </div>
+                                    <div className="text-xs text-gray-500 uppercase w-20 text-center">World Rank</div>
+                                    <div className="w-32 text-left">
+                                      <div className="text-sm font-semibold">{guestReport.world_rank}</div>
+                                    </div>
+                                  </div>
+
+                                  <div className="flex items-center justify-center gap-4">
+                                    <div className="w-32 text-right">
+                                      <div className="text-sm font-semibold">{homeReport.national_rank}</div>
+                                    </div>
+                                    <div className="text-xs text-gray-500 uppercase w-20 text-center">National Rank</div>
+                                    <div className="w-32 text-left">
+                                      <div className="text-sm font-semibold">{guestReport.national_rank}</div>
+                                    </div>
+                                  </div>
+
+                                  <div className="flex items-center justify-center gap-4">
+                                    <div className="w-32 text-right">
+                                      <div className="text-sm font-semibold">{homeReport.regional_rank}</div>
+                                    </div>
+                                    <div className="text-xs text-gray-500 uppercase w-20 text-center">Regional Rank</div>
+                                    <div className="w-32 text-left">
+                                      <div className="text-sm font-semibold">{guestReport.regional_rank}</div>
+                                    </div>
+                                  </div>
+
+                                  <div className="flex items-center justify-center gap-4">
+                                    <div className="w-32 text-right">
+                                      <div className="text-sm font-semibold">{Number(homeReport.avg_csr).toLocaleString()}</div>
+                                    </div>
+                                    <div className="text-xs text-gray-500 uppercase w-20 text-center">Avg CSR</div>
+                                    <div className="w-32 text-left">
+                                      <div className="text-sm font-semibold">{Number(guestReport.avg_csr).toLocaleString()}</div>
+                                    </div>
+                                  </div>
+
+                                  <div className="flex items-center justify-center gap-4">
+                                    <div className="w-32 text-right">
+                                      <div className="text-sm font-semibold">{homeReport.energy_level}%</div>
+                                    </div>
+                                    <div className="text-xs text-gray-500 uppercase w-20 text-center">Energy</div>
+                                    <div className="w-32 text-left">
+                                      <div className="text-sm font-semibold">{guestReport.energy_level}%</div>
+                                    </div>
+                                  </div>
+
+                                  <div className="flex items-center justify-center gap-4">
+                                    <div className="w-32 text-right">
+                                      <div className="text-sm font-semibold">{homeReport.weight}kg</div>
+                                    </div>
+                                    <div className="text-xs text-gray-500 uppercase w-20 text-center">Weight</div>
+                                    <div className="w-32 text-left">
+                                      <div className="text-sm font-semibold">{guestReport.weight}kg</div>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+
+                            <div className="pt-4 border-t border-gray-200">
+                              <div className="flex justify-center gap-8 text-center">
+                                <div>
+                                  <div className="text-xs text-gray-500 uppercase mb-1">Venue</div>
+                                  <div className="text-sm font-medium">{fixture.venue || 'N/A'}</div>
+                                </div>
+                                <div>
+                                  <div className="text-xs text-gray-500 uppercase mb-1">Attendance</div>
+                                  <div className="text-sm font-medium">{getAttendance(fixture)}</div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                          )}
+
+                          {currentTab === 'statistics' && (
+                            <div className="max-w-4xl mx-auto">
+                              {loadingStats[fixture.id] ? (
+                                <div className="text-center py-8">
+                                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+                                  <p className="text-gray-600 mt-4">Loading statistics...</p>
+                                </div>
+                              ) : stats ? (
+                                <div className="space-y-6">
+                                  <div className="grid md:grid-cols-2 gap-6">
+                                    <div className="bg-gray-50 rounded-lg p-6">
+                                      <h3 className="text-lg font-bold text-gray-900 mb-4 text-center">{getTeamNameById(fixture.hometeamid)}</h3>
+                                      <div className="space-y-3">
+                                        <div className="flex justify-between border-b pb-2">
+                                          <span className="text-sm text-gray-600">Tackles</span>
+                                          <span className="font-semibold">{stats['home team stats']?.tackles || 0}</span>
+                                        </div>
+                                        <div className="flex justify-between border-b pb-2">
+                                          <span className="text-sm text-gray-600">Metres Gained</span>
+                                          <span className="font-semibold">{stats['home team stats']?.['metres gained'] || 0}</span>
+                                        </div>
+                                        <div className="flex justify-between border-b pb-2">
+                                          <span className="text-sm text-gray-600">Linebreaks</span>
+                                          <span className="font-semibold">{stats['home team stats']?.linebreaks || 0}</span>
+                                        </div>
+                                        <div className="flex justify-between border-b pb-2">
+                                          <span className="text-sm text-gray-600">Missed Tackles</span>
+                                          <span className="font-semibold">{stats['home team stats']?.['missed tackles'] || 0}</span>
+                                        </div>
+                                        <div className="flex justify-between border-b pb-2">
+                                          <span className="text-sm text-gray-600">Turnovers</span>
+                                          <span className="font-semibold">{stats['home team stats']?.turnovers || 0}</span>
+                                        </div>
+                                        <div className="flex justify-between border-b pb-2">
+                                          <span className="text-sm text-gray-600">Knock-ons</span>
+                                          <span className="font-semibold">{stats['home team stats']?.knockons || 0}</span>
+                                        </div>
+                                        <div className="flex justify-between border-b pb-2">
+                                          <span className="text-sm text-gray-600">Penalties Conceded</span>
+                                          <span className="font-semibold">{stats['home team stats']?.['penalties conceded'] || 0}</span>
+                                        </div>
+                                        <div className="flex justify-between border-b pb-2">
+                                          <span className="text-sm text-gray-600">Lineouts Won/Lost</span>
+                                          <span className="font-semibold">{stats['home team stats']?.['lineouts won'] || 0}/{stats['home team stats']?.['lineouts lost'] || 0}</span>
+                                        </div>
+                                        <div className="flex justify-between border-b pb-2">
+                                          <span className="text-sm text-gray-600">Scrums Won/Lost</span>
+                                          <span className="font-semibold">{stats['home team stats']?.['scrums won'] || 0}/{stats['home team stats']?.['scrums lost'] || 0}</span>
+                                        </div>
+                                        <div className="flex justify-between border-b pb-2">
+                                          <span className="text-sm text-gray-600">Rucks Won</span>
+                                          <span className="font-semibold">{stats['home team stats']?.['rucks won'] || 0}</span>
+                                        </div>
+                                        <div className="flex justify-between border-b pb-2">
+                                          <span className="text-sm text-gray-600">Mauls Won</span>
+                                          <span className="font-semibold">{stats['home team stats']?.['mauls won'] || 0}</span>
+                                        </div>
+                                        <div className="flex justify-between border-b pb-2">
+                                          <span className="text-sm text-gray-600">Kicking Metres</span>
+                                          <span className="font-semibold">{stats['home team stats']?.['kicking metres'] || 0}</span>
+                                        </div>
+                                      </div>
+                                    </div>
+
+                                    <div className="bg-gray-50 rounded-lg p-6">
+                                      <h3 className="text-lg font-bold text-gray-900 mb-4 text-center">{getTeamNameById(fixture.guestteamid)}</h3>
+                                      <div className="space-y-3">
+                                        <div className="flex justify-between border-b pb-2">
+                                          <span className="text-sm text-gray-600">Tackles</span>
+                                          <span className="font-semibold">{stats['guest team stats']?.tackles || 0}</span>
+                                        </div>
+                                        <div className="flex justify-between border-b pb-2">
+                                          <span className="text-sm text-gray-600">Metres Gained</span>
+                                          <span className="font-semibold">{stats['guest team stats']?.['metres gained'] || 0}</span>
+                                        </div>
+                                        <div className="flex justify-between border-b pb-2">
+                                          <span className="text-sm text-gray-600">Linebreaks</span>
+                                          <span className="font-semibold">{stats['guest team stats']?.linebreaks || 0}</span>
+                                        </div>
+                                        <div className="flex justify-between border-b pb-2">
+                                          <span className="text-sm text-gray-600">Missed Tackles</span>
+                                          <span className="font-semibold">{stats['guest team stats']?.['missed tackles'] || 0}</span>
+                                        </div>
+                                        <div className="flex justify-between border-b pb-2">
+                                          <span className="text-sm text-gray-600">Turnovers</span>
+                                          <span className="font-semibold">{stats['guest team stats']?.turnovers || 0}</span>
+                                        </div>
+                                        <div className="flex justify-between border-b pb-2">
+                                          <span className="text-sm text-gray-600">Knock-ons</span>
+                                          <span className="font-semibold">{stats['guest team stats']?.knockons || 0}</span>
+                                        </div>
+                                        <div className="flex justify-between border-b pb-2">
+                                          <span className="text-sm text-gray-600">Penalties Conceded</span>
+                                          <span className="font-semibold">{stats['guest team stats']?.['penalties conceded'] || 0}</span>
+                                        </div>
+                                        <div className="flex justify-between border-b pb-2">
+                                          <span className="text-sm text-gray-600">Lineouts Won/Lost</span>
+                                          <span className="font-semibold">{stats['guest team stats']?.['lineouts won'] || 0}/{stats['guest team stats']?.['lineouts lost'] || 0}</span>
+                                        </div>
+                                        <div className="flex justify-between border-b pb-2">
+                                          <span className="text-sm text-gray-600">Scrums Won/Lost</span>
+                                          <span className="font-semibold">{stats['guest team stats']?.['scrums won'] || 0}/{stats['guest team stats']?.['scrums lost'] || 0}</span>
+                                        </div>
+                                        <div className="flex justify-between border-b pb-2">
+                                          <span className="text-sm text-gray-600">Rucks Won</span>
+                                          <span className="font-semibold">{stats['guest team stats']?.['rucks won'] || 0}</span>
+                                        </div>
+                                        <div className="flex justify-between border-b pb-2">
+                                          <span className="text-sm text-gray-600">Mauls Won</span>
+                                          <span className="font-semibold">{stats['guest team stats']?.['mauls won'] || 0}</span>
+                                        </div>
+                                        <div className="flex justify-between border-b pb-2">
+                                          <span className="text-sm text-gray-600">Kicking Metres</span>
+                                          <span className="font-semibold">{stats['guest team stats']?.['kicking metres'] || 0}</span>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              ) : (
+                                <div className="text-center py-8 text-gray-600">
+                                  No statistics available for this match.
+                                </div>
+                              )}
+                            </div>
+                          )}
+
+                          <div className="mt-6 pt-4 border-t border-gray-200">
+                            <div className="flex justify-center">
+                              <button
+                                onClick={() => currentTab === 'matchstats' ? exportMatchStatsToExcel(fixture) : exportStatisticsToExcel(fixture)}
+                                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-semibold flex items-center gap-2"
+                              >
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                </svg>
+                                Export {currentTab === 'matchstats' ? 'Match Stats' : 'Statistics'}
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })()}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {upcomingFixtures.length > 0 && (
+        <div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">Upcoming Fixtures</h2>
+          <div className="grid gap-4">
+            {upcomingFixtures.map((fixture) => {
+              const dateInfo = formatDate(fixture.matchstart);
+              const isHome = String(fixture.hometeamid) === String(activeInternationalId);
+
+              return (
+                <div
+                  key={fixture.id}
+                  className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow"
+                >
+                  <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-3 opacity-90">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm font-medium">
+                        Season {fixture.season} • Round {fixture.round} • {
+                          fixture.competition === 'Friendly' && fixture.friendlycompetitionshort
+                            ? fixture.friendlycompetitionshort
+                            : formatCompetition(fixture.competition)
+                        }
+                      </span>
+                      <span className="text-sm">
+                        {formatTime(fixture.matchstart)}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="p-6">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-4 flex-1">
+                        <div className="text-center w-16">
+                          <div className="text-3xl font-bold text-gray-900">{dateInfo.day}</div>
+                          <div className="text-sm text-gray-600 uppercase">{dateInfo.month}</div>
+                        </div>
+
+                        <div className="flex-1">
+                          <div className={`text-lg font-semibold ${isHome ? 'text-blue-700' : 'text-gray-900'} flex items-center`}>
+                            {getTeamNameById(fixture.hometeamid)}
+                            {isHome && <span className="ml-2 text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">HOME</span>}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="px-6 text-center">
+                        <span className="text-2xl font-bold text-gray-400">vs</span>
+                      </div>
+
+                      <div className="flex-1">
+                        <div className={`text-lg font-semibold text-right ${!isHome ? 'text-blue-700' : 'text-gray-900'} flex items-center justify-end`}>
+                          {!isHome && <span className="mr-2 text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">AWAY</span>}
+                          {getTeamNameById(fixture.guestteamid)}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="mt-4 pt-4 border-t border-gray-200">
+                      <button
+                        onClick={() => toggleExpand(fixture.id)}
+                        className="w-full flex items-center justify-center text-sm text-gray-600 hover:text-blue-700 transition-colors"
+                      >
+                        <span className="font-medium">
+                          {expandedFixture === fixture.id ? 'less' : 'more'}
+                        </span>
+                        <svg
+                          className={`ml-2 w-4 h-4 transition-transform ${expandedFixture === fixture.id ? 'rotate-180' : ''}`}
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        </svg>
+                      </button>
+                    </div>
+
+                    {expandedFixture === fixture.id && (
+                      <div className="mt-4 pt-4 border-t border-gray-200">
+                        <div className="max-w-4xl mx-auto space-y-6">
+                          <div className="flex justify-center">
+                            <div className="text-center">
+                              <div className="text-xs text-gray-500 uppercase mb-1">Venue</div>
+                              <div className="text-sm font-medium">{fixture.venue || 'TBD'}</div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {internationalFixtures.length === 0 && (
+        <div className="bg-white rounded-lg shadow-md p-12 text-center">
+          <div className="text-gray-400 text-lg">No fixtures available</div>
+        </div>
+      )}
     </div>
   );
 }

@@ -14,6 +14,8 @@ export function InternationalsProvider({ children }) {
   const [activeInternational, setActiveInternational] = useState(null);
   const [activeInternationalType, setActiveInternationalType] = useState(null);
   const [internationalPlayers, setInternationalPlayers] = useState([]);
+  const [internationalFixtures, setInternationalFixtures] = useState([]);
+  const [loadingFixtures, setLoadingFixtures] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [sortField, setSortField] = useState('ranking_points');
@@ -34,10 +36,12 @@ export function InternationalsProvider({ children }) {
 
       if (international) {
         fetchInternationalPlayers(activeInternationalType, activeInternationalId);
+        fetchInternationalFixtures(activeInternationalType, activeInternationalId);
       }
     } else {
       setActiveInternational(null);
       setInternationalPlayers([]);
+      setInternationalFixtures([]);
     }
   }, [activeInternationalId, activeInternationalType, nationalTeams, u20Teams]);
 
@@ -103,6 +107,40 @@ export function InternationalsProvider({ children }) {
     }
   };
 
+  const fetchInternationalFixtures = async (type, teamId) => {
+    setLoadingFixtures(true);
+    try {
+      const [lastResponse, futureResponse] = await Promise.all([
+        fetch(`${API_BASE_URL}/team/${type}/${teamId}/fixtures?last=10`, {
+          headers: {
+            'Accept': 'application/json',
+            'accesskey': memberKey
+          }
+        }),
+        fetch(`${API_BASE_URL}/team/${type}/${teamId}/fixtures?future=10`, {
+          headers: {
+            'Accept': 'application/json',
+            'accesskey': memberKey
+          }
+        })
+      ]);
+
+      const lastData = await lastResponse.json();
+      const futureData = await futureResponse.json();
+
+      const lastFixtures = lastData.data?.status === 'Ok' && lastData.data.fixtures ? Object.values(lastData.data.fixtures) : [];
+      const futureFixtures = futureData.data?.status === 'Ok' && futureData.data.fixtures ? Object.values(futureData.data.fixtures) : [];
+
+      const allFixtures = [...lastFixtures, ...futureFixtures];
+      setInternationalFixtures(allFixtures);
+    } catch (err) {
+      console.error('Error fetching international fixtures:', err);
+      setInternationalFixtures([]);
+    } finally {
+      setLoadingFixtures(false);
+    }
+  };
+
   const handleSort = (field) => {
     if (sortField === field) {
       setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
@@ -161,6 +199,8 @@ export function InternationalsProvider({ children }) {
       activeInternationalType,
       setActiveInternationalType,
       internationalPlayers,
+      internationalFixtures,
+      loadingFixtures,
       loading,
       error,
       sortField,
