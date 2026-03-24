@@ -84,7 +84,8 @@ function ImportPage() {
                     <tr>
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Team ID</th>
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Average Top 15 CSR</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ranking Points</th>
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
@@ -92,7 +93,8 @@ function ImportPage() {
                       <tr key={team.id}>
                         <td className="px-4 py-3 text-sm text-gray-900">{team.id}</td>
                         <td className="px-4 py-3 text-sm text-gray-900">{team.name}</td>
-                        <td className="px-4 py-3 text-sm text-gray-900">National</td>
+                        <td className="px-4 py-3 text-sm text-gray-900">{team.average_top15_csr || '-'}</td>
+                        <td className="px-4 py-3 text-sm text-gray-900">{team.ranking_points || '-'}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -110,7 +112,8 @@ function ImportPage() {
                     <tr>
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Team ID</th>
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Average Top 15 CSR</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ranking Points</th>
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
@@ -118,7 +121,8 @@ function ImportPage() {
                       <tr key={team.id}>
                         <td className="px-4 py-3 text-sm text-gray-900">{team.id}</td>
                         <td className="px-4 py-3 text-sm text-gray-900">{team.name}</td>
-                        <td className="px-4 py-3 text-sm text-gray-900">U20</td>
+                        <td className="px-4 py-3 text-sm text-gray-900">{team.average_top15_csr || '-'}</td>
+                        <td className="px-4 py-3 text-sm text-gray-900">{team.ranking_points || '-'}</td>
                       </tr>
                     ))}
                   </tbody>
