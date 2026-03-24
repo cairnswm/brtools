@@ -108,8 +108,8 @@ const IntPlayerDetailPage = () => {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div>
               <p className="text-sm text-gray-500">CSR</p>
-              <p className="text-lg font-semibold text-gray-900">
-                {formatCSR(player.csr)}
+              <p className={`text-lg font-semibold ${formatCSR(player.csr).color}`}>
+                {formatCSR(player.csr).value}
               </p>
             </div>
             <div>
