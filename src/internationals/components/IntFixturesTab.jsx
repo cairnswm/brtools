@@ -6,7 +6,7 @@ import * as XLSX from 'xlsx';
 import { API_BASE_URL } from "../../config/api";
 
 function IntFixturesTab() {
-  const { internationalFixtures, loadingFixtures, activeInternational, activeInternationalId, activeInternationalType } = useInternationalsHook();
+  const { internationalFixtures, loadingFixtures, activeInternational, activeInternationalId, activeInternationalType, nationalTeams, u20Teams } = useInternationalsHook();
   const { memberKey } = useBRTools();
   const [expandedFixture, setExpandedFixture] = useState(null);
   const [expandedTab, setExpandedTab] = useState({});
@@ -57,7 +57,9 @@ function IntFixturesTab() {
   };
 
   const getTeamNameById = (teamId) => {
-    return `Team ${teamId}`;
+    const allTeams = [...nationalTeams, ...u20Teams];
+    const team = allTeams.find(t => String(t.id) === String(teamId));
+    return team?.name || `Team ${teamId}`;
   };
 
   const isMatchPlayed = (fixture) => {
