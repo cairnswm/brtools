@@ -926,7 +926,7 @@ const TeamFixtures = () => {
                     {expandedFixture === fixture.id && (() => {
                       const homeReport = fixture.reporterSummary?.home;
                       const guestReport = fixture.reporterSummary?.guest;
-                      const venue = fixture.venue || (homeTeam ? `${homeTeam.name} Stadium` : 'TBD');
+                      const venue = homeTeam?.stadium || `${homeTeam?.name || 'TBD'} Stadium`;
 
                       return (
                         <div className="mt-4 pt-4 border-t border-gray-200">
@@ -946,7 +946,7 @@ const TeamFixtures = () => {
                                     <div className="w-32 text-right">
                                       {renderForm(homeReport.all_form)}
                                     </div>
-                                    <div className="text-xs text-gray-500 uppercase w-24 text-center">Form</div>
+                                    <div className="text-xs text-gray-500 uppercase w-20 text-center">Form</div>
                                     <div className="w-32 text-left">
                                       {renderForm(guestReport.all_form)}
                                     </div>
@@ -956,7 +956,7 @@ const TeamFixtures = () => {
                                     <div className="w-32 text-right">
                                       <div className="text-sm font-semibold">{homeReport.world_rank}</div>
                                     </div>
-                                    <div className="text-xs text-gray-500 uppercase w-24 text-center">World Rank</div>
+                                    <div className="text-xs text-gray-500 uppercase w-20 text-center">World Rank</div>
                                     <div className="w-32 text-left">
                                       <div className="text-sm font-semibold">{guestReport.world_rank}</div>
                                     </div>
@@ -966,7 +966,7 @@ const TeamFixtures = () => {
                                     <div className="w-32 text-right">
                                       <div className="text-sm font-semibold">{homeReport.national_rank}</div>
                                     </div>
-                                    <div className="text-xs text-gray-500 uppercase w-24 text-center">National Rank</div>
+                                    <div className="text-xs text-gray-500 uppercase w-20 text-center">National Rank</div>
                                     <div className="w-32 text-left">
                                       <div className="text-sm font-semibold">{guestReport.national_rank}</div>
                                     </div>
@@ -976,7 +976,7 @@ const TeamFixtures = () => {
                                     <div className="w-32 text-right">
                                       <div className="text-sm font-semibold">{homeReport.regional_rank}</div>
                                     </div>
-                                    <div className="text-xs text-gray-500 uppercase w-24 text-center">Regional Rank</div>
+                                    <div className="text-xs text-gray-500 uppercase w-20 text-center">Regional Rank</div>
                                     <div className="w-32 text-left">
                                       <div className="text-sm font-semibold">{guestReport.regional_rank}</div>
                                     </div>
@@ -986,7 +986,7 @@ const TeamFixtures = () => {
                                     <div className="w-32 text-right">
                                       <div className="text-sm font-semibold">{Number(homeReport.average_top15_csr).toLocaleString()}</div>
                                     </div>
-                                    <div className="text-xs text-gray-500 uppercase w-24 text-center">Avg Top 15 CSR</div>
+                                    <div className="text-xs text-gray-500 uppercase w-20 text-center">Avg Top 15 CSR</div>
                                     <div className="w-32 text-left">
                                       <div className="text-sm font-semibold">{Number(guestReport.average_top15_csr).toLocaleString()}</div>
                                     </div>
@@ -996,7 +996,7 @@ const TeamFixtures = () => {
                                     <div className="w-32 text-right">
                                       <div className="text-sm font-semibold">{Number(homeReport.ranking_points).toFixed(2)}</div>
                                     </div>
-                                    <div className="text-xs text-gray-500 uppercase w-24 text-center">Ranking Points</div>
+                                    <div className="text-xs text-gray-500 uppercase w-20 text-center">Ranking Points</div>
                                     <div className="w-32 text-left">
                                       <div className="text-sm font-semibold">{Number(guestReport.ranking_points).toFixed(2)}</div>
                                     </div>
