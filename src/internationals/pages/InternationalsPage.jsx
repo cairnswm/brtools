@@ -1,12 +1,14 @@
 import Header from '../../components/Header';
 import { accessElf } from '../../components/accessElf';
 import { useInternationalsHook } from '../hooks/useInternationalsHook';
+import { useBRTools } from '../../hooks/useBRTools';
 import { useNavigate } from 'react-router-dom';
 
 function InternationalsPage() {
   accessElf.track("Internationals");
 
   const navigate = useNavigate();
+  const { memberData } = useBRTools();
   const {
     nationalTeams,
     u20Teams,
@@ -26,6 +28,10 @@ function InternationalsPage() {
   const getSortIcon = (field) => {
     if (sortField !== field) return '⇅';
     return sortDirection === 'asc' ? '↑' : '↓';
+  };
+
+  const isOwnedByUser = (team) => {
+    return memberData && team.owner && team.owner === memberData.id;
   };
 
   const currentTeams = activeTab === 'national' ? nationalTeams : u20Teams;
@@ -137,7 +143,7 @@ function InternationalsPage() {
                     onClick={() => handleTeamClick(team.id)}
                   >
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">
+                      <div className={`text-sm font-medium ${isOwnedByUser(team) ? 'text-green-600' : 'text-gray-900'}`}>
                         {team.name}
                       </div>
                     </td>
