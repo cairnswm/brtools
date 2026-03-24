@@ -390,7 +390,7 @@ const TeamFixtures = () => {
                   key={fixture.id}
                   className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow"
                 >
-                  <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-3">
+                  <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-3 opacity-90">
                     <div className="flex justify-between items-center">
                       <span className="text-sm font-medium">
                         Season {fixture.season} • Round {fixture.round} • {
@@ -494,7 +494,7 @@ const TeamFixtures = () => {
                   key={fixture.id}
                   className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow"
                 >
-                  <div className={`${result.color} text-white px-6 py-3`}>
+                  <div className={`${result.color} text-white px-6 py-3 opacity-90`}>
                     <div className="flex justify-between items-center">
                       <span className="text-sm font-medium">
                         Season {fixture.season} • Round {fixture.round} • {

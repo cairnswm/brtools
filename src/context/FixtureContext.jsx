@@ -30,7 +30,12 @@ export const FixtureProvider = ({ children }) => {
         const data = await response.json();
         console.log("Fixtures Data", data);
         if (data.data?.status === 'Ok' && data.data?.fixtures) {
-          setFixtures(data.data.fixtures);
+          const sortedFixtures = [...data.data.fixtures].sort((a, b) => {
+            const dateA = new Date(a.matchstart);
+            const dateB = new Date(b.matchstart);
+            return dateA - dateB;
+          });
+          setFixtures(sortedFixtures);
         } else {
           throw new Error('Invalid response from server');
         }
