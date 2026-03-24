@@ -12,6 +12,8 @@ export function InternationalsProvider({ children }) {
   const [activeTab, setActiveTab] = useState('national');
   const [activeInternationalId, setActiveInternationalId] = useState(null);
   const [activeInternational, setActiveInternational] = useState(null);
+  const [activeInternationalType, setActiveInternationalType] = useState(null);
+  const [internationalPlayers, setInternationalPlayers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [sortField, setSortField] = useState('ranking_points');
@@ -25,14 +27,19 @@ export function InternationalsProvider({ children }) {
   }, [memberKey]);
 
   useEffect(() => {
-    if (activeInternationalId) {
-      const allTeams = [...nationalTeams, ...u20Teams];
+    if (activeInternationalId && activeInternationalType) {
+      const allTeams = activeInternationalType === 'nat' ? nationalTeams : u20Teams;
       const international = allTeams.find(t => t.id === activeInternationalId);
       setActiveInternational(international || null);
+
+      if (international) {
+        fetchInternationalPlayers(activeInternationalType, activeInternationalId);
+      }
     } else {
       setActiveInternational(null);
+      setInternationalPlayers([]);
     }
-  }, [activeInternationalId, nationalTeams, u20Teams]);
+  }, [activeInternationalId, activeInternationalType, nationalTeams, u20Teams]);
 
   const fetchInternationalsData = async () => {
     setLoading(true);
@@ -71,6 +78,28 @@ export function InternationalsProvider({ children }) {
       console.error('Error:', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchInternationalPlayers = async (type, teamId) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/team/${type}/${teamId}/players`, {
+        headers: {
+          'Accept': 'application/json'
+        }
+      });
+
+      const data = await response.json();
+
+      if (data.data?.status === 'Ok' && data.data.players) {
+        const playersArray = Object.values(data.data.players);
+        setInternationalPlayers(playersArray);
+      } else {
+        setInternationalPlayers([]);
+      }
+    } catch (err) {
+      console.error('Error fetching international players:', err);
+      setInternationalPlayers([]);
     }
   };
 
@@ -129,6 +158,9 @@ export function InternationalsProvider({ children }) {
       activeInternationalId,
       setActiveInternationalId,
       activeInternational,
+      activeInternationalType,
+      setActiveInternationalType,
+      internationalPlayers,
       loading,
       error,
       sortField,

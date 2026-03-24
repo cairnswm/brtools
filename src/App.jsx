@@ -13,6 +13,8 @@ import SettingsPage from './pages/SettingsPage';
 import ImportPage from './pages/ImportPage';
 import ScoutingPage from './pages/ScoutingPage';
 import InternationalsPage from './internationals/pages/InternationalsPage';
+import IntTeamDetailPage from './internationals/pages/IntTeamDetailPage';
+import IntPlayerDetailPage from './internationals/pages/IntPlayerDetailPage';
 import { useEffect } from 'react';
 import { accessElf } from './components/accessElf';
 
@@ -46,6 +48,22 @@ const App = () => {
             element={
               <InternationalsProvider>
                 <InternationalsPage />
+              </InternationalsProvider>
+            }
+          />
+          <Route
+            path="/internationals/:type/:teamId"
+            element={
+              <InternationalsProvider>
+                <IntTeamDetailPage />
+              </InternationalsProvider>
+            }
+          />
+          <Route
+            path="/internationals/:type/:teamId/player/:playerId"
+            element={
+              <InternationalsProvider>
+                <IntPlayerDetailPage />
               </InternationalsProvider>
             }
           />

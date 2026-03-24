@@ -14,6 +14,8 @@ function InternationalsPage() {
     u20Teams,
     activeTab,
     setActiveTab,
+    setActiveInternationalId,
+    setActiveInternationalType,
     loading,
     error,
     sortField,
@@ -23,7 +25,10 @@ function InternationalsPage() {
   } = useInternationalsHook();
 
   const handleTeamClick = (teamId) => {
-    navigate(`/team/${teamId}`);
+    const type = activeTab === 'national' ? 'nat' : 'u20';
+    setActiveInternationalId(teamId);
+    setActiveInternationalType(type);
+    navigate(`/internationals/${type}/${teamId}`);
   };
 
   const getSortIcon = (field) => {
