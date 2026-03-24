@@ -13,7 +13,10 @@ function ImportPage() {
     totalTeamsToProcess,
     isProcessingTeams,
     lastDataLoad,
-    fetchLastDataLoad
+    fetchLastDataLoad,
+    internationals,
+    loadingInternationals,
+    fetchInternationals
   } = useImport();
 
   useEffect(() => {
@@ -24,6 +27,10 @@ function ImportPage() {
     await fetchRankings();
   };
 
+  const handleImportInternationals = async () => {
+    await fetchInternationals();
+  };
+
   return (
     <div className="min-h-screen bg-gray-100">
       <Header />
@@ -32,7 +39,7 @@ function ImportPage() {
         <h1 className="text-3xl font-bold text-gray-900 mb-6">Import Data</h1>
 
         <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">Import Data from Blackout Rugby</h2>
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">Import Team and Player Data from Blackout Rugby</h2>
 
           {lastDataLoad && (
             <p className="text-sm text-gray-600 mb-4">
@@ -55,6 +62,70 @@ function ImportPage() {
               </div>
             )}
           </div>
+        </div>
+
+        <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">Import Internationals from Blackout Rugby</h2>
+
+          <button
+            onClick={handleImportInternationals}
+            disabled={loadingInternationals}
+            className="w-full bg-green-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+          >
+            {loadingInternationals ? 'Loading...' : 'Import Internationals'}
+          </button>
+
+          {internationals.nat.length > 0 && (
+            <div className="mt-6">
+              <h3 className="text-lg font-semibold text-gray-800 mb-3">National Teams</h3>
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Team ID</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {internationals.nat.map((team) => (
+                      <tr key={team.id}>
+                        <td className="px-4 py-3 text-sm text-gray-900">{team.id}</td>
+                        <td className="px-4 py-3 text-sm text-gray-900">{team.name}</td>
+                        <td className="px-4 py-3 text-sm text-gray-900">National</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {internationals.u20.length > 0 && (
+            <div className="mt-6">
+              <h3 className="text-lg font-semibold text-gray-800 mb-3">U20 Teams</h3>
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Team ID</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {internationals.u20.map((team) => (
+                      <tr key={team.id}>
+                        <td className="px-4 py-3 text-sm text-gray-900">{team.id}</td>
+                        <td className="px-4 py-3 text-sm text-gray-900">{team.name}</td>
+                        <td className="px-4 py-3 text-sm text-gray-900">U20</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
         </div>
 
         {totalLoaded > 0 && (

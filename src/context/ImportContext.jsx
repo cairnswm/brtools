@@ -17,6 +17,8 @@ export function ImportProvider({ children }) {
   const [totalTeamsToProcess, setTotalTeamsToProcess] = useState(0);
   const [isProcessingTeams, setIsProcessingTeams] = useState(false);
   const [lastDataLoad, setLastDataLoad] = useState(null);
+  const [internationals, setInternationals] = useState({ nat: [], u20: [] });
+  const [loadingInternationals, setLoadingInternationals] = useState(false);
 
   const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -137,6 +139,40 @@ export function ImportProvider({ children }) {
     }
   };
 
+  const fetchInternationals = async () => {
+    setLoadingInternationals(true);
+    setError(null);
+
+    try {
+      const response = await fetch('https://thegamedeveloper.co.za/brexport/api/api.php/bulk/international?images=1', {
+        headers: {
+          'Accept': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch internationals');
+      }
+
+      const result = await response.json();
+
+      if (result?.data?.status === 'Ok') {
+        const natArray = result.data.nat ? Object.values(result.data.nat) : [];
+        const u20Array = result.data.u20 ? Object.values(result.data.u20) : [];
+
+        setInternationals({
+          nat: natArray,
+          u20: u20Array
+        });
+      }
+    } catch (err) {
+      setError(err.message);
+      console.error('Error fetching internationals:', err);
+    } finally {
+      setLoadingInternationals(false);
+    }
+  };
+
   return (
     <ImportContext.Provider value={{
       rankings,
@@ -149,7 +185,10 @@ export function ImportProvider({ children }) {
       totalTeamsToProcess,
       isProcessingTeams,
       lastDataLoad,
-      fetchLastDataLoad
+      fetchLastDataLoad,
+      internationals,
+      loadingInternationals,
+      fetchInternationals
     }}>
       {children}
     </ImportContext.Provider>
