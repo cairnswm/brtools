@@ -14,7 +14,10 @@ function IntTeamDetailPage() {
   const {
     activeInternational,
     setActiveInternationalId,
-    setActiveInternationalType
+    setActiveInternationalType,
+    nationalTeams,
+    u20Teams,
+    loading
   } = useInternationalsHook();
 
   const [activeTab, setActiveTab] = useState('players');
@@ -30,13 +33,34 @@ function IntTeamDetailPage() {
     navigate('/internationals');
   };
 
-  if (!activeInternational) {
+  const teamsLoaded = nationalTeams.length > 0 || u20Teams.length > 0;
+
+  if (!activeInternational && (!teamsLoaded || loading)) {
     return (
       <div className="min-h-screen bg-gray-100">
         <Header />
         <div className="container mx-auto px-4 py-8">
           <div className="text-center">
             <p className="text-gray-600">Loading team...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!activeInternational && teamsLoaded && !loading) {
+    return (
+      <div className="min-h-screen bg-gray-100">
+        <Header />
+        <div className="container mx-auto px-4 py-8">
+          <div className="text-center">
+            <p className="text-gray-600">Team not found</p>
+            <button
+              onClick={handleBack}
+              className="mt-4 text-blue-600 hover:text-blue-800"
+            >
+              Back to Internationals
+            </button>
           </div>
         </div>
       </div>

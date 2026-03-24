@@ -29,7 +29,7 @@ export function InternationalsProvider({ children }) {
   useEffect(() => {
     if (activeInternationalId && activeInternationalType) {
       const allTeams = activeInternationalType === 'nat' ? nationalTeams : u20Teams;
-      const international = allTeams.find(t => t.id === activeInternationalId);
+      const international = allTeams.find(t => String(t.id) === String(activeInternationalId));
       setActiveInternational(international || null);
 
       if (international) {
