@@ -291,6 +291,7 @@ function ScoutingPage() {
                         <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                           {filters.playerType === 'senior' ? 'CSR' : 'Stars'}
                         </th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Exp</th>
                         <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Form</th>
                         <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Agg</th>
                         <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Disc</th>
@@ -298,25 +299,41 @@ function ScoutingPage() {
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
-                      {searchResults.map((player) => (
-                        <tr key={player.id} className="hover:bg-gray-50">
-                          <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">{player.name}</td>
-                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">{player.teamname}</td>
-                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">{player.age}</td>
-                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">
-                            {player.nat1}{player.nat2 ? `/${player.nat2}` : ''}
-                          </td>
-                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">{player.height}</td>
-                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">{player.weight}</td>
-                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">
-                            {filters.playerType === 'senior' ? player.csr : player.stars}
-                          </td>
-                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">{player.form}</td>
-                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">{player.agg}</td>
-                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">{player.disc}</td>
-                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">{player.ldr}</td>
-                        </tr>
-                      ))}
+                      {searchResults.map((player) => {
+                        const playerUrl = filters.playerType === 'senior'
+                          ? `https://www.blackoutrugby.com/game/club.squad.php#player=${player.id}`
+                          : `https://www.blackoutrugby.com/game/club.squad.youth.php#player=${player.id}`;
+
+                        return (
+                          <tr key={player.id} className="hover:bg-gray-50">
+                            <td className="px-4 py-3 whitespace-nowrap text-sm font-medium">
+                              <a
+                                href={playerUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-blue-600 hover:text-blue-800 hover:underline"
+                              >
+                                {player.name}
+                              </a>
+                            </td>
+                            <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">{player.teamname}</td>
+                            <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">{player.age}</td>
+                            <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">
+                              {player.nat1}{player.nat2 ? `/${player.nat2}` : ''}
+                            </td>
+                            <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">{player.height}</td>
+                            <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">{player.weight}</td>
+                            <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">
+                              {filters.playerType === 'senior' ? player.csr : player.stars}
+                            </td>
+                            <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">{player.exp}</td>
+                            <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">{player.form}</td>
+                            <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">{player.agg}</td>
+                            <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">{player.disc}</td>
+                            <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">{player.ldr}</td>
+                          </tr>
+                        );
+                      })}
                     </tbody>
                   </table>
                 </div>
