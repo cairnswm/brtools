@@ -392,7 +392,7 @@ function ScoutingPage() {
                               ) : (
                                 player.nat1
                               )}
-                              {player.nat2 && (
+                              {player.nat2 && player.nat2 !== player.nat1 && (
                                 <>
                                   /
                                   {player.capped_for && player.capped_for === player.nat2 ? (
