@@ -6,9 +6,15 @@ import TeamsList from '../components/TeamsList';
 import { accessElf } from '../components/accessElf';
 
 function HomePage() {
-  const { loading, error, teams, memberKey } = useBRTools();
+  const { loading, error, teams, memberKey, memberData } = useBRTools();
 
   accessElf.track("Home");
+
+  const formatDate = (dateString) => {
+    if (!dateString) return 'Unknown';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-NZ', { year: 'numeric', month: 'long', day: 'numeric' });
+  };
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -29,6 +35,16 @@ function HomePage() {
         {error && (
           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-6">
             {error}
+          </div>
+        )}
+
+        {memberData && (
+          <div className="bg-white shadow rounded-lg p-4 mb-6">
+            <div className="flex items-center gap-2 text-gray-700">
+              <span className="font-semibold">{memberData.username}</span>
+              <span className="text-gray-500">•</span>
+              <span className="text-sm">Playing since {formatDate(memberData.dateregistered)}</span>
+            </div>
           </div>
         )}
 

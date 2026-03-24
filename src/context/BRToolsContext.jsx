@@ -18,6 +18,7 @@ export function BRToolsProvider({ children }) {
 
   const [teams, setTeams] = useState([]);
   const [cachedTeams, setCachedTeams] = useState({});
+  const [memberData, setMemberData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -49,11 +50,31 @@ export function BRToolsProvider({ children }) {
 
   useEffect(() => {
     localStorage.setItem('brtools-member-key', memberKey);
-    
+
     if (memberKey) {
       setLoading(true);
       setError(null);
-      
+
+      // Fetch member data
+      fetch(`${API_BASE_URL}/mydata`, {
+        headers: {
+          'accesskey': memberKey
+        }
+      })
+        .then(response => response.json())
+        .then(data => {
+          if (data.data?.status === 'Ok' && data.data?.members) {
+            const memberId = Object.keys(data.data.members)[0];
+            const member = data.data.members[memberId];
+            const { teams, ...memberInfo } = member;
+            setMemberData(memberInfo);
+          }
+        })
+        .catch(err => {
+          console.error('Error fetching member data:', err);
+        });
+
+      // Fetch teams data
       fetch(`${API_BASE_URL}/mydata/teams`, {
         headers: {
           'accesskey': memberKey
@@ -83,6 +104,7 @@ export function BRToolsProvider({ children }) {
         });
     } else {
       setTeams([]);
+      setMemberData(null);
     }
   }, [memberKey]);
 
@@ -131,11 +153,12 @@ export function BRToolsProvider({ children }) {
   }
 
   return (
-    <BRToolsContext.Provider value={{ 
-      memberKey, 
-      setMemberKey, 
-      teams, 
-      loading, 
+    <BRToolsContext.Provider value={{
+      memberKey,
+      setMemberKey,
+      teams,
+      memberData,
+      loading,
       error,
       cachedTeams,
       addTeamsToCache,
