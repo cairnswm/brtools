@@ -924,8 +924,6 @@ const TeamFixtures = () => {
                     </div>
 
                     {expandedFixture === fixture.id && (() => {
-                      const homeReport = fixture.reporterSummary?.home;
-                      const guestReport = fixture.reporterSummary?.guest;
                       const venue = homeTeam?.stadium || `${homeTeam?.name || 'TBD'} Stadium`;
 
                       return (
@@ -938,67 +936,57 @@ const TeamFixtures = () => {
                               </div>
                             </div>
 
-                            {homeReport && guestReport && (
+                            {homeTeam && guestTeam && (
                               <div className="pt-4 border-t border-gray-200 space-y-3">
                                 <h3 className="text-sm font-bold text-gray-700 text-center uppercase tracking-wide">Team Information</h3>
                                 <div className="space-y-3">
                                   <div className="flex items-center justify-center gap-4">
                                     <div className="w-32 text-right">
-                                      {renderForm(homeReport.all_form)}
-                                    </div>
-                                    <div className="text-xs text-gray-500 uppercase w-20 text-center">Form</div>
-                                    <div className="w-32 text-left">
-                                      {renderForm(guestReport.all_form)}
-                                    </div>
-                                  </div>
-
-                                  <div className="flex items-center justify-center gap-4">
-                                    <div className="w-32 text-right">
-                                      <div className="text-sm font-semibold">{homeReport.world_rank}</div>
+                                      <div className="text-sm font-semibold">{homeTeam.world_rank || 'N/A'}</div>
                                     </div>
                                     <div className="text-xs text-gray-500 uppercase w-20 text-center">World Rank</div>
                                     <div className="w-32 text-left">
-                                      <div className="text-sm font-semibold">{guestReport.world_rank}</div>
+                                      <div className="text-sm font-semibold">{guestTeam.world_rank || 'N/A'}</div>
                                     </div>
                                   </div>
 
                                   <div className="flex items-center justify-center gap-4">
                                     <div className="w-32 text-right">
-                                      <div className="text-sm font-semibold">{homeReport.national_rank}</div>
+                                      <div className="text-sm font-semibold">{homeTeam.national_rank || 'N/A'}</div>
                                     </div>
                                     <div className="text-xs text-gray-500 uppercase w-20 text-center">National Rank</div>
                                     <div className="w-32 text-left">
-                                      <div className="text-sm font-semibold">{guestReport.national_rank}</div>
+                                      <div className="text-sm font-semibold">{guestTeam.national_rank || 'N/A'}</div>
                                     </div>
                                   </div>
 
                                   <div className="flex items-center justify-center gap-4">
                                     <div className="w-32 text-right">
-                                      <div className="text-sm font-semibold">{homeReport.regional_rank}</div>
+                                      <div className="text-sm font-semibold">{homeTeam.regional_rank || 'N/A'}</div>
                                     </div>
                                     <div className="text-xs text-gray-500 uppercase w-20 text-center">Regional Rank</div>
                                     <div className="w-32 text-left">
-                                      <div className="text-sm font-semibold">{guestReport.regional_rank}</div>
+                                      <div className="text-sm font-semibold">{guestTeam.regional_rank || 'N/A'}</div>
                                     </div>
                                   </div>
 
                                   <div className="flex items-center justify-center gap-4">
                                     <div className="w-32 text-right">
-                                      <div className="text-sm font-semibold">{Number(homeReport.average_top15_csr).toLocaleString()}</div>
+                                      <div className="text-sm font-semibold">{homeTeam.average_top15_csr ? Number(homeTeam.average_top15_csr).toLocaleString() : 'N/A'}</div>
                                     </div>
                                     <div className="text-xs text-gray-500 uppercase w-20 text-center">Avg Top 15 CSR</div>
                                     <div className="w-32 text-left">
-                                      <div className="text-sm font-semibold">{Number(guestReport.average_top15_csr).toLocaleString()}</div>
+                                      <div className="text-sm font-semibold">{guestTeam.average_top15_csr ? Number(guestTeam.average_top15_csr).toLocaleString() : 'N/A'}</div>
                                     </div>
                                   </div>
 
                                   <div className="flex items-center justify-center gap-4">
                                     <div className="w-32 text-right">
-                                      <div className="text-sm font-semibold">{Number(homeReport.ranking_points).toFixed(2)}</div>
+                                      <div className="text-sm font-semibold">{homeTeam.ranking_points ? Number(homeTeam.ranking_points).toFixed(2) : 'N/A'}</div>
                                     </div>
                                     <div className="text-xs text-gray-500 uppercase w-20 text-center">Ranking Points</div>
                                     <div className="w-32 text-left">
-                                      <div className="text-sm font-semibold">{Number(guestReport.ranking_points).toFixed(2)}</div>
+                                      <div className="text-sm font-semibold">{guestTeam.ranking_points ? Number(guestTeam.ranking_points).toFixed(2) : 'N/A'}</div>
                                     </div>
                                   </div>
                                 </div>
