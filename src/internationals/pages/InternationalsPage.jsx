@@ -146,11 +146,15 @@ function InternationalsPage() {
                 {currentTeams.map((team) => (
                   <tr
                     key={team.id}
-                    className="hover:bg-gray-50 cursor-pointer"
+                    className={`cursor-pointer ${
+                      isOwnedByUser(team)
+                        ? 'bg-green-50 hover:bg-green-100'
+                        : 'hover:bg-gray-50'
+                    }`}
                     onClick={() => handleTeamClick(team.id)}
                   >
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className={`text-sm font-medium ${isOwnedByUser(team) ? 'text-green-600' : 'text-gray-900'}`}>
+                      <div className={`text-sm font-medium ${isOwnedByUser(team) ? 'text-green-700' : 'text-gray-900'}`}>
                         {team.name}
                       </div>
                     </td>
