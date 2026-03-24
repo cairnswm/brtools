@@ -288,7 +288,9 @@ function ScoutingPage() {
                         <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nat</th>
                         <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Height</th>
                         <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Weight</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stars</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          {filters.playerType === 'senior' ? 'CSR' : 'Stars'}
+                        </th>
                         <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Form</th>
                         <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Agg</th>
                         <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Disc</th>
@@ -301,10 +303,14 @@ function ScoutingPage() {
                           <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">{player.name}</td>
                           <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">{player.teamname}</td>
                           <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">{player.age}</td>
-                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">{player.nat1}</td>
+                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">
+                            {player.nat1}{player.nat2 ? `/${player.nat2}` : ''}
+                          </td>
                           <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">{player.height}</td>
                           <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">{player.weight}</td>
-                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">{player.stars}</td>
+                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">
+                            {filters.playerType === 'senior' ? player.csr : player.stars}
+                          </td>
                           <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">{player.form}</td>
                           <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">{player.agg}</td>
                           <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">{player.disc}</td>
