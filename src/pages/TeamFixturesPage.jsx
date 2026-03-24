@@ -357,8 +357,8 @@ const TeamFixtures = () => {
     );
   }
 
-  const upcomingFixtures = fixtures.filter(f => !isMatchPlayed(f));
   const playedFixtures = fixtures.filter(f => isMatchPlayed(f));
+  const upcomingFixtures = fixtures.filter(f => !isMatchPlayed(f));
 
   return (
     <div className="space-y-8">
@@ -373,106 +373,6 @@ const TeamFixtures = () => {
             </svg>
             Export Fixtures
           </button>
-        </div>
-      )}
-      {upcomingFixtures.length > 0 && (
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Upcoming Fixtures</h2>
-          <div className="grid gap-4">
-            {upcomingFixtures.map((fixture) => {
-              const homeTeam = getTeamById(fixture.hometeamid);
-              const guestTeam = getTeamById(fixture.guestteamid);
-              const dateInfo = formatDate(fixture.matchstart);
-              const isHome = fixture.hometeamid === teamId;
-
-              return (
-                <div
-                  key={fixture.id}
-                  className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow"
-                >
-                  <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-3 opacity-90">
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm font-medium">
-                        Season {fixture.season} • Round {fixture.round} • {
-                          fixture.competition === 'Friendly' && fixture.friendlycompetitionshort
-                            ? fixture.friendlycompetitionshort
-                            : formatCompetition(fixture.competition)
-                        }
-                      </span>
-                      <span className="text-sm">
-                        {formatTime(fixture.matchstart)}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="p-6">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-4 flex-1">
-                        <div className="text-center w-16">
-                          <div className="text-3xl font-bold text-gray-900">{dateInfo.day}</div>
-                          <div className="text-sm text-gray-600 uppercase">{dateInfo.month}</div>
-                        </div>
-
-                        <div className="flex-1">
-                          <div className={`text-lg font-semibold ${isHome ? 'text-blue-700' : 'text-gray-900'} flex items-center`}>
-                            {homeTeam?.name || `Team ${fixture.hometeamid}`}
-                            {isHome && <span className="ml-2 text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">HOME</span>}
-                          </div>
-                          <div className="text-sm text-gray-500">{homeTeam?.country_iso || ''}</div>
-                        </div>
-                      </div>
-
-                      <div className="px-6 text-center">
-                        <span className="text-2xl font-bold text-gray-400">vs</span>
-                      </div>
-
-                      <div className="flex-1">
-                        <div className={`text-lg font-semibold text-right ${!isHome ? 'text-blue-700' : 'text-gray-900'} flex items-center justify-end`}>
-                          {!isHome && <span className="mr-2 text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">AWAY</span>}
-                          {guestTeam?.name || `Team ${fixture.guestteamid}`}
-                        </div>
-                        <div className="text-sm text-gray-500 text-right">{guestTeam?.country_iso || ''}</div>
-                      </div>
-                    </div>
-
-                    <div className="mt-4 pt-4 border-t border-gray-200">
-                      <button
-                        onClick={() => toggleExpand(fixture.id)}
-                        className="w-full flex items-center justify-center text-sm text-gray-600 hover:text-blue-700 transition-colors"
-                      >
-                        <span className="font-medium">
-                          {expandedFixture === fixture.id ? 'less' : 'more'}
-                        </span>
-                        <svg
-                          className={`ml-2 w-4 h-4 transition-transform ${expandedFixture === fixture.id ? 'rotate-180' : ''}`}
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                        </svg>
-                      </button>
-                    </div>
-
-                    {expandedFixture === fixture.id && (
-                      <div className="mt-4 pt-4 border-t border-gray-200 space-y-3">
-                        <div className="grid grid-cols-2 gap-4">
-                          <div className="text-center">
-                            <div className="text-xs text-gray-500 uppercase mb-1">Venue</div>
-                            <div className="text-sm font-medium">{fixture.venue || 'TBD'}</div>
-                          </div>
-                          <div className="text-center">
-                            <div className="text-xs text-gray-500 uppercase mb-1">Attendance</div>
-                            <div className="text-sm font-medium">{fixture.attendance || 'N/A'}</div>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
         </div>
       )}
 
@@ -936,6 +836,107 @@ const TeamFixtures = () => {
                         </div>
                       );
                     })()}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {upcomingFixtures.length > 0 && (
+        <div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">Upcoming Fixtures</h2>
+          <div className="grid gap-4">
+            {upcomingFixtures.map((fixture) => {
+              const homeTeam = getTeamById(fixture.hometeamid);
+              const guestTeam = getTeamById(fixture.guestteamid);
+              const dateInfo = formatDate(fixture.matchstart);
+              const isHome = fixture.hometeamid === teamId;
+
+              return (
+                <div
+                  key={fixture.id}
+                  className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow"
+                >
+                  <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-3 opacity-90">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm font-medium">
+                        Season {fixture.season} • Round {fixture.round} • {
+                          fixture.competition === 'Friendly' && fixture.friendlycompetitionshort
+                            ? fixture.friendlycompetitionshort
+                            : formatCompetition(fixture.competition)
+                        }
+                      </span>
+                      <span className="text-sm">
+                        {formatTime(fixture.matchstart)}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="p-6">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-4 flex-1">
+                        <div className="text-center w-16">
+                          <div className="text-3xl font-bold text-gray-900">{dateInfo.day}</div>
+                          <div className="text-sm text-gray-600 uppercase">{dateInfo.month}</div>
+                        </div>
+
+                        <div className="flex-1">
+                          <div className={`text-lg font-semibold ${isHome ? 'text-blue-700' : 'text-gray-900'} flex items-center`}>
+                            {homeTeam?.name || `Team ${fixture.hometeamid}`}
+                            {isHome && <span className="ml-2 text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">HOME</span>}
+                          </div>
+                          <div className="text-sm text-gray-500">{homeTeam?.country_iso || ''}</div>
+                        </div>
+                      </div>
+
+                      <div className="px-6 text-center">
+                        <span className="text-2xl font-bold text-gray-400">vs</span>
+                      </div>
+
+                      <div className="flex-1">
+                        <div className={`text-lg font-semibold text-right ${!isHome ? 'text-blue-700' : 'text-gray-900'} flex items-center justify-end`}>
+                          {!isHome && <span className="mr-2 text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">AWAY</span>}
+                          {guestTeam?.name || `Team ${fixture.guestteamid}`}
+                        </div>
+                        <div className="text-sm text-gray-500 text-right">{guestTeam?.country_iso || ''}</div>
+                      </div>
+                    </div>
+
+                    <div className="mt-4 pt-4 border-t border-gray-200">
+                      <button
+                        onClick={() => toggleExpand(fixture.id)}
+                        className="w-full flex items-center justify-center text-sm text-gray-600 hover:text-blue-700 transition-colors"
+                      >
+                        <span className="font-medium">
+                          {expandedFixture === fixture.id ? 'less' : 'more'}
+                        </span>
+                        <svg
+                          className={`ml-2 w-4 h-4 transition-transform ${expandedFixture === fixture.id ? 'rotate-180' : ''}`}
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        </svg>
+                      </button>
+                    </div>
+
+                    {expandedFixture === fixture.id && (
+                      <div className="mt-4 pt-4 border-t border-gray-200 space-y-3">
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="text-center">
+                            <div className="text-xs text-gray-500 uppercase mb-1">Venue</div>
+                            <div className="text-sm font-medium">{fixture.venue || 'TBD'}</div>
+                          </div>
+                          <div className="text-center">
+                            <div className="text-xs text-gray-500 uppercase mb-1">Attendance</div>
+                            <div className="text-sm font-medium">{fixture.attendance || 'N/A'}</div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               );
