@@ -1,45 +1,40 @@
-import { useState } from 'react';
 import Header from '../components/Header';
 import { accessElf } from '../components/accessElf';
+import { useScouting } from '../scouting/hooks/useScouting';
 
 function ScoutingPage() {
   accessElf.track("Scouting");
 
-  const [filters, setFilters] = useState({
-    nationality: '',
-    ageMin: '',
-    ageMax: '',
-    heightMin: '',
-    heightMax: '',
-    weightMin: '',
-    weightMax: '',
-    playerType: 'senior'
-  });
+  const {
+    filters,
+    updateFilters,
+    searchResults,
+    isLoading,
+    error,
+    hasSearched,
+    isFormCollapsed,
+    totalLoaded,
+    fetchSearchResults,
+    fetchNextPage,
+    resetSearch,
+    toggleFormCollapse
+  } = useScouting();
 
   const handleFilterChange = (field, value) => {
-    setFilters(prev => ({
-      ...prev,
-      [field]: value
-    }));
+    updateFilters({ [field]: value });
   };
 
-  const handleSearch = (e) => {
+  const handleSearch = async (e) => {
     e.preventDefault();
-    console.log('Search filters:', filters);
-    // TODO: Implement search functionality
+    await fetchSearchResults(0);
   };
 
   const handleReset = () => {
-    setFilters({
-      nationality: '',
-      ageMin: '',
-      ageMax: '',
-      heightMin: '',
-      heightMax: '',
-      weightMin: '',
-      weightMax: '',
-      playerType: 'senior'
-    });
+    resetSearch();
+  };
+
+  const handleLoadMore = async () => {
+    await fetchNextPage();
   };
 
   return (
@@ -47,10 +42,21 @@ function ScoutingPage() {
       <Header />
 
       <div className="container mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-6">Scouting</h1>
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-3xl font-bold text-gray-900">Scouting</h1>
+          {hasSearched && (
+            <button
+              onClick={toggleFormCollapse}
+              className="text-blue-600 hover:text-blue-800 font-medium"
+            >
+              {isFormCollapsed ? 'Show Filters' : 'Hide Filters'}
+            </button>
+          )}
+        </div>
 
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <form onSubmit={handleSearch} className="space-y-6">
+        {!isFormCollapsed && (
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <form onSubmit={handleSearch} className="space-y-6">
             {/* Player Type */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -242,14 +248,86 @@ function ScoutingPage() {
             </div>
           </form>
         </div>
+        )}
 
-        {/* Results section placeholder */}
-        <div className="mt-6 bg-white rounded-lg shadow-md p-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Search Results</h2>
-          <p className="text-gray-600">
-            Use the filters above to search for players
-          </p>
-        </div>
+        {/* Results section */}
+        {hasSearched && (
+          <div className="mt-6 bg-white rounded-lg shadow-md p-6">
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">
+              Search Results {searchResults.length > 0 && `(${searchResults.length} players)`}
+            </h2>
+
+            {isLoading && searchResults.length === 0 && (
+              <div className="text-center py-8">
+                <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                <p className="mt-2 text-gray-600">Loading players...</p>
+              </div>
+            )}
+
+            {error && (
+              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+                {error}
+              </div>
+            )}
+
+            {!isLoading && searchResults.length === 0 && !error && (
+              <p className="text-gray-600 text-center py-8">
+                No players found matching your criteria
+              </p>
+            )}
+
+            {searchResults.length > 0 && (
+              <>
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Team</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Age</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nat</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Height</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Weight</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stars</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Form</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Agg</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Disc</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ldr</th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {searchResults.map((player) => (
+                        <tr key={player.id} className="hover:bg-gray-50">
+                          <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">{player.name}</td>
+                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">{player.teamname}</td>
+                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">{player.age}</td>
+                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">{player.nat1}</td>
+                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">{player.height}</td>
+                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">{player.weight}</td>
+                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">{player.stars}</td>
+                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">{player.form}</td>
+                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">{player.agg}</td>
+                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">{player.disc}</td>
+                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">{player.ldr}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                <div className="mt-4 flex justify-center">
+                  <button
+                    onClick={handleLoadMore}
+                    disabled={isLoading}
+                    className="px-6 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+                  >
+                    {isLoading ? 'Loading...' : 'Load More'}
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

@@ -3,6 +3,7 @@ import { BRToolsProvider } from './context/BRToolsContext';
 import { TeamProvider } from './context/TeamContext';
 import { FixtureProvider } from './context/FixtureContext';
 import { ImportProvider } from './context/ImportContext';
+import { ScoutingProvider } from './scouting/context/ScoutingContext';
 import LandingPage from './pages/LandingPage';
 import HomePage from './pages/HomePage';
 import StadiumCalculator from './pages/StadiumCalculator';
@@ -30,7 +31,14 @@ const App = () => {
           <Route path="/" element={<LandingPage />} />
           <Route path="/home" element={<HomePage />} />
           <Route path="/stadium-calculator" element={<StadiumCalculator />} />
-          <Route path="/scouting" element={<ScoutingPage />} />
+          <Route
+            path="/scouting"
+            element={
+              <ScoutingProvider>
+                <ScoutingPage />
+              </ScoutingProvider>
+            }
+          />
           <Route path="/settings" element={<SettingsPage />} />
           <Route
             path="/import"
