@@ -16,8 +16,30 @@ export function ImportProvider({ children }) {
   const [teamsProcessed, setTeamsProcessed] = useState(0);
   const [totalTeamsToProcess, setTotalTeamsToProcess] = useState(0);
   const [isProcessingTeams, setIsProcessingTeams] = useState(false);
+  const [lastDataLoad, setLastDataLoad] = useState(null);
 
   const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+  const fetchLastDataLoad = async () => {
+    try {
+      const response = await fetch('http://thegamedeveloper.co.za/brexport/api/api.php/bulk/lastdataload', {
+        headers: {
+          'Accept': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch last data load');
+      }
+
+      const result = await response.json();
+      if (result?.data) {
+        setLastDataLoad(result.data);
+      }
+    } catch (err) {
+      console.error('Error fetching last data load:', err);
+    }
+  };
 
   const fetchRankings = async () => {
     setLoading(true);
@@ -125,7 +147,9 @@ export function ImportProvider({ children }) {
       fetchRankings,
       teamsProcessed,
       totalTeamsToProcess,
-      isProcessingTeams
+      isProcessingTeams,
+      lastDataLoad,
+      fetchLastDataLoad
     }}>
       {children}
     </ImportContext.Provider>

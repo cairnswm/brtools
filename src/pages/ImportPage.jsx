@@ -1,5 +1,6 @@
 import { useImport } from '../hooks/useImport';
 import Header from '../components/Header';
+import { useEffect } from 'react';
 
 function ImportPage() {
   const {
@@ -10,8 +11,14 @@ function ImportPage() {
     fetchRankings,
     teamsProcessed,
     totalTeamsToProcess,
-    isProcessingTeams
+    isProcessingTeams,
+    lastDataLoad,
+    fetchLastDataLoad
   } = useImport();
+
+  useEffect(() => {
+    fetchLastDataLoad();
+  }, []);
 
   const handleImportRankings = async () => {
     await fetchRankings();
@@ -25,7 +32,13 @@ function ImportPage() {
         <h1 className="text-3xl font-bold text-gray-900 mb-6">Import Data</h1>
 
         <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Import Data from Blackout Rugby</h2>
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">Import Data from Blackout Rugby</h2>
+
+          {lastDataLoad && (
+            <p className="text-sm text-gray-600 mb-4">
+              Last data load: {lastDataLoad.gamedate}
+            </p>
+          )}
 
           <div className="space-y-4">
             <button
