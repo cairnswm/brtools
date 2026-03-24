@@ -254,6 +254,40 @@ function ScoutingPage() {
               </div>
             </div>
 
+            {/* Sort Options */}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Sort By
+                </label>
+                <select
+                  value={filters.sortBy}
+                  onChange={(e) => handleFilterChange('sortBy', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="">{filters.playerType === 'senior' ? 'CSR' : 'Stars'} (Default)</option>
+                  <option value="height">Height</option>
+                  <option value="weight">Weight</option>
+                  <option value="age">Age</option>
+                  <option value="exp">Experience</option>
+                  <option value="form">Form</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Sort Direction
+                </label>
+                <select
+                  value={filters.sortDir}
+                  onChange={(e) => handleFilterChange('sortDir', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="desc">Descending</option>
+                  <option value="asc">Ascending</option>
+                </select>
+              </div>
+            </div>
+
             {/* Action Buttons */}
             <div className="flex gap-4">
               <button
@@ -342,8 +376,22 @@ function ScoutingPage() {
                             </td>
                             <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">{player.teamname}</td>
                             <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">{player.age}</td>
-                            <td className={`px-4 py-3 whitespace-nowrap text-sm text-gray-600 ${player.capped_for ? 'font-bold' : ''}`}>
-                              {player.nat1}{player.nat2 ? `/${player.nat2}` : ''}
+                            <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">
+                              {player.capped_for && player.capped_for === player.nat1 ? (
+                                <span className="font-bold">{player.nat1}</span>
+                              ) : (
+                                player.nat1
+                              )}
+                              {player.nat2 && (
+                                <>
+                                  /
+                                  {player.capped_for && player.capped_for === player.nat2 ? (
+                                    <span className="font-bold">{player.nat2}</span>
+                                  ) : (
+                                    player.nat2
+                                  )}
+                                </>
+                              )}
                             </td>
                             <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">{player.height}</td>
                             <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">{player.weight}</td>

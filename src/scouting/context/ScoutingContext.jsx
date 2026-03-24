@@ -12,7 +12,9 @@ export const ScoutingProvider = ({ children }) => {
     heightMax: '',
     weightMin: '',
     weightMax: '',
-    playerType: 'senior'
+    playerType: 'senior',
+    sortBy: '',
+    sortDir: 'desc'
   });
 
   const [searchResults, setSearchResults] = useState([]);
@@ -34,6 +36,16 @@ export const ScoutingProvider = ({ children }) => {
     if (filters.weightMin) params.append('min_weight', filters.weightMin);
     if (filters.weightMax) params.append('max_weight', filters.weightMax);
     params.append('start', start);
+
+    // Add sortby only if it's not the default (csr for senior, stars for junior)
+    const defaultSort = filters.playerType === 'senior' ? 'csr' : 'stars';
+    if (filters.sortBy && filters.sortBy !== defaultSort) {
+      params.append('sortby', filters.sortBy);
+    }
+
+    if (filters.sortDir) {
+      params.append('sortdir', filters.sortDir);
+    }
 
     return `${API_BASE_URL}/scouting/${endpoint}?${params.toString()}`;
   };
