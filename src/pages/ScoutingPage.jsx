@@ -1,6 +1,7 @@
 import Header from '../components/Header';
 import { accessElf } from '../components/accessElf';
 import { useScouting } from '../scouting/hooks/useScouting';
+import * as XLSX from 'xlsx';
 
 function ScoutingPage() {
   accessElf.track("Scouting");
@@ -35,6 +36,29 @@ function ScoutingPage() {
 
   const handleLoadMore = async () => {
     await fetchNextPage();
+  };
+
+  const exportToExcel = () => {
+    const exportData = searchResults.map(player => ({
+      Name: player.name,
+      Team: player.teamname,
+      Age: player.age,
+      Nationality: player.nat1 + (player.nat2 ? `/${player.nat2}` : ''),
+      'Capped For': player.capped_for || '',
+      Height: player.height,
+      Weight: player.weight,
+      CSR: filters.playerType === 'senior' ? player.csr : player.stars,
+      Exp: player.exp,
+      Form: player.form,
+      Aggression: player.agg,
+      Discipline: player.disc,
+      Leadership: player.ldr
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(exportData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Scouting Results");
+    XLSX.writeFile(wb, "scouting_results.xlsx");
   };
 
   return (
@@ -318,7 +342,7 @@ function ScoutingPage() {
                             </td>
                             <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">{player.teamname}</td>
                             <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">{player.age}</td>
-                            <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">
+                            <td className={`px-4 py-3 whitespace-nowrap text-sm text-gray-600 ${player.capped_for ? 'font-bold' : ''}`}>
                               {player.nat1}{player.nat2 ? `/${player.nat2}` : ''}
                             </td>
                             <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">{player.height}</td>
@@ -338,7 +362,13 @@ function ScoutingPage() {
                   </table>
                 </div>
 
-                <div className="mt-4 flex justify-center">
+                <div className="mt-4 flex justify-between items-center">
+                  <button
+                    onClick={exportToExcel}
+                    className="px-6 py-2 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition-colors"
+                  >
+                    Export to Excel
+                  </button>
                   <button
                     onClick={handleLoadMore}
                     disabled={isLoading}
@@ -346,6 +376,7 @@ function ScoutingPage() {
                   >
                     {isLoading ? 'Loading...' : 'Load More'}
                   </button>
+                  <div className="w-40"></div>
                 </div>
               </>
             )}
