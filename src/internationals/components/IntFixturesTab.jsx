@@ -62,6 +62,12 @@ function IntFixturesTab() {
     return team?.name || `Team ${teamId}`;
   };
 
+  const getTeamStadiumById = (teamId) => {
+    const allTeams = [...nationalTeams, ...u20Teams];
+    const team = allTeams.find(t => String(t.id) === String(teamId));
+    return team?.stadium || 'N/A';
+  };
+
   const isMatchPlayed = (fixture) => {
     return fixture.matchSummary && (fixture.matchSummary.home.points > 0 || fixture.matchSummary.guest.points > 0);
   };
@@ -195,7 +201,7 @@ function IntFixturesTab() {
         'Away Team': getTeamNameById(fixture.guestteamid),
         'Home Score': played ? fixture.matchSummary.home.points : '',
         'Away Score': played ? fixture.matchSummary.guest.points : '',
-        'Venue': fixture.venue || '',
+        'Venue': getTeamStadiumById(fixture.hometeamid),
         'Status': played ? 'Played' : 'Upcoming'
       };
     });
@@ -217,7 +223,7 @@ function IntFixturesTab() {
       { 'Category': 'Teams', 'Home Team': getTeamNameById(fixture.hometeamid), 'Away Team': getTeamNameById(fixture.guestteamid) },
       { 'Category': 'Date', 'Home Team': new Date(fixture.matchstart).toLocaleDateString(), 'Away Team': '' },
       { 'Category': 'Competition', 'Home Team': formatCompetition(fixture.competition), 'Away Team': '' },
-      { 'Category': 'Venue', 'Home Team': fixture.venue || '', 'Away Team': '' },
+      { 'Category': 'Venue', 'Home Team': getTeamStadiumById(fixture.hometeamid), 'Away Team': '' },
       { 'Category': 'Attendance', 'Home Team': getAttendance(fixture), 'Away Team': '' },
       { 'Category': '', 'Home Team': '', 'Away Team': '' },
       { 'Category': 'Score', 'Home Team': fixture.matchSummary.home.points, 'Away Team': fixture.matchSummary.guest.points },
@@ -257,8 +263,6 @@ function IntFixturesTab() {
       { 'Category': '', 'Home Team': '', 'Away Team': '' },
       { 'Category': 'Team Information', 'Home Team': '', 'Away Team': '' },
       { 'Category': 'World Rank', 'Home Team': homeReport.world_rank, 'Away Team': guestReport.world_rank },
-      { 'Category': 'National Rank', 'Home Team': homeReport.national_rank, 'Away Team': guestReport.national_rank },
-      { 'Category': 'Regional Rank', 'Home Team': homeReport.regional_rank, 'Away Team': guestReport.regional_rank },
       { 'Category': 'Avg CSR', 'Home Team': homeReport.avg_csr, 'Away Team': guestReport.avg_csr },
       { 'Category': 'Energy %', 'Home Team': homeReport.energy_level, 'Away Team': guestReport.energy_level },
       { 'Category': 'Weight (kg)', 'Home Team': homeReport.weight, 'Away Team': guestReport.weight },
@@ -347,8 +351,12 @@ function IntFixturesTab() {
     );
   }
 
-  const playedFixtures = internationalFixtures.filter(f => isMatchPlayed(f));
-  const upcomingFixtures = internationalFixtures.filter(f => !isMatchPlayed(f));
+  const sortedFixtures = [...internationalFixtures].sort((a, b) =>
+    new Date(a.matchstart) - new Date(b.matchstart)
+  );
+
+  const playedFixtures = sortedFixtures.filter(f => isMatchPlayed(f));
+  const upcomingFixtures = sortedFixtures.filter(f => !isMatchPlayed(f));
 
   return (
     <div className="space-y-8">
@@ -613,26 +621,6 @@ function IntFixturesTab() {
 
                                   <div className="flex items-center justify-center gap-4">
                                     <div className="w-32 text-right">
-                                      <div className="text-sm font-semibold">{homeReport.national_rank}</div>
-                                    </div>
-                                    <div className="text-xs text-gray-500 uppercase w-20 text-center">National Rank</div>
-                                    <div className="w-32 text-left">
-                                      <div className="text-sm font-semibold">{guestReport.national_rank}</div>
-                                    </div>
-                                  </div>
-
-                                  <div className="flex items-center justify-center gap-4">
-                                    <div className="w-32 text-right">
-                                      <div className="text-sm font-semibold">{homeReport.regional_rank}</div>
-                                    </div>
-                                    <div className="text-xs text-gray-500 uppercase w-20 text-center">Regional Rank</div>
-                                    <div className="w-32 text-left">
-                                      <div className="text-sm font-semibold">{guestReport.regional_rank}</div>
-                                    </div>
-                                  </div>
-
-                                  <div className="flex items-center justify-center gap-4">
-                                    <div className="w-32 text-right">
                                       <div className="text-sm font-semibold">{Number(homeReport.avg_csr).toLocaleString()}</div>
                                     </div>
                                     <div className="text-xs text-gray-500 uppercase w-20 text-center">Avg CSR</div>
@@ -668,7 +656,7 @@ function IntFixturesTab() {
                               <div className="flex justify-center gap-8 text-center">
                                 <div>
                                   <div className="text-xs text-gray-500 uppercase mb-1">Venue</div>
-                                  <div className="text-sm font-medium">{fixture.venue || 'N/A'}</div>
+                                  <div className="text-sm font-medium">{getTeamStadiumById(fixture.hometeamid)}</div>
                                 </div>
                                 <div>
                                   <div className="text-xs text-gray-500 uppercase mb-1">Attendance</div>
@@ -911,7 +899,7 @@ function IntFixturesTab() {
                           <div className="flex justify-center">
                             <div className="text-center">
                               <div className="text-xs text-gray-500 uppercase mb-1">Venue</div>
-                              <div className="text-sm font-medium">{fixture.venue || 'TBD'}</div>
+                              <div className="text-sm font-medium">{getTeamStadiumById(fixture.hometeamid)}</div>
                             </div>
                           </div>
                         </div>
