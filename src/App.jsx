@@ -4,6 +4,7 @@ import { TeamProvider } from './context/TeamContext';
 import { FixtureProvider } from './context/FixtureContext';
 import { ImportProvider } from './context/ImportContext';
 import { ScoutingProvider } from './scouting/context/ScoutingContext';
+import { InternationalsProvider } from './internationals/context/InternationalsContext';
 import LandingPage from './pages/LandingPage';
 import HomePage from './pages/HomePage';
 import StadiumCalculator from './pages/StadiumCalculator';
@@ -11,6 +12,7 @@ import TeamDetails from './pages/TeamDetails';
 import SettingsPage from './pages/SettingsPage';
 import ImportPage from './pages/ImportPage';
 import ScoutingPage from './pages/ScoutingPage';
+import InternationalsPage from './internationals/pages/InternationalsPage';
 import { useEffect } from 'react';
 import { accessElf } from './components/accessElf';
 
@@ -37,6 +39,14 @@ const App = () => {
               <ScoutingProvider>
                 <ScoutingPage />
               </ScoutingProvider>
+            }
+          />
+          <Route
+            path="/internationals"
+            element={
+              <InternationalsProvider>
+                <InternationalsPage />
+              </InternationalsProvider>
             }
           />
           <Route path="/settings" element={<SettingsPage />} />
