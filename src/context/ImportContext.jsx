@@ -22,7 +22,7 @@ export function ImportProvider({ children }) {
 
   const fetchLastDataLoad = async () => {
     try {
-      const response = await fetch('http://thegamedeveloper.co.za/brexport/api/api.php/bulk/lastdataload', {
+      const response = await fetch('https://thegamedeveloper.co.za/brexport/api/api.php/bulk/lastdataload', {
         headers: {
           'Accept': 'application/json'
         }
