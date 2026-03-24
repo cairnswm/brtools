@@ -6,14 +6,16 @@ import { API_BASE_URL } from '../../config/api';
 export const InternationalsContext = createContext();
 
 export function InternationalsProvider({ children }) {
-  const [internationals, setInternationalsData] = useState([]);
+  const [nationalTeams, setNationalTeams] = useState([]);
+  const [u20Teams, setU20Teams] = useState([]);
+  const [activeTab, setActiveTab] = useState('national');
   const [activeInternationalId, setActiveInternationalId] = useState(null);
   const [activeInternational, setActiveInternational] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [sortField, setSortField] = useState('name');
-  const [sortDirection, setSortDirection] = useState('asc');
-  const { memberKey, addTeamsToCache } = useBRTools();
+  const [sortField, setSortField] = useState('ranking_points');
+  const [sortDirection, setSortDirection] = useState('desc');
+  const { memberKey } = useBRTools();
 
   useEffect(() => {
     if (memberKey) {
@@ -22,39 +24,46 @@ export function InternationalsProvider({ children }) {
   }, [memberKey]);
 
   useEffect(() => {
-    if (activeInternationalId && internationals.length > 0) {
-      const international = internationals.find(t => t.id === activeInternationalId);
+    if (activeInternationalId) {
+      const allTeams = [...nationalTeams, ...u20Teams];
+      const international = allTeams.find(t => t.id === activeInternationalId);
       setActiveInternational(international || null);
     } else {
       setActiveInternational(null);
     }
-  }, [activeInternationalId, internationals]);
+  }, [activeInternationalId, nationalTeams, u20Teams]);
 
   const fetchInternationalsData = async () => {
     setLoading(true);
     setError(null);
 
     try {
-      const response = await fetch(`${API_BASE_URL}/teams/internationals`, {
-        headers: {
-          'accesskey': memberKey
-        }
-      });
+      const [natResponse, u20Response] = await Promise.all([
+        fetch(`${API_BASE_URL}/int/nat`, {
+          headers: {
+            'accesskey': memberKey
+          }
+        }),
+        fetch(`${API_BASE_URL}/int/u20`, {
+          headers: {
+            'accesskey': memberKey
+          }
+        })
+      ]);
 
-      const data = await response.json();
+      const natData = await natResponse.json();
+      const u20Data = await u20Response.json();
 
-      if (data.data?.status === 'Ok') {
-        const allInternationalsData = [
-          ...(data.data.a ? Object.values(data.data.a) : []),
-          ...(data.data.u20 ? Object.values(data.data.u20) : [])
-        ];
-
-        setInternationalsData(allInternationalsData);
-
-        const teamIds = allInternationalsData.map(team => team.id);
-        addTeamsToCache(teamIds);
+      if (natData.data?.status === 'Ok') {
+        setNationalTeams(natData.data.items || []);
       } else {
-        throw new Error('Invalid response from server');
+        setNationalTeams([]);
+      }
+
+      if (u20Data.data?.status === 'Ok') {
+        setU20Teams(u20Data.data.items || []);
+      } else {
+        setU20Teams([]);
       }
     } catch (err) {
       setError('Failed to fetch internationals data');
@@ -73,23 +82,31 @@ export function InternationalsProvider({ children }) {
     }
   };
 
-  const sortedInternationalsData = [...internationals].sort((a, b) => {
-    let aValue = a[sortField];
-    let bValue = b[sortField];
+  const sortTeams = (teams) => {
+    return [...teams].sort((a, b) => {
+      let aValue = a[sortField];
+      let bValue = b[sortField];
 
-    if (['average_top15_csr', 'ranking_points', 'world_rank', 'national_rank'].includes(sortField)) {
-      aValue = Number(aValue) || 0;
-      bValue = Number(bValue) || 0;
-    }
+      if (['average_top15_csr', 'ranking_points', 'world_rank'].includes(sortField)) {
+        aValue = Number(aValue) || 0;
+        bValue = Number(bValue) || 0;
+      }
 
-    if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1;
-    if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
-    return 0;
-  });
+      if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1;
+      if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
+      return 0;
+    });
+  };
+
+  const sortedNationalTeams = sortTeams(nationalTeams);
+  const sortedU20Teams = sortTeams(u20Teams);
 
   return (
     <InternationalsContext.Provider value={{
-      internationals: sortedInternationalsData,
+      nationalTeams: sortedNationalTeams,
+      u20Teams: sortedU20Teams,
+      activeTab,
+      setActiveTab,
       activeInternationalId,
       setActiveInternationalId,
       activeInternational,

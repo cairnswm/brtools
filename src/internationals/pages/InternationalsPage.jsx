@@ -1,7 +1,6 @@
 import Header from '../../components/Header';
 import { accessElf } from '../../components/accessElf';
 import { useInternationalsHook } from '../hooks/useInternationalsHook';
-import { useBRTools } from '../../hooks/useBRTools';
 import { useNavigate } from 'react-router-dom';
 
 function InternationalsPage() {
@@ -9,15 +8,16 @@ function InternationalsPage() {
 
   const navigate = useNavigate();
   const {
-    internationals,
+    nationalTeams,
+    u20Teams,
+    activeTab,
+    setActiveTab,
     loading,
     error,
     sortField,
     sortDirection,
     handleSort
   } = useInternationalsHook();
-
-  const { cachedTeams } = useBRTools();
 
   const handleTeamClick = (teamId) => {
     navigate(`/team/${teamId}`);
@@ -27,6 +27,8 @@ function InternationalsPage() {
     if (sortField !== field) return '⇅';
     return sortDirection === 'asc' ? '↑' : '↓';
   };
+
+  const currentTeams = activeTab === 'national' ? nationalTeams : u20Teams;
 
   if (loading) {
     return (
@@ -64,6 +66,31 @@ function InternationalsPage() {
         </div>
 
         <div className="bg-white rounded-lg shadow-md overflow-hidden">
+          <div className="border-b border-gray-200">
+            <nav className="flex -mb-px">
+              <button
+                onClick={() => setActiveTab('national')}
+                className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors ${
+                  activeTab === 'national'
+                    ? 'border-blue-500 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                National
+              </button>
+              <button
+                onClick={() => setActiveTab('u20')}
+                className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors ${
+                  activeTab === 'u20'
+                    ? 'border-blue-500 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                Under 20
+              </button>
+            </nav>
+          </div>
+
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
@@ -100,18 +127,10 @@ function InternationalsPage() {
                       World Rank {getSortIcon('world_rank')}
                     </div>
                   </th>
-                  <th
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
-                    onClick={() => handleSort('national_rank')}
-                  >
-                    <div className="flex items-center gap-2">
-                      National Rank {getSortIcon('national_rank')}
-                    </div>
-                  </th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {internationals.map((team) => (
+                {currentTeams.map((team) => (
                   <tr
                     key={team.id}
                     className="hover:bg-gray-50 cursor-pointer"
@@ -137,11 +156,6 @@ function InternationalsPage() {
                         {team.world_rank || '-'}
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">
-                        {team.national_rank || '-'}
-                      </div>
-                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -149,9 +163,9 @@ function InternationalsPage() {
           </div>
         </div>
 
-        {internationals.length === 0 && (
+        {currentTeams.length === 0 && (
           <div className="text-center mt-8">
-            <p className="text-gray-600">No international teams found.</p>
+            <p className="text-gray-600">No {activeTab === 'national' ? 'national' : 'under 20'} teams found.</p>
           </div>
         )}
       </div>
