@@ -89,7 +89,8 @@ export function InternationalsProvider({ children }) {
     try {
       const response = await fetch(`${API_BASE_URL}/team/${type}/${teamId}/players`, {
         headers: {
-          'Accept': 'application/json'
+          'Accept': 'application/json',
+          'accesskey': memberKey
         }
       });
 
@@ -169,6 +170,57 @@ export function InternationalsProvider({ children }) {
   const sortedNationalTeams = sortTeams(nationalTeams);
   const sortedU20Teams = sortTeams(u20Teams);
 
+  const getNationality = (player) => {
+    let nat = player.nationality;
+    if (player.capped_for && player.capped_for === player.nationality) { nat += '*'; }
+    if (player.dualnationality) { nat += `/${player.dualnationality}`; }
+    if (player.capped_for && player.capped_for === player.dualnationality) {
+      nat += '*';
+    }
+    return nat;
+  };
+
+  const safeNum = (val) => {
+    const n = Number(val);
+    return isNaN(n) ? 0 : n;
+  };
+
+  const exportPlayersToExcel = () => {
+    const exportData = internationalPlayers.map(player => ({
+      Jersey: player.jersey !== "255" ? player.jersey || "" : "",
+      'First Name': player.fname || "",
+      'Last Name': player.lname || "",
+      Age: safeNum(player.age),
+      CSR: safeNum(player.csr),
+      Energy: safeNum(player.energy),
+      Form: safeNum(player.form),
+      Leadership: safeNum(player.leadership),
+      Experience: safeNum(player.experience),
+      Discipline: safeNum(player.discipline),
+      Aggression: safeNum(player.aggression),
+      Height: safeNum(player.height),
+      Weight: safeNum(player.weight),
+      Nationality: getNationality(player) || "",
+      Salary: safeNum(player.salary),
+      Stamina: safeNum(player.stamina),
+      Handling: safeNum(player.handling),
+      Attack: safeNum(player.attack),
+      Defense: safeNum(player.defense),
+      Technique: safeNum(player.technique),
+      Strength: safeNum(player.strength),
+      Jumping: safeNum(player.jumping),
+      Speed: safeNum(player.speed),
+      Agility: safeNum(player.agility),
+      Kicking: safeNum(player.kicking)
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(exportData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Players");
+    const teamName = activeInternational?.name?.replace(/[^a-z0-9]/gi, '_').toLowerCase() || 'players';
+    XLSX.writeFile(wb, `${teamName}_players.xlsx`);
+  };
+
   const exportToExcel = () => {
     const currentTeams = activeTab === 'national' ? sortedNationalTeams : sortedU20Teams;
     const exportData = currentTeams.map(team => ({
@@ -207,7 +259,8 @@ export function InternationalsProvider({ children }) {
       sortDirection,
       handleSort,
       refreshInternationalsData: fetchInternationalsData,
-      exportToExcel
+      exportToExcel,
+      exportPlayersToExcel
     }}>
       {children}
     </InternationalsContext.Provider>

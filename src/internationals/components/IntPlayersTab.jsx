@@ -41,7 +41,7 @@ function IntPlayersTab() {
     return 0;
   });
 
-  const { activeInternational, activeInternationalType } = useInternationalsHook();
+  const { activeInternational, activeInternationalType, exportPlayersToExcel } = useInternationalsHook();
 
   const handlePlayerClick = (playerId) => {
     navigate(`/internationals/${activeInternationalType}/${activeInternational.id}/player/${playerId}`);
@@ -58,6 +58,14 @@ function IntPlayersTab() {
 
   return (
     <div className="bg-white rounded-lg shadow overflow-hidden">
+      <div className="flex justify-end px-6 py-3 border-b border-gray-200">
+        <button
+          onClick={exportPlayersToExcel}
+          className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors text-sm"
+        >
+          Export to Excel
+        </button>
+      </div>
       <div className="overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
