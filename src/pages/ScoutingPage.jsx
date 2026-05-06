@@ -161,6 +161,32 @@ function ScoutingPage() {
               </select>
             </div>
 
+            {/* Capped For */}
+            <div className="flex items-center gap-6">
+              <label className={`flex items-center gap-2 ${!filters.nationality ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}`}>
+                <input
+                  type="checkbox"
+                  checked={filters.cappedFor}
+                  disabled={!filters.nationality}
+                  onChange={(e) => {
+                    updateFilters({ cappedFor: e.target.checked });
+                  }}
+                  className="w-4 h-4 accent-blue-600"
+                />
+                <span className="text-sm font-medium text-gray-700">Capped For</span>
+              </label>
+              <label className={`flex items-center gap-2 ${!filters.cappedFor || !filters.nationality ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}`}>
+                <input
+                  type="checkbox"
+                  checked={filters.orUncapped}
+                  disabled={!filters.cappedFor || !filters.nationality}
+                  onChange={(e) => updateFilters({ orUncapped: e.target.checked })}
+                  className="w-4 h-4 accent-blue-600"
+                />
+                <span className="text-sm font-medium text-gray-700">or Uncapped</span>
+              </label>
+            </div>
+
             {/* Age Range */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">

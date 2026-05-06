@@ -6,6 +6,8 @@ export const ScoutingContext = createContext();
 export const ScoutingProvider = ({ children }) => {
   const [filters, setFilters] = useState({
     nationality: '',
+    cappedFor: false,
+    orUncapped: true,
     ageMin: '',
     ageMax: '',
     heightMin: '',
@@ -100,13 +102,17 @@ export const ScoutingProvider = ({ children }) => {
   const resetSearch = () => {
     setFilters({
       nationality: '',
+      cappedFor: false,
+      orUncapped: true,
       ageMin: '',
       ageMax: '',
       heightMin: '',
       heightMax: '',
       weightMin: '',
       weightMax: '',
-      playerType: 'senior'
+      playerType: 'senior',
+      sortBy: '',
+      sortDir: 'desc'
     });
     setSearchResults([]);
     setHasSearched(false);
@@ -119,10 +125,20 @@ export const ScoutingProvider = ({ children }) => {
     setIsFormCollapsed(prev => !prev);
   };
 
+  const filteredResults = (() => {
+    if (!filters.cappedFor || !filters.nationality) return searchResults;
+
+    return searchResults.filter(player => {
+      const cappedMatch = player.capped_for === filters.nationality;
+      const uncappedMatch = filters.orUncapped && !player.capped_for;
+      return cappedMatch || uncappedMatch;
+    });
+  })();
+
   const value = {
     filters,
     updateFilters,
-    searchResults,
+    searchResults: filteredResults,
     isLoading,
     error,
     hasSearched,
