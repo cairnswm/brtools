@@ -24,8 +24,8 @@ function TeamsList() {
         aValue = a.average_top15_csr || 0;
         bValue = b.average_top15_csr || 0;
       } else if (sortConfig.key === 'ranking') {
-        aValue = a.ranking || 0;
-        bValue = b.ranking || 0;
+        aValue = Number(a.world_rank) || 0;
+        bValue = Number(b.world_rank) || 0;
       }
 
       if (aValue < bValue) {
@@ -106,18 +106,29 @@ function TeamsList() {
                   </Link>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{team.country_iso}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right">{team.ranking || '-'}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right">{team.world_rank || '-'}</td>
                 <td className={`px-6 py-4 whitespace-nowrap text-sm text-right ${csrFormatted.color}`}>
                   {csrFormatted.value}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right">
-                  <Link
-                    to={`/stadium-calculator?team=${team.id}`}
-                    className="inline-flex items-center p-2 text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
-                    title="Stadium Calculator"
-                  >
-                    <StadiumIcon width={20} height={20} />
-                  </Link>
+                  <div className="flex items-center justify-end gap-1">
+                    <Link
+                      to={`/team/${team.id}/players`}
+                      className="inline-flex items-center p-2 text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+                      title="Players"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" width={20} height={20} viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/>
+                      </svg>
+                    </Link>
+                    <Link
+                      to={`/stadium-calculator?team=${team.id}`}
+                      className="inline-flex items-center p-2 text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+                      title="Stadium Calculator"
+                    >
+                      <StadiumIcon width={20} height={20} />
+                    </Link>
+                  </div>
                 </td>
               </tr>
             );
