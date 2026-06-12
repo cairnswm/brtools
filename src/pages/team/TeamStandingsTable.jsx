@@ -1,6 +1,6 @@
-import { useTeam } from '../hooks/useTeam';
-import { useBRTools } from '../hooks/useBRTools';
-import { formatCSR, formatRanking } from '../utils/formatters';
+import { useTeam } from '../../hooks/useTeam';
+import { useBRTools } from '../../hooks/useBRTools';
+import { formatCSR, formatRanking } from '../../utils/formatters';
 
 function TeamStandings() {
   const { 

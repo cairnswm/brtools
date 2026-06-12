@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
-import { useBRTools } from '../hooks/useBRTools';
-import Header from "../components/Header";
-import { accessElf } from "../components/accessElf";
+import { useBRTools } from '../../hooks/useBRTools';
+import Header from "../../components/Header";
+import { accessElf } from "../../components/accessElf";
 
 function StadiumCalculator() {
   const navigate = useNavigate();

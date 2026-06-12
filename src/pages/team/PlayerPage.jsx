@@ -1,10 +1,10 @@
 import React, { useEffect } from "react";
-import { useTeam } from '../hooks/useTeam';
-import PlayersList from "../components/PlayersList";
-import PlayersDetailList from "../components/PlayersDetailList";
-import PlayersAverages from "../components/PlayersAverages";
-import PlayerHeader from "../components/PlayerHeader";
-import { accessElf } from "../components/accessElf";
+import { useTeam } from '../../hooks/useTeam';
+import PlayersList from "../../components/PlayersList";
+import PlayersDetailList from "../../components/PlayersDetailList";
+import PlayersAverages from "../../components/PlayersAverages";
+import PlayerHeader from "../../components/PlayerHeader";
+import { accessElf } from "../../components/accessElf";
 
 const PlayerPage = () => {
   const {

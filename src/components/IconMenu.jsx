@@ -3,11 +3,13 @@ import { Link } from 'react-router-dom';
 import StadiumIcon from './StadiumIcon';
 import ScoutingIcon from './ScoutingIcon';
 import InternationalsIcon from './InternationalsIcon';
+import ExportIcon from './ExportIcon';
 
 function IconMenu() {
   const [showStadiumTooltip, setShowStadiumTooltip] = useState(false);
   const [showScoutingTooltip, setShowScoutingTooltip] = useState(false);
   const [showInternationalsTooltip, setShowInternationalsTooltip] = useState(false);
+  const [showExportTooltip, setShowExportTooltip] = useState(false);
 
   return (
     <div className="bg-white rounded-lg shadow-md p-4 mb-6">
@@ -68,6 +70,26 @@ function IconMenu() {
           {showInternationalsTooltip && (
             <div className="absolute left-1/2 transform -translate-x-1/2 mt-2 px-3 py-2 bg-gray-800 text-white text-sm rounded-lg shadow-lg z-10 whitespace-nowrap">
               Internationals
+            </div>
+          )}
+        </div>
+
+        <div className="relative">
+          <Link
+            to="/export"
+            className="block p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            onMouseEnter={() => setShowExportTooltip(true)}
+            onMouseLeave={() => setShowExportTooltip(false)}
+          >
+            <ExportIcon
+              width={32}
+              height={32}
+              className="text-gray-600 hover:text-gray-900"
+            />
+          </Link>
+          {showExportTooltip && (
+            <div className="absolute left-1/2 transform -translate-x-1/2 mt-2 px-3 py-2 bg-gray-800 text-white text-sm rounded-lg shadow-lg z-10 whitespace-nowrap">
+              Match Export
             </div>
           )}
         </div>

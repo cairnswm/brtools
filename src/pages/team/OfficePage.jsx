@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import { useTeam } from "../hooks/useTeam";
-import { useBRTools } from "../hooks/useBRTools";
-import { accessElf } from "../components/accessElf";
+import { useTeam } from "../../hooks/useTeam";
+import { useBRTools } from "../../hooks/useBRTools";
+import { accessElf } from "../../components/accessElf";
 import { Link } from "react-router-dom";
 
 const OfficePage = () => {

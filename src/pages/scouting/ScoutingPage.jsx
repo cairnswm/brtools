@@ -1,6 +1,6 @@
-import Header from '../components/Header';
-import { accessElf } from '../components/accessElf';
-import { useScouting } from '../scouting/hooks/useScouting';
+import Header from '../../components/Header';
+import { accessElf } from '../../components/accessElf';
+import { useScouting } from '../../scouting/hooks/useScouting';
 import * as XLSX from 'xlsx';
 
 function ScoutingPage() {

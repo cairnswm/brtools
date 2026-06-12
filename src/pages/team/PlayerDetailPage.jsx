@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { useTeam } from '../hooks/useTeam';
-import { useBRTools } from '../hooks/useBRTools';
-import { accessElf } from "../components/accessElf";
-import { formatCSR } from "../utils/formatters";
-import { API_BASE_URL } from "../config/api";
+import { useTeam } from '../../hooks/useTeam';
+import { useBRTools } from '../../hooks/useBRTools';
+import { accessElf } from "../../components/accessElf";
+import { formatCSR } from "../../utils/formatters";
+import { API_BASE_URL } from "../../config/api";
 
 const PlayerDetailPage = () => {
   const { playerId, teamId } = useParams();

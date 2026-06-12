@@ -7,14 +7,15 @@ import { ScoutingProvider } from './scouting/context/ScoutingContext';
 import { InternationalsProvider } from './internationals/context/InternationalsContext';
 import LandingPage from './pages/LandingPage';
 import HomePage from './pages/HomePage';
-import StadiumCalculator from './pages/StadiumCalculator';
-import TeamDetails from './pages/TeamDetails';
+import StadiumCalculator from './pages/team/StadiumCalculator';
+import TeamDetails from './pages/team/TeamDetails';
 import SettingsPage from './pages/SettingsPage';
-import ImportPage from './pages/ImportPage';
-import ScoutingPage from './pages/ScoutingPage';
+import ImportPage from './pages/admin/ImportPage';
+import ScoutingPage from './pages/scouting/ScoutingPage';
 import InternationalsPage from './internationals/pages/InternationalsPage';
 import IntTeamDetailPage from './internationals/pages/IntTeamDetailPage';
 import IntPlayerDetailPage from './internationals/pages/IntPlayerDetailPage';
+import ExportPage from './pages/ExportPage';
 import { useEffect } from 'react';
 import { accessElf } from './components/accessElf';
 
@@ -68,6 +69,7 @@ const App = () => {
             }
           />
           <Route path="/settings" element={<SettingsPage />} />
+          <Route path="/export" element={<ExportPage />} />
           <Route
             path="/import"
             element={

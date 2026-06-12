@@ -1,8 +1,8 @@
 import { useEffect } from "react";
 import { useParams, Route, Routes } from "react-router-dom";
-import { useTeam } from '../hooks/useTeam';
-import Header from "../components/Header";
-import TeamMenu from "../components/TeamMenu";
+import { useTeam } from '../../hooks/useTeam';
+import Header from "../../components/Header";
+import TeamMenu from "../../components/TeamMenu";
 import PlayerPage from "./PlayerPage";
 import PlayerDetailPage from "./PlayerDetailPage";
 import TeamStandingsPage from "./TeamStandingsPage";
@@ -10,7 +10,7 @@ import TeamFixturesPage from "./TeamFixturesPage";
 import YouthPage from "./YouthPage";
 import TrainingPage from "./TrainingPage";
 import OfficePage from "./OfficePage";
-import { accessElf } from "../components/accessElf";
+import { accessElf } from "../../components/accessElf";
 
 const TeamDetails = () => {
   const { teamId: routeTeamId } = useParams();

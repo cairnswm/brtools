@@ -1,9 +1,9 @@
 import React, { useEffect } from "react";
-import { useTeam } from '../hooks/useTeam';
-import YouthList from "../components/YouthList";
-import PlayersDetailList from "../components/PlayersDetailList";
-import YouthHeader from "../components/YouthHeader";
-import { accessElf } from "../components/accessElf";
+import { useTeam } from '../../hooks/useTeam';
+import YouthList from "../../components/YouthList";
+import PlayersDetailList from "../../components/PlayersDetailList";
+import YouthHeader from "../../components/YouthHeader";
+import { accessElf } from "../../components/accessElf";
 
 const YouthPage = () => {
   const { teamId, youth, loading, error, playersView } = useTeam();

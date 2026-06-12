@@ -1,5 +1,5 @@
-import { useImport } from '../hooks/useImport';
-import Header from '../components/Header';
+import { useImport } from '../../hooks/useImport';
+import Header from '../../components/Header';
 import { useEffect } from 'react';
 
 function ImportPage() {

@@ -1,8 +1,8 @@
 import React, { useEffect } from "react";
 import { Link } from "react-router-dom";
 import TeamStandings from "./TeamStandingsTable"; 
-import { accessElf } from "../components/accessElf";
-import { useTeam } from '../hooks/useTeam';
+import { accessElf } from "../../components/accessElf";
+import { useTeam } from '../../hooks/useTeam';
 
 const TeamStandingsPage = () => {
   const {teamId }= useTeam();
