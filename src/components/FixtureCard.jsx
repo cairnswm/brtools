@@ -255,6 +255,113 @@ function FixtureCard({ fixture, teamId = null }) {
     XLSX.writeFile(wb, fileName);
   };
 
+  const exportPlayerStatsToExcel = async () => {
+    let statsData;
+    try {
+      const response = await fetch(`${API_BASE_URL}/fixture/${fixture.id}/stats?all=1`, {
+        headers: { accesskey: memberKey },
+      });
+      const json = await response.json();
+      const fixtureStats = json.data?.fixtures?.[fixture.id] ?? json.data;
+      if (!fixtureStats) {
+        alert('Player statistics not available for this match.');
+        return;
+      }
+      statsData = fixtureStats;
+    } catch {
+      alert('Failed to fetch player statistics.');
+      return;
+    }
+
+    // Collect all player entries in order (home players first, then guest)
+    const playerEntries = Object.entries(statsData).filter(
+      ([key]) => /^(home|guest) player \d+$/i.test(key)
+    );
+
+    if (playerEntries.length === 0) {
+      alert('No player statistics found in the response.');
+      return;
+    }
+
+    const g = (p, key, fallback = 0) => p[key] ?? fallback;
+
+    const headers = [
+      'id', 'id', 'energy_before', 'tackles', 'metres_gained', 'tries', 'conversions',
+      'missed_conversions', 'dropgoals', 'missed_dropgoals', 'penalties', 'missed_penalties',
+      'total_points', 'yellow_cards', 'red_cards', 'linebreaks', 'intercepts', 'kicks',
+      'good_kicks', 'bad_kicks', 'up_and_unders', 'good_up_and_unders', 'bad_up_and_unders',
+      'knockons', 'forward_passes', 'try_assists', 'beaten_defenders', 'injuries',
+      'handling_errors', 'missed_tackles', 'fights', 'kicking_metres', 'league_caps',
+      'friendly_caps', 'cup_caps', 'under_twenty_caps', 'national_caps',
+      'under_twenty_world_cup_caps', 'world_cup_caps', 'other_caps', 'penalties_conceded',
+      'kicks_out_on_the_full', 'ball_time', 'played', 'turnovers', 'lineouts_secured',
+      'lineouts_conceded', 'lineouts_stolen', 'successful_lineout_throws',
+      'unsuccessful_lineout_throws', 'minutes_played', 'energy_after',
+    ];
+
+    const rows = playerEntries.map(([, p]) => [
+      fixture.id,
+      g(p, 'id', ''),
+      g(p, 'energy before'),
+      g(p, 'tackles'),
+      g(p, 'metres gained'),
+      g(p, 'tries'),
+      g(p, 'conversions'),
+      g(p, 'missed conversions'),
+      g(p, 'dropgoals'),
+      g(p, 'missed dropgoals'),
+      g(p, 'penalties'),
+      g(p, 'missed penalties'),
+      g(p, 'total points'),
+      g(p, 'yellow cards'),
+      g(p, 'red cards'),
+      g(p, 'linebreaks'),
+      g(p, 'intercepts'),
+      g(p, 'kicks'),
+      g(p, 'good kicks'),
+      g(p, 'bad kicks'),
+      g(p, 'up and unders'),
+      g(p, 'good up and unders'),
+      g(p, 'bad up and unders'),
+      g(p, 'knockons'),
+      g(p, 'forward passes'),
+      g(p, 'try assists'),
+      g(p, 'beaten defenders'),
+      g(p, 'injuries'),
+      g(p, 'handling errors'),
+      g(p, 'missed tackles'),
+      g(p, 'fights'),
+      g(p, 'kicking metres'),
+      g(p, 'league caps'),
+      g(p, 'friendly caps'),
+      g(p, 'cup caps'),
+      g(p, 'under twenty caps'),
+      g(p, 'national caps'),
+      g(p, 'under twenty world cup caps'),
+      g(p, 'world cup caps'),
+      g(p, 'other caps'),
+      g(p, 'penalties conceded'),
+      g(p, 'kicks out on the full'),
+      g(p, 'ball time'),
+      g(p, 'matches played'),
+      g(p, 'turnovers'),
+      g(p, 'lineouts secured'),
+      g(p, 'lineouts lost'),
+      g(p, 'lineouts against throw'),
+      g(p, 'lineouts thrown'),
+      g(p, 'lineouts conceded'),
+      g(p, 'minutes played'),
+      g(p, 'energy after'),
+    ]);
+
+    const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Player Stats');
+    const fileName =
+      `player_stats_${homeTeam?.name || 'Home'}_vs_${guestTeam?.name || 'Away'}`.replace(/[^a-z0-9_]/gi, '_') + '.xlsx';
+    XLSX.writeFile(wb, fileName);
+  };
+
   // ── render helpers ────────────────────────────────────────────────────────
 
   const dateInfo = formatDate(fixture.matchstart);
@@ -460,9 +567,9 @@ function FixtureCard({ fixture, teamId = null }) {
           </div>
         )}
 
-        {/* Export button */}
+        {/* Export buttons */}
         <div className="mt-6 pt-4 border-t border-gray-200">
-          <div className="flex justify-center">
+          <div className="flex justify-center gap-3 flex-wrap">
             <button
               onClick={activeTab === 'matchstats' ? exportMatchStatsToExcel : exportStatisticsToExcel}
               className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-semibold flex items-center gap-2"
@@ -471,6 +578,15 @@ function FixtureCard({ fixture, teamId = null }) {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
               Export {activeTab === 'matchstats' ? 'Match Stats' : 'Statistics'}
+            </button>
+            <button
+              onClick={exportPlayerStatsToExcel}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-semibold flex items-center gap-2"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+              Export Player Stats
             </button>
           </div>
         </div>
