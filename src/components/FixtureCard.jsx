@@ -258,108 +258,159 @@ function FixtureCard({ fixture, teamId = null }) {
   const exportPlayerStatsToExcel = async () => {
     let statsData;
     try {
-      const response = await fetch(`${API_BASE_URL}/fixture/${fixture.id}/stats?all=1`, {
-        headers: { accesskey: memberKey },
-      });
-      const json = await response.json();
-      const fixtureStats = json.data?.fixtures?.[fixture.id] ?? json.data;
+      // Fetch player stats + both squads in parallel
+      const [statsRes, homePlayersRes, guestPlayersRes] = await Promise.all([
+        fetch(`${API_BASE_URL}/fixture/${fixture.id}/stats?all=1`, {
+          headers: { accesskey: memberKey },
+        }),
+        fetch(`${API_BASE_URL}/team/${fixture.hometeamid}/players`, {
+          headers: { accesskey: memberKey },
+        }),
+        fetch(`${API_BASE_URL}/team/${fixture.guestteamid}/players`, {
+          headers: { accesskey: memberKey },
+        }),
+      ]);
+
+      const [statsJson, homePlayersJson, guestPlayersJson] = await Promise.all([
+        statsRes.json(),
+        homePlayersRes.json(),
+        guestPlayersRes.json(),
+      ]);
+
+      const fixtureStats = statsJson.data?.fixtures?.[fixture.id] ?? statsJson.data;
       if (!fixtureStats) {
         alert('Player statistics not available for this match.');
         return;
       }
       statsData = fixtureStats;
+
+      // Build id → name lookup from both squads
+      const nameMap = new Map();
+      const addPlayers = (data) => {
+        if (data?.data?.status === 'Ok' && data.data?.players) {
+          Object.values(data.data.players).forEach((p) => {
+            if (p.id && p.name) nameMap.set(String(p.id), p.name);
+          });
+        }
+      };
+      addPlayers(homePlayersJson);
+      addPlayers(guestPlayersJson);
+
+      // Separate home and guest player entries (preserve numeric order)
+      const homePlayers = Object.entries(statsData)
+        .filter(([key]) => /^home player \d+$/i.test(key))
+        .sort(([a], [b]) => {
+          const n = (k) => parseInt(k.replace(/\D+/g, ''), 10);
+          return n(a) - n(b);
+        });
+
+      const guestPlayers = Object.entries(statsData)
+        .filter(([key]) => /^guest player \d+$/i.test(key))
+        .sort(([a], [b]) => {
+          const n = (k) => parseInt(k.replace(/\D+/g, ''), 10);
+          return n(a) - n(b);
+        });
+
+      if (homePlayers.length === 0 && guestPlayers.length === 0) {
+        alert('No player statistics found in the response.');
+        return;
+      }
+
+      const g = (p, key, fallback = 0) => p[key] ?? fallback;
+
+      const headers = [
+        'id', 'id', 'name', 'energy_before', 'tackles', 'metres_gained', 'tries', 'conversions',
+        'missed_conversions', 'dropgoals', 'missed_dropgoals', 'penalties', 'missed_penalties',
+        'total_points', 'yellow_cards', 'red_cards', 'linebreaks', 'intercepts', 'kicks',
+        'good_kicks', 'bad_kicks', 'up_and_unders', 'good_up_and_unders', 'bad_up_and_unders',
+        'knockons', 'forward_passes', 'try_assists', 'beaten_defenders', 'injuries',
+        'handling_errors', 'missed_tackles', 'fights', 'kicking_metres', 'league_caps',
+        'friendly_caps', 'cup_caps', 'under_twenty_caps', 'national_caps',
+        'under_twenty_world_cup_caps', 'world_cup_caps', 'other_caps', 'penalties_conceded',
+        'kicks_out_on_the_full', 'ball_time', 'played', 'turnovers', 'lineouts_secured',
+        'lineouts_conceded', 'lineouts_stolen', 'successful_lineout_throws',
+        'unsuccessful_lineout_throws', 'minutes_played', 'energy_after',
+      ];
+
+      const buildRow = ([, p]) => {
+        const playerId = g(p, 'id', '');
+        return [
+          fixture.id,
+          playerId,
+          nameMap.get(String(playerId)) ?? '',
+          g(p, 'energy before'),
+          g(p, 'tackles'),
+          g(p, 'metres gained'),
+          g(p, 'tries'),
+          g(p, 'conversions'),
+          g(p, 'missed conversions'),
+          g(p, 'dropgoals'),
+          g(p, 'missed dropgoals'),
+          g(p, 'penalties'),
+          g(p, 'missed penalties'),
+          g(p, 'total points'),
+          g(p, 'yellow cards'),
+          g(p, 'red cards'),
+          g(p, 'linebreaks'),
+          g(p, 'intercepts'),
+          g(p, 'kicks'),
+          g(p, 'good kicks'),
+          g(p, 'bad kicks'),
+          g(p, 'up and unders'),
+          g(p, 'good up and unders'),
+          g(p, 'bad up and unders'),
+          g(p, 'knockons'),
+          g(p, 'forward passes'),
+          g(p, 'try assists'),
+          g(p, 'beaten defenders'),
+          g(p, 'injuries'),
+          g(p, 'handling errors'),
+          g(p, 'missed tackles'),
+          g(p, 'fights'),
+          g(p, 'kicking metres'),
+          g(p, 'league caps'),
+          g(p, 'friendly caps'),
+          g(p, 'cup caps'),
+          g(p, 'under twenty caps'),
+          g(p, 'national caps'),
+          g(p, 'under twenty world cup caps'),
+          g(p, 'world cup caps'),
+          g(p, 'other caps'),
+          g(p, 'penalties conceded'),
+          g(p, 'kicks out on the full'),
+          g(p, 'ball time'),
+          g(p, 'matches played'),
+          g(p, 'turnovers'),
+          g(p, 'lineouts secured'),
+          g(p, 'lineouts lost'),
+          g(p, 'lineouts against throw'),
+          g(p, 'lineouts thrown'),
+          g(p, 'lineouts conceded'),
+          g(p, 'minutes played'),
+          g(p, 'energy after'),
+        ];
+      };
+
+      const sheetData = [
+        headers,
+        ...homePlayers.map(buildRow),
+        // 3 blank rows + repeated header before guest section
+        [],
+        [],
+        [],
+        headers,
+        ...guestPlayers.map(buildRow),
+      ];
+
+      const ws = XLSX.utils.aoa_to_sheet(sheetData);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'Player Stats');
+      const fileName =
+        `player_stats_${homeTeam?.name || 'Home'}_vs_${guestTeam?.name || 'Away'}`.replace(/[^a-z0-9_]/gi, '_') + '.xlsx';
+      XLSX.writeFile(wb, fileName);
     } catch {
       alert('Failed to fetch player statistics.');
-      return;
     }
-
-    // Collect all player entries in order (home players first, then guest)
-    const playerEntries = Object.entries(statsData).filter(
-      ([key]) => /^(home|guest) player \d+$/i.test(key)
-    );
-
-    if (playerEntries.length === 0) {
-      alert('No player statistics found in the response.');
-      return;
-    }
-
-    const g = (p, key, fallback = 0) => p[key] ?? fallback;
-
-    const headers = [
-      'id', 'id', 'energy_before', 'tackles', 'metres_gained', 'tries', 'conversions',
-      'missed_conversions', 'dropgoals', 'missed_dropgoals', 'penalties', 'missed_penalties',
-      'total_points', 'yellow_cards', 'red_cards', 'linebreaks', 'intercepts', 'kicks',
-      'good_kicks', 'bad_kicks', 'up_and_unders', 'good_up_and_unders', 'bad_up_and_unders',
-      'knockons', 'forward_passes', 'try_assists', 'beaten_defenders', 'injuries',
-      'handling_errors', 'missed_tackles', 'fights', 'kicking_metres', 'league_caps',
-      'friendly_caps', 'cup_caps', 'under_twenty_caps', 'national_caps',
-      'under_twenty_world_cup_caps', 'world_cup_caps', 'other_caps', 'penalties_conceded',
-      'kicks_out_on_the_full', 'ball_time', 'played', 'turnovers', 'lineouts_secured',
-      'lineouts_conceded', 'lineouts_stolen', 'successful_lineout_throws',
-      'unsuccessful_lineout_throws', 'minutes_played', 'energy_after',
-    ];
-
-    const rows = playerEntries.map(([, p]) => [
-      fixture.id,
-      g(p, 'id', ''),
-      g(p, 'energy before'),
-      g(p, 'tackles'),
-      g(p, 'metres gained'),
-      g(p, 'tries'),
-      g(p, 'conversions'),
-      g(p, 'missed conversions'),
-      g(p, 'dropgoals'),
-      g(p, 'missed dropgoals'),
-      g(p, 'penalties'),
-      g(p, 'missed penalties'),
-      g(p, 'total points'),
-      g(p, 'yellow cards'),
-      g(p, 'red cards'),
-      g(p, 'linebreaks'),
-      g(p, 'intercepts'),
-      g(p, 'kicks'),
-      g(p, 'good kicks'),
-      g(p, 'bad kicks'),
-      g(p, 'up and unders'),
-      g(p, 'good up and unders'),
-      g(p, 'bad up and unders'),
-      g(p, 'knockons'),
-      g(p, 'forward passes'),
-      g(p, 'try assists'),
-      g(p, 'beaten defenders'),
-      g(p, 'injuries'),
-      g(p, 'handling errors'),
-      g(p, 'missed tackles'),
-      g(p, 'fights'),
-      g(p, 'kicking metres'),
-      g(p, 'league caps'),
-      g(p, 'friendly caps'),
-      g(p, 'cup caps'),
-      g(p, 'under twenty caps'),
-      g(p, 'national caps'),
-      g(p, 'under twenty world cup caps'),
-      g(p, 'world cup caps'),
-      g(p, 'other caps'),
-      g(p, 'penalties conceded'),
-      g(p, 'kicks out on the full'),
-      g(p, 'ball time'),
-      g(p, 'matches played'),
-      g(p, 'turnovers'),
-      g(p, 'lineouts secured'),
-      g(p, 'lineouts lost'),
-      g(p, 'lineouts against throw'),
-      g(p, 'lineouts thrown'),
-      g(p, 'lineouts conceded'),
-      g(p, 'minutes played'),
-      g(p, 'energy after'),
-    ]);
-
-    const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'Player Stats');
-    const fileName =
-      `player_stats_${homeTeam?.name || 'Home'}_vs_${guestTeam?.name || 'Away'}`.replace(/[^a-z0-9_]/gi, '_') + '.xlsx';
-    XLSX.writeFile(wb, fileName);
   };
 
   // ── render helpers ────────────────────────────────────────────────────────
